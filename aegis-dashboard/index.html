@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aegis EBS — Digital Twin Dashboard</title>
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="scene"></canvas>
+
+      <header id="hud-top">
+        <div class="brand">
+          <h1>AEGIS&nbsp;EBS</h1>
+          <span class="sub">Digital Twin · Building A · 10 floors · 4 zones/floor</span>
+        </div>
+        <div id="conn-badge" class="badge badge-connecting">CONNECTING…</div>
+      </header>
+
+      <aside id="hud-side">
+        <section class="panel">
+          <h2>Metrics</h2>
+          <dl id="metrics">
+            <div><dt>Connected</dt><dd id="m-connected">–</dd></div>
+            <div><dt>p50 (ms)</dt><dd id="m-p50">–</dd></div>
+            <div><dt>p95 (ms)</dt><dd id="m-p95">–</dd></div>
+            <div><dt>p99 (ms)</dt><dd id="m-p99">–</dd></div>
+            <div><dt>Retries</dt><dd id="m-retry">–</dd></div>
+          </dl>
+        </section>
+
+        <section class="panel">
+          <h2>Active alerts <span id="alert-count" class="pill">0</span></h2>
+          <ul id="alerts" class="alerts"></ul>
+        </section>
+
+        <section class="panel">
+          <h2>Legend</h2>
+          <ul class="legend">
+            <li><i class="sw sw-online"></i>Online / acked</li>
+            <li><i class="sw sw-warning"></i>Warning</li>
+            <li><i class="sw sw-critical"></i>Critical</li>
+            <li><i class="sw sw-offline"></i>Offline</li>
+          </ul>
+        </section>
+      </aside>
+
+      <div id="tooltip" hidden></div>
+
+      <footer id="hud-foot">
+        <span id="feed-mode">feed: –</span>
+        <span class="dot">·</span>
+        <span id="last-update">last update: –</span>
+        <span class="dot">·</span>
+        <span>drag to orbit · scroll to zoom · hover a zone for details</span>
+      </footer>
+    </div>
+    <noscript>This dashboard requires JavaScript (WebGL).</noscript>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

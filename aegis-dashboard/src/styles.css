@@ -1,0 +1,260 @@
+:root {
+  --bg: #0b1020;
+  --panel: rgba(13, 19, 38, 0.82);
+  --border: rgba(120, 140, 190, 0.22);
+  --text: #dbe4f5;
+  --muted: #8fa0c2;
+  --online: #22c55e;
+  --warning: #facc15;
+  --critical: #ef4444;
+  --offline: #64748b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+#app {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+#scene {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+}
+
+/* --- top bar --- */
+
+#hud-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  pointer-events: none;
+}
+
+.brand h1 {
+  margin: 0;
+  font-size: 20px;
+  letter-spacing: 3px;
+}
+
+.brand .sub {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.badge {
+  pointer-events: auto;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  backdrop-filter: blur(6px);
+}
+
+.badge-live { color: var(--online); border-color: var(--online); }
+.badge-mock { color: var(--warning); border-color: var(--warning); }
+.badge-reconnecting,
+.badge-connecting { color: var(--muted); }
+.badge-offline { color: var(--offline); border-color: var(--offline); }
+
+/* --- side panels --- */
+
+#hud-side {
+  position: absolute;
+  top: 64px;
+  right: 14px;
+  width: 290px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  backdrop-filter: blur(6px);
+}
+
+.panel h2 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pill {
+  background: rgba(120, 140, 190, 0.18);
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 11px;
+  color: var(--text);
+}
+
+#metrics {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 12px;
+}
+
+#metrics div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+}
+
+#metrics dt {
+  color: var(--muted);
+}
+
+#metrics dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.alerts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.alert {
+  font-size: 12px;
+  line-height: 1.35;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border-left: 3px solid var(--offline);
+  background: rgba(120, 140, 190, 0.08);
+}
+
+.alert-critical { border-left-color: var(--critical); }
+.alert-warning { border-left-color: var(--warning); }
+.alert-none { color: var(--muted); border-left-color: var(--online); }
+
+.legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sw {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.sw-online { background: var(--online); }
+.sw-warning { background: var(--warning); }
+.sw-critical { background: var(--critical); }
+.sw-offline { background: var(--offline); }
+
+/* --- tooltip / footer --- */
+
+#tooltip {
+  position: absolute;
+  z-index: 10;
+  max-width: 320px;
+  pointer-events: none;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12px;
+  backdrop-filter: blur(6px);
+}
+
+.tt-title {
+  font-weight: 700;
+  margin-bottom: 3px;
+  letter-spacing: 0.5px;
+}
+
+#hud-foot {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 10px 18px;
+  font-size: 11px;
+  color: var(--muted);
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  pointer-events: none;
+}
+
+/* --- small screens --- */
+
+@media (max-width: 760px) {
+  #hud-side {
+    top: auto;
+    bottom: 34px;
+    right: 8px;
+    left: 8px;
+    width: auto;
+    max-height: 38vh;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .panel {
+    flex: 1 1 200px;
+  }
+
+  .brand .sub {
+    display: none;
+  }
+}
