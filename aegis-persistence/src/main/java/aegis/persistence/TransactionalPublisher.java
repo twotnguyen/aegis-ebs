@@ -130,14 +130,87 @@ public final class TransactionalPublisher {
     }
   }
 
+  /**
+   * payload_hash (v2): SHA-256 over a canonical JSON rendering of the whole
+   * payload — fixed alphabetical key order, JSON-escaped strings, no
+   * whitespace. Covers buildingId, createdBy, category, priority, title, body,
+   * metadataJson (as the exact submitted text), expiresAt and the deduplicated
+   * target device list in publish order, so no field change or embedded
+   * newline/quote can leave the fingerprint unchanged or shift field
+   * boundaries. requestId is the idempotency key (stored in its own column)
+   * and is deliberately NOT part of the payload fingerprint: identical
+   * payloads published under different requestIds hash identically.
+   */
   private static String payloadHash(Request req, List<String> deviceIds) {
-    String canonical = req.title() + "\n" + req.body() + "\n" + req.metadataJson() + "\n"
-        + String.join(",", deviceIds);
+    String canonical = canonicalPayloadJson(req, deviceIds);
     try {
       MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
       return HexFormat.of().formatHex(sha256.digest(canonical.getBytes(StandardCharsets.UTF_8)));
     } catch (NoSuchAlgorithmException e) {
       throw new IllegalStateException("SHA-256 unavailable", e);
     }
+  }
+
+  private static String canonicalPayloadJson(Request req, List<String> deviceIds) {
+    StringBuilder sb = new StringBuilder("{");
+    jsonField(sb, "body", req.body());
+    sb.append(',');
+    jsonField(sb, "buildingId", req.buildingId());
+    sb.append(',');
+    jsonField(sb, "category", req.category());
+    sb.append(',');
+    jsonField(sb, "createdBy", req.createdBy());
+    sb.append(",\"deviceIds\":[");
+    for (int i = 0; i < deviceIds.size(); i++) {
+      if (i > 0) {
+        sb.append(',');
+      }
+      jsonString(sb, deviceIds.get(i));
+    }
+    sb.append("],\"expiresAt\":");
+    if (req.expiresAt() == null) {
+      sb.append("null");
+    } else {
+      jsonString(sb, Sql.ts(req.expiresAt()));
+    }
+    sb.append(',');
+    jsonField(sb, "metadataJson", req.metadataJson());
+    sb.append(',');
+    jsonField(sb, "priority", req.priority().name());
+    sb.append(',');
+    jsonField(sb, "title", req.title());
+    sb.append('}');
+    return sb.toString();
+  }
+
+  private static void jsonField(StringBuilder sb, String key, String value) {
+    jsonString(sb, key);
+    sb.append(':');
+    jsonString(sb, value);
+  }
+
+  /** Minimal RFC 8259 string escaping: quote, backslash and control characters. */
+  private static void jsonString(StringBuilder sb, String value) {
+    sb.append('"');
+    for (int i = 0; i < value.length(); i++) {
+      char ch = value.charAt(i);
+      switch (ch) {
+        case '"' -> sb.append("\\\"");
+        case '\\' -> sb.append("\\\\");
+        case '\b' -> sb.append("\\b");
+        case '\f' -> sb.append("\\f");
+        case '\n' -> sb.append("\\n");
+        case '\r' -> sb.append("\\r");
+        case '\t' -> sb.append("\\t");
+        default -> {
+          if (ch < 0x20) {
+            sb.append(String.format("\\u%04x", (int) ch));
+          } else {
+            sb.append(ch);
+          }
+        }
+      }
+    }
+    sb.append('"');
   }
 }

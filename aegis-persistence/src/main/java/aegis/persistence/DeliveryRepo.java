@@ -133,6 +133,13 @@ public final class DeliveryRepo {
    * Records a device ack and advances the delivery state monotonically
    * (ACK only advances state: RECEIVED &lt; ACKNOWLEDGED; CANCEL is terminal).
    * Ack row + state change commit together.
+   *
+   * <p>The delivery must belong to the given {@code (deviceId, alertId, revision)}:
+   * a mismatch or unknown delivery rolls back and throws {@link SQLException},
+   * so one device can never ack/cancel another device's delivery. Repeating an
+   * ack of the same kind is an idempotent no-op (at-least-once transport), and
+   * an ack whose target rank is not above the current state leaves the state
+   * unchanged.
    */
   public DeviceAck recordAck(String deviceId, String alertId, int revision, String deliveryId,
                              AckKind kind, String userId) throws SQLException {
@@ -148,9 +155,29 @@ public final class DeliveryRepo {
       try (Statement s = c.createStatement()) {
         s.execute("BEGIN IMMEDIATE");
         try {
+          // The ack may only target a delivery owned by this device/alert/revision;
+          // reject mismatches before writing anything (cross-device ack guard).
+          try (PreparedStatement ps = c.prepareStatement(
+              "SELECT device_id, alert_id, revision FROM deliveries WHERE id=?")) {
+            ps.setString(1, deliveryId);
+            try (ResultSet rs = ps.executeQuery()) {
+              if (!rs.next()) {
+                throw new SQLException("recordAck: unknown delivery " + deliveryId);
+              }
+              if (!Objects.equals(deviceId, rs.getString(1))
+                  || !Objects.equals(alertId, rs.getString(2))
+                  || revision != rs.getInt(3)) {
+                throw new SQLException("recordAck: delivery " + deliveryId
+                    + " does not belong to device/alert/revision (" + deviceId + ", "
+                    + alertId + ", " + revision + ")");
+              }
+            }
+          }
+          // Duplicate ack of the same kind is a benign no-op (at-least-once retries).
           try (PreparedStatement ps = c.prepareStatement(
               "INSERT INTO device_acks(id,device_id,alert_id,revision,delivery_id,ack_kind,acked_at,user_id) "
-                  + "VALUES(?,?,?,?,?,?,?,?)")) {
+                  + "VALUES(?,?,?,?,?,?,?,?) "
+                  + "ON CONFLICT(device_id,alert_id,revision,ack_kind) DO NOTHING")) {
             ps.setString(1, ack.id());
             ps.setString(2, ack.deviceId());
             ps.setString(3, ack.alertId());
@@ -162,13 +189,17 @@ public final class DeliveryRepo {
             ps.executeUpdate();
           }
           try (PreparedStatement ps = c.prepareStatement(
-              "UPDATE deliveries SET state=? WHERE id=? AND "
+              "UPDATE deliveries SET state=? WHERE id=? AND device_id=? AND alert_id=? AND revision=? AND "
                   + "CASE state WHEN 'PENDING' THEN 0 WHEN 'SENT' THEN 1 WHEN 'RETRY_SCHEDULED' THEN 1 "
                   + "WHEN 'RECEIVED' THEN 2 WHEN 'ACKNOWLEDGED' THEN 3 WHEN 'FAILED' THEN 3 "
                   + "WHEN 'EXPIRED' THEN 4 WHEN 'CANCELLED' THEN 4 END < ?")) {
             ps.setString(1, target.name());
             ps.setString(2, deliveryId);
-            ps.setInt(3, targetRank);
+            ps.setString(3, deviceId);
+            ps.setString(4, alertId);
+            ps.setInt(5, revision);
+            ps.setInt(6, targetRank);
+            // 0 rows = state already at/above target rank: monotonic no-op, not an error.
             ps.executeUpdate();
           }
           s.execute("COMMIT");

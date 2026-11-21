@@ -43,12 +43,12 @@ class RepositoriesTest {
       assertEquals(Role.FLOOR_MANAGER, u.role());
       assertTrue(u.enabled());
       assertEquals(Fixtures.NOW, u.createdAt());
-      // UUID text id + raw UTC ISO-8601 storage
+      // UUID text id + raw UTC ISO-8601 storage (fixed-width 9-digit nanos, see Sql.TS)
       UUID.fromString(u.id());
       try (Connection c = db.open(); Statement s = c.createStatement();
            ResultSet rs = s.executeQuery("SELECT created_at FROM users WHERE id='" + u.id() + "'")) {
         assertTrue(rs.next());
-        assertEquals("2026-11-21T07:00:00Z", rs.getString(1));
+        assertEquals("2026-11-21T07:00:00.000000000Z", rs.getString(1));
       }
     }
 
