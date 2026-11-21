@@ -1,0 +1,68 @@
+# AEGIS-EBS CI — full Maven reactor verify (all module tests) + dashboard build.
+# Local equivalent: see docs/BUILD.md. Fresh-install budget: NFR-015 (<30 min),
+# enforced here via timeout-minutes: 30.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: mvn verify + dashboard build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Temurin JDK 24 matches maven.compiler.release=24 in the root pom.
+      # cache: maven restores ~/.m2/repository keyed on the pom files.
+      - name: Set up JDK 24 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '24'
+          cache: maven
+
+      # Node 26 for aegis-dashboard (Vite 8). cache: npm restores ~/.npm
+      # keyed on aegis-dashboard/package-lock.json (npm ci requires the lockfile).
+      - name: Set up Node 26
+        uses: actions/setup-node@v4
+        with:
+          node-version: '26'
+          cache: npm
+          cache-dependency-path: aegis-dashboard/package-lock.json
+
+      # JavaFX headless note: aegis-client depends on JavaFX 24, but its current
+      # tests (AlertRecord/ClientConfig/InboxStore) never start the JavaFX
+      # toolkit, so plain headless ubuntu-latest works — no X server needed.
+      # If JavaFX UI tests are added later, run surefire with Monocle headless:
+      #   -Dglass.platform=Monocle -Dmonocle.platform=Headless -Dprism.order=sw
+      # (add org.testfx:openjfx-monocle test dependency), or wrap this step
+      # with xvfb-run. sqlite-jdbc native-access warnings are benign.
+      - name: Maven verify (full reactor, all tests)
+        run: mvn -B -ntp verify
+
+      - name: Dashboard build (npm ci + vite build)
+        working-directory: aegis-dashboard
+        run: |
+          npm ci
+          npm run build
+
+      - name: Upload surefire reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: '**/target/surefire-reports/*.xml'
+          if-no-files-found: ignore
+          retention-days: 7
