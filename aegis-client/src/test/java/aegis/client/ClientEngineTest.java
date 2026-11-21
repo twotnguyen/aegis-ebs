@@ -148,22 +148,35 @@ class ClientEngineTest {
       s.handshake(true);
       if (idx == 0) {
         s.pushAlert(alert1, "push-0-0");
-        s.rstClose(); // lose the ACK: connection dies right after the push
+        // Durability barrier: the engine commits BEFORE it ACKs, so observing the
+        // ACK proves alert1 is durable. Only then RST the link. An immediate RST
+        // (the old flake) can discard the push on slow runners before it is ever
+        // committed, leaving the reconnect SYNC without ALT-1.
+        Envelope e;
+        do {
+          e = s.read();
+        } while (!"ACK_RECEIVED".equals(e.type()));
+        s.rstClose(); // connection dies right after the durable commit
       } else {
         s.recordLoop(List.of(alert1, alert2), false); // SYNC redelivers alert1 + new alert2
       }
     });
     startEngine(server);
-    await("reconnect + SYNC_REQUEST", 15_000, () -> server.connections.get() >= 2
-        && !server.framesOfType("SYNC_REQUEST").isEmpty());
+    await("reconnect + SYNC_REQUEST carrying durable ALT-1", 15_000, () ->
+        server.connections.get() >= 2 && server.framesOfType("SYNC_REQUEST").stream()
+            .anyMatch(e -> e.payload().path("knownRevisions").path("ALT-1").asLong(0) == 1));
     await("alert2 acked after sync", 10_000, () -> server.framesOfType("ACK_RECEIVED").stream()
         .anyMatch(e -> "ALT-2".equals(e.payload().path("alertId").asText())));
     await("alert1 re-acked after sync redelivery", 10_000, () -> server.framesOfType("ACK_RECEIVED").stream()
         .anyMatch(e -> "ALT-1".equals(e.payload().path("alertId").asText())));
 
-    Envelope sync = server.framesOfType("SYNC_REQUEST").get(0);
-    assertEquals("DEV-TEST-01", sync.payload().get("deviceId").asText());
-    assertEquals(1, sync.payload().get("knownRevisions").get("ALT-1").asLong(),
+    // Select the SYNC frame that actually carries the durably-known revision
+    // (null-safe path(): never get() on a possibly-absent node).
+    Envelope sync = server.framesOfType("SYNC_REQUEST").stream()
+        .filter(e -> e.payload().path("knownRevisions").path("ALT-1").asLong(0) == 1)
+        .findFirst().orElseThrow(() -> new AssertionError("no SYNC_REQUEST carried knownRevisions ALT-1"));
+    assertEquals("DEV-TEST-01", sync.payload().path("deviceId").asText());
+    assertEquals(1, sync.payload().path("knownRevisions").path("ALT-1").asLong(),
         "SYNC must carry durably-known revisions");
     assertEquals(List.of("ALT-1", "ALT-2"), listener.fresh.stream().map(AlertRecord::alertId).toList(),
         "redelivered alert1 must not pop up again");
