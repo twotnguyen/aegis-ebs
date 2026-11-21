@@ -451,7 +451,7 @@ Các nguồn ngoài giáo trình: [3] (ExecutorService, JSSE/TLS) → 2.3, 2.8; 
 
 Chương này trình bày kết quả thực nghiệm của đồ án theo trình tự: yêu cầu hệ thống (3.1), phân tích và thiết kế (3.2), cài đặt (3.3), hướng dẫn biên dịch/chạy (3.4), kiểm thử và số liệu đo (3.5), cuối cùng là ưu điểm và hạn chế (3.6). Toàn bộ mô tả thiết kế và cài đặt được đối chiếu trực tiếp với mã nguồn của repository `aegis-ebs` tại commit `9f0dad2` (ngày 21/11/2026) và các tài liệu đặc tả `docs/ARCHITECTURE.md`, `docs/ERD.md`, `docs/PROTOCOL.md`, `docs/TEST-PLAN.md`, `docs/SECURITY.md`.
 
-**Nguyên tắc trung thực số liệu (NFR-018).** Mọi số liệu đo đạc trình bày trong chương này đều phải là kết quả của lần chạy thật, kèm điều kiện đo (runId, commit SHA, cấu hình máy, thời điểm). Những hạng mục đã có bằng chứng thật (kiểm kê test từ mã nguồn, kết quả peer-review trong `docs/reviews/`, báo cáo benchmark `target/lab-report/fanout-report.json`, lần chạy test dashboard được xác minh lại) được trích dẫn đúng nguồn. Những hạng mục chưa có lần chạy nghiệm thu chính thức — kết quả verify toàn reactor trên máy đo, ma trận acceptance T-01…T-30, 16 kịch bản chaos có seed, tải 100 client với p50/p95/p99 và tỷ lệ ACK, ảnh dashboard — được giữ nguyên dạng placeholder `[TODO: số thật từ docs/evidence/, runId/SHA/máy]`; thư mục `docs/evidence/` chưa tồn tại tại thời điểm viết báo cáo. Tuyệt đối không điền số liệu ước đoán hay bịa đặt vào các placeholder này. Hệ thống là **SIMULATION/TRAINING**, không thay thế hệ thống báo cháy/sơ tán đã chứng nhận.
+**Nguyên tắc trung thực số liệu (NFR-018).** Mọi số liệu đo đạc trình bày trong chương này đều phải là kết quả của lần chạy thật, kèm điều kiện đo (runId, commit SHA, cấu hình máy, thời điểm). Những hạng mục đã có bằng chứng thật (kiểm kê test từ mã nguồn, kết quả peer-review trong `docs/reviews/`, báo cáo benchmark `target/lab-report/fanout-report.json`, lần chạy test dashboard được xác minh lại) được trích dẫn đúng nguồn. Những hạng mục đã có lần chạy thật được điền số liệu kèm runId/commit SHA/máy đo: **tải 100 client clean** (p50=773/p95=1307/p99=1334 ms, ACK_RECEIVED 100%, runId `276dedf5`, mục 3.5.5) và **chaos C01–C03** (lossy/delayed/duplicate fleet 50, mục 3.5.4); bằng chứng lưu trong `docs/evidence/` (benchmark + chaos, kèm DB/log/audit thật). Những hạng mục chưa có lần chạy nghiệm thu chính thức — kết quả verify toàn reactor trên máy đo, ma trận acceptance T-01…T-30, chaos C04…C16 end-to-end, tải mixed/200–500, chỉ số CPU/RSS/WAL, ảnh dashboard — vẫn giữ dạng placeholder `[TODO]`. Tuyệt đối không điền số liệu ước đoán hay bịa đặt vào các placeholder này. Hệ thống là **SIMULATION/TRAINING**, không thay thế hệ thống báo cháy/sơ tán đã chứng nhận.
 
 ### 3.1 Yêu cầu hệ thống
 
@@ -1325,9 +1325,9 @@ Mười sáu kịch bản chaos (blueprint §12, ánh xạ trong `docs/TEST-PLAN
 
 | Mã | Kịch bản | Cơ chế tiêm | Module/test liên quan hiện có | Kết quả chính thức |
 |---|---|---|---|---|
-| C01 | Drop ACK | simulator `lossy` (dropRate 0,3) | RetryPolicyTest, FanoutEngineTest, ClientEngineTest (T-13) | [TODO] |
-| C02 | Delay ACK | simulator `delayed` (500 ms + jitter 1500) | MetricsRegistry percentile; dashboard DELAY_ACK (mock) | [TODO] |
-| C03 | Duplicate | simulator `duplicate` (rate 0,5 × 2 bản) | DedupIndexTest, InboxStoreTest concurrent, TlsLoopback idempotent replay (T-14) | [TODO] |
+| C01 | Drop ACK | simulator `lossy` (dropRate 0,3) | RetryPolicyTest, FanoutEngineTest, ClientEngineTest (T-13) | **ĐẠT (đo thật fleet 50, seed 42, runId e1943406):** 15 ACK bị drop → 15 retry, ACK_RECEIVED 98% (49/50), 1 FAILED sau attempt 4 (SIM-DEV-0044), 14 duplicate push bị dedup; p50=493/p95=6026/p99=13575 ms. `docs/evidence/chaos/lossy.json` |
+| C02 | Delay ACK | simulator `delayed` (500 ms + jitter 1500) | MetricsRegistry percentile; dashboard DELAY_ACK (mock) | **ĐẠT (đo thật fleet 50, seed 42, runId d04af662):** 50 ACK delayed, ACK_RECEIVED 100% (50/50), 0 retry; p50=1585/p95=2703/p99=2707 ms. `docs/evidence/chaos/delayed.json` |
+| C03 | Duplicate | simulator `duplicate` (rate 0,5 × 2 bản) | DedupIndexTest, InboxStoreTest concurrent, TlsLoopback idempotent replay (T-14) | **ĐẠT (đo thật fleet 50, seed 42, runId 04c97420):** 22 duplicate ACK bị khử trùng (ON CONFLICT DO NOTHING), ACK_RECEIVED 100%, 0 retry, không xử lý trùng; p50=189/p95=301/p99=306 ms. `docs/evidence/chaos/duplicate.json` |
 | C04 | Disconnect 20% | simulator `flaky` 0,3 / `mixed` 0,2 | SessionRegistryTest, ClientEngineTest reconnect | [TODO] |
 | C05 | Reconnect | simulator + backoff client engine | ClientEngineTest reconnect/SYNC, resendPendingAcks (T-15) | [TODO] |
 | C06 | Kill sau commit | restart server; enqueuer lỗi sau COMMIT | TransactionalPublisherTest, RecoveryScannerTest, TlsLoopback crashRecoveryRedeliversAfterRestart (T-18) | [TODO] |
@@ -1357,7 +1357,15 @@ Mười sáu kịch bản chaos (blueprint §12, ánh xạ trong `docs/TEST-PLAN
 
 **Tính tất định (T-29).** `FaultInjector.decide()` tiêu thụ **đúng 4 số ngẫu nhiên double theo thứ tự cố định** (drop, delay-jitter, duplicate, disconnect) bất kể rate/timing/thread; mỗi agent nhận RNG dẫn xuất tất định từ master seed (`master.nextLong()` theo index). Probe độc lập của review-d đếm 1000 quyết định → đúng 4000 draw, hai fleet cùng seed cho chuỗi quyết định giống hệt; smoke `lossy` hai lần chạy seed 99 cho **số liệu tổng kết giống hệt end-to-end**; `hundredAgentFleetSmoke` chạy thật 100 agent với 200 ACK chính xác. Giới hạn trung thực (INFO I3 của review-d): với kịch bản có disconnect (`flaky`/`mixed`), chuỗi quyết định vẫn tất định nhưng **số liệu tổng kết có thể dao động** giữa các run cùng seed vì backoff reconnect dùng jitter thời gian thực và deadline wall-clock; muốn tái lập tuyệt đối cả mixed cần tiêm seeded RNG vào backoff và dùng virtual clock (hướng phát triển, Chương 4). Ba lệnh chaos của dashboard (DROP_ACK/DELAY_ACK/DISCONNECT) hoạt động trên mock feed, chỉ phục vụ trình diễn UI — không phải tiêm lỗi mạng thật.
 
-[TODO: kết quả thật 16 kịch bản C01…C16 — mỗi kịch bản ghi seed, lệnh chạy, runId, commit SHA, máy đo, log/report/ảnh vào docs/evidence/. KHÔNG bịa số]
+**Kết quả chaos đo thật (C01–C03, fleet 50, seed 42, máy Apple M3 Pro/Java 24.0.1, commit `69fbee8`, cổng 29443/29444).** Chạy bằng `scripts/chaos-run.sh lossy delayed duplicate` (FLEET=50 DURATION=15 SEED=42); mỗi kịch bản DB mới + fleet đúng N thiết bị + một FIRE_DRILL toàn tòa nhà, chờ ngân sách retry settle rồi xuất summary + db_stats + audit. Bằng chứng: `docs/evidence/chaos/{lossy,delayed,duplicate}.json` + `docs/evidence/chaos/runs/<scenario>-<runId>/{chaos.db,server.log,sim.log,audit.json}`.
+
+| Kịch bản | runId | ACK_RECEIVED | Retry | FAILED | Duplicate | p50/p95/p99 (ms) | Bất biến xác nhận |
+|---|---|---|---|---|---|---|---|
+| C01 lossy (drop 0,3) | e1943406 | 98% (49/50) | 15 | 1 (attempt 4) | 14 push dedup | 493/6026/13575 | retry khôi phục ACK mất; FAILED đúng ngân sách (≤4 attempt); audit RETRY 14 + DELIVERY_FAILED 1 |
+| C02 delayed (500+jitter1500) | d04af662 | 100% (50/50) | 0 | 0 | 0 | 1585/2703/2707 | ACK trễ vẫn về đủ, không retry thừa; percentile phản ánh delay thật |
+| C03 duplicate (0,5×2) | 04c97420 | 100% (50/50) | 0 | 0 | 22 ACK dedup | 189/301/306 | khử trùng idempotent (ON CONFLICT DO NOTHING), không xử lý trùng, không popup trùng |
+
+Phân tích: C01 chứng minh cơ chế retry at-least-once có ngân sách — 15 ACK bị drop được gửi lại (attemptHistogram {1:38, 2:10, 3:1, 4:1}), 49/50 khôi phục, 1 thiết bị FAILED đúng sau 4 attempt (không retry vô hạn); audit ghi RETRY kèm messageId mới mỗi attempt và DELIVERY_FAILED cho SIM-DEV-0044. C03 chứng minh dedup phía server nhận 22 ACK trùng mà không tạo bản ghi/state trùng. C02 chứng minh đo latency trung thực dưới delay. Các kịch bản C04–C16 (disconnect/reconnect/crash/RBAC/cert/fuzz/priority/cancel/UDP/multicast/contention/slow-client) đã có test tự động phủ (Bảng 3.16) nhưng **chưa chạy end-to-end chính thức bằng chaos-run.sh** — giữ placeholder, sẽ bổ sung (đặc biệt flaky/mixed để đo reconnect NFR-007).
 
 #### 3.5.5 Tải 100 client và độ trễ phân phối
 
@@ -1365,22 +1373,26 @@ Mười sáu kịch bản chaos (blueprint §12, ánh xạ trong `docs/TEST-PLAN
 
 **Bằng chứng hiện có.** `SimulatorSmokeTest` (5 test; toàn module simulator 20/20 pass trên surefire) chạy thật đội 30/12/8/100 agent trên TLS loopback (~30 s), trong đó `hundredAgentFleetSmoke` xác nhận 100 agent hoàn thành với 200 ACK chính xác và `sameSeedReproducesIdenticalFaultAccounting` xác nhận tái lập số liệu lossy. Đây là bằng chứng năng lực chịu tải ở mức smoke, **chưa phải phép đo định lượng chính thức** với đầy đủ metrics và điều kiện máy đo.
 
-**Bảng 3.18.** Chỉ số tải 100 client — chờ số đo chính thức.
+**Bảng 3.18.** Chỉ số tải 100 client — số đo thật (nguồn: `docs/evidence/benchmark/276dedf5-fa83-4022-b7be-f3a47fccf591/summary.json`).
 
-| Chỉ số | Đơn vị | Giá trị |
+Điều kiện đo: runId `276dedf5-fa83-4022-b7be-f3a47fccf591`, commit `c1dbab5`, máy Apple M3 Pro (12 nhân, 18 GB RAM, arm64), macOS 15.7.3, Java 24.0.1, Python 3.14.2, host Macbook-Tinh; bắt đầu 2026-11-21T13:58:01Z; fleet 100, scenario `clean`, seed 42, duration 30 s, cổng TLS 29443/WS 29444, retry maxRetries=3 base 3000 ms (3s/6s/12s). Publish FIRE_DRILL CRITICAL toàn tòa nhà (deliveryCount 100) lúc 13:58:12.029Z sau khi 100/100 thiết bị xác thực (3,36 s).
+
+| Chỉ số | Đơn vị | Giá trị (đo thật) |
 |---|---|---|
-| Độ trễ phân phối p50 (publish → ACK_RECEIVED) | ms | [TODO: số thật từ docs/evidence/, runId/SHA/máy] |
-| Độ trễ phân phối p95 | ms | [TODO: số thật từ docs/evidence/, runId/SHA/máy] |
-| Độ trễ phân phối p99 | ms | [TODO: số thật từ docs/evidence/, runId/SHA/máy] |
-| Tỷ lệ ACK_RECEIVED (received/targeted) | % | [TODO: số thật từ docs/evidence/, runId/SHA/máy] |
-| Tỷ lệ ACK_USER (user-ack/targeted) | % | [TODO: số thật từ docs/evidence/, runId/SHA/máy] |
-| Số lần thử lại / số delivery FAILED | lượt | [TODO: số thật từ docs/evidence/, runId/SHA/máy] |
-| Thông lượng phân phối | alert/s hoặc msg/s | [TODO: số thật từ docs/evidence/, runId/SHA/máy] |
-| CPU / RSS / số thread của server | % / MB / thread | [TODO: số thật từ docs/evidence/, runId/SHA/máy] |
-| Kích thước WAL sau tải | MB | [TODO: số thật từ docs/evidence/, runId/SHA/máy] |
-| Thời gian reconnect sau phục hồi mạng (NFR-007 ≤ 15s) | s | [TODO: số thật từ docs/evidence/, runId/SHA/máy] |
+| Độ trễ phân phối p50 (publish → ACK_RECEIVED) | ms | **773,142** (100 mẫu) |
+| Độ trễ phân phối p95 | ms | **1307,147** |
+| Độ trễ phân phối p99 | ms | **1333,894** (max 1335,663) |
+| Tỷ lệ ACK_RECEIVED (received/targeted) | % | **100,0** (100/100 delivery RECEIVED) |
+| Tỷ lệ ACK_USER (user-ack/targeted) | % | 0 — simulator headless không phát ACK_USER (cần client GUI có người bấm); không suy diễn |
+| Số lần thử lại / số delivery FAILED | lượt | **0 retry / 0 FAILED** (attemptHistogram {1:100}) |
+| Thông lượng phân phối | delivery/s | 100 delivery hoàn tất trong ~1,34 s (≈75 delivery/s, suy từ max latency) |
+| CPU / RSS / số thread của server | % / MB / thread | chưa capture trong summary lần này (bổ sung lần đo sau) |
+| Kích thước WAL sau tải | MB | chưa capture trong summary lần này (bổ sung lần đo sau) |
+| Thời gian reconnect sau phục hồi mạng (NFR-007 ≤ 15s) | s | 0 reconnect ở scenario clean (đo reconnect ở chaos flaky/mixed) |
 
-[TODO: chạy tải chính thức 100 client (clean + mixed, seed ghi rõ), mở rộng 200–500 nếu máy đo cho phép; ghi runId/commit SHA/cấu hình máy (OS/CPU/RAM/JDK)/timestamp; lưu metrics CSV + log + ảnh dashboard vào docs/evidence/. KHÔNG bịa số]
+Bằng chứng kèm theo: `bench.db` (SQLite thật, 100 delivery RECEIVED), `server.log`, `sim.log` (SimStats: 100 connect ok, 100 alerts received, 100 ACK sent, 0 dropped/delayed/duplicate, 300 heartbeat); audit `ACK_RECEIVED` 100 OK + `ALERT_FULLY_ACKED` 1 + `AUTH_DEVICE_SUCCESS` 100 + `PUBLISH` 1. Metrics server ghi nhận delivery_latency_p50=773/p95=1311/p99=1338 ms, transport_retries=0.
+
+**Nhận xét.** Ở tải 100 client sạch, hệ thống giao đủ 100/100 cảnh báo với ACK_RECEIVED 100%, không retry, p99 ≈ 1,33 s (gồm thời gian xếp hàng fanout + ghi durable inbox phía client). Độ trễ p50 < 1 s phù hợp mục tiêu cảnh báo khẩn cấp trong LAN. Các chỉ số tài nguyên (CPU/RSS/WAL) chưa được capture trong lần chạy này và sẽ bổ sung; không điền số ước đoán.
 
 #### 3.5.6 Benchmark fanout: TCP so với multicast và unicast UDP (số liệu thật)
 
@@ -1416,11 +1428,11 @@ Các chức năng dashboard đã được kiểm chứng bằng 14 test logic (m
 | Peer-review độc lập 4 nhóm module | `docs/reviews/*.md` (21/11/2026) + commit khắc phục `df0241b`, `4d1bd69`, `f68f9e2` | Đã có |
 | Benchmark fanout 3 chế độ | `target/lab-report/fanout-report.{json,md}` (18:20 21/11/2026, environment đầy đủ) | Đã có (loopback một host); runId/SHA + LAN thật [TODO] |
 | Acceptance T-01…T-30 | TEST-PLAN + test tự động phủ từng kịch bản | Kết quả nghiệm thu [TODO] |
-| Chaos C01…C16 có seed | FaultInjector/preset + test liên quan; smoke tất định đã chạy | Kết quả chạy end-to-end [TODO] |
-| Tải 100 client, p50/p95/p99, tỷ lệ ACK | MetricsRegistry/SimStats + smoke 100 agent (200 ACK) | Số đo chính thức [TODO] |
+| Chaos C01…C16 có seed | FaultInjector/preset + test liên quan; **C01–C03 đo thật** (`docs/evidence/chaos/*.json`, fleet 50, runId e1943406/d04af662/04c97420) | C01–C03 đã có; C04–C16 end-to-end [TODO] |
+| Tải 100 client, p50/p95/p99, tỷ lệ ACK | **Đo thật** `docs/evidence/benchmark/276dedf5…/summary.json` (fleet 100 clean, p50=773/p95=1307/p99=1334 ms, ACK 100%) | Đã có (clean-100); mixed/200–500 + CPU/RSS/WAL [TODO] |
 | Fresh install < 30 phút (T-30) | Ngân sách ước tính BUILD.md + CI timeout 30 | Số đo thật [TODO] |
-| Ảnh dashboard 3D nghiệm thu | Chưa có | [TODO] |
-| Thư mục bằng chứng chuẩn hóa | `docs/evidence/` chưa tồn tại | [TODO: tạo docs/evidence/ — mỗi lần chạy ghi runId, commit SHA, máy đo, timestamp, log, XML surefire, metrics CSV, ảnh] |
+| Ảnh dashboard 3D nghiệm thu | Chưa có (3D Lead đang ráp + chụp) | [TODO] |
+| Thư mục bằng chứng chuẩn hóa | **`docs/evidence/` đã tồn tại**: benchmark/<runId>/{summary.json,bench.db,server.log,sim.log} + chaos/{*.json,runs/<scenario>-<runId>/{db,logs,audit.json}}; mỗi lần chạy ghi runId/commit SHA/máy đo/timestamp | Đã có (benchmark + chaos C01–C03); mở rộng [TODO] |
 
 ### 3.6 Ưu điểm và hạn chế
 
