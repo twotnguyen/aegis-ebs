@@ -1,0 +1,12 @@
+{
+  "notice": "Fixtures for planning/tests. Example timestamps and IDs, not live alerts. All simulated.",
+  "protocol": "EBSP/2.0",
+  "frame": {"prefixBytes": 4, "byteOrder": "big-endian", "maxUtf8PayloadBytes": 65536},
+  "messages": [
+    {"version":2,"type":"HELLO","messageId":"msg-hello-001","correlationId":"boot-001","sentAt":"2026-11-21T00:00:00Z","payload":{"clientType":"DEVICE","deviceId":"DEV-B01-F05-01","supportedVersions":[2]}},
+    {"version":2,"type":"ALERT_PUSH","messageId":"msg-alert-001","correlationId":"req-001","sentAt":"2026-11-21T00:00:01Z","payload":{"incidentId":"INC-TEST-001","alertId":"ALT-TEST-001","revision":1,"deliveryId":"DLV-TEST-001","buildingId":"B01","category":"FIRE","priority":"CRITICAL","title":"SIMULATION — Fire Drill","instruction":"Training only. Do not take real-world action.","simulation":true,"urgency":"Immediate","severity":"Severe","certainty":"Observed","expiresAt":"2026-11-21T01:00:00Z"}},
+    {"version":2,"type":"ACK_RECEIVED","messageId":"msg-ack-001","correlationId":"msg-alert-001","sentAt":"2026-11-21T00:00:02Z","payload":{"alertId":"ALT-TEST-001","deliveryId":"DLV-TEST-001","revision":1,"deviceId":"DEV-B01-F05-01","ackAt":"2026-11-21T00:00:02Z"}},
+    {"version":2,"type":"ACK_USER","messageId":"msg-user-ack-001","correlationId":"msg-alert-001","sentAt":"2026-11-21T00:00:05Z","payload":{"alertId":"ALT-TEST-001","deliveryId":"DLV-TEST-001","revision":1,"deviceId":"DEV-B01-F05-01","userId":"USER-TEST-001","action":"ACKNOWLEDGE"}},
+    {"version":2,"type":"CANCEL_PUSH","messageId":"msg-cancel-001","correlationId":"req-cancel-001","sentAt":"2026-11-21T00:00:06Z","payload":{"alertId":"ALT-TEST-001","revision":2,"operationId":"OP-TEST-001","reason":"Training exercise ended","simulation":true}}
+  ]
+}
