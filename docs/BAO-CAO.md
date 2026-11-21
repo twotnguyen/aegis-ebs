@@ -32,8 +32,18 @@ Khung mục lục tĩnh của báo cáo:
   - 2.8 TLS với SSLSocket/SSLServerSocket
   - 2.9 RBAC và bảo mật ứng dụng
   - 2.10 Chuẩn CAP 1.2 (tham khảo)
-- CHƯƠNG 3. KẾT QUẢ THỰC NGHIỆM [TODO]
-- CHƯƠNG 4. KẾT LUẬN VÀ KIẾN NGHỊ [TODO]
+- CHƯƠNG 3. KẾT QUẢ THỰC NGHIỆM
+  - 3.1 Yêu cầu hệ thống (3.1.1 Yêu cầu chức năng; 3.1.2 Yêu cầu phi chức năng)
+  - 3.2 Phân tích và thiết kế (3.2.1 Kiến trúc bốn mặt phẳng; 3.2.2 Thiết kế lớp và mô hình đồng thời; 3.2.3 ERD 26 bảng; 3.2.4 Giao thức EBSP/2.0; 3.2.5 Máy trạng thái incident/alert/delivery; 3.2.6 Quan sát và dashboard)
+  - 3.3 Cài đặt (3.3.1 Môi trường; 3.3.2 Cấu trúc thư mục; 3.3.3 Mã nguồn tiêu biểu; 3.3.4 Dashboard digital twin)
+  - 3.4 Hướng dẫn biên dịch và chạy
+  - 3.5 Kiểm thử và kết quả thực nghiệm (3.5.1 Kiểm kê test; 3.5.2 Acceptance T-01…T-30; 3.5.3 Peer-review; 3.5.4 Chaos C01…C16; 3.5.5 Tải 100 client; 3.5.6 Benchmark fanout; 3.5.7 Dashboard; 3.5.8 Tổng hợp bằng chứng)
+  - 3.6 Ưu điểm và hạn chế
+- CHƯƠNG 4. KẾT LUẬN VÀ KIẾN NGHỊ
+  - 4.1 Kết quả đạt được so với mục tiêu
+  - 4.2 Hạn chế chính
+  - 4.3 Kiến nghị và hướng phát triển
+  - 4.4 Kết luận chung
 - TÀI LIỆU THAM KHẢO
 - PHỤ LỤC: MÃ NGUỒN CHƯƠNG TRÌNH [TODO]
 
@@ -98,6 +108,26 @@ Khung mục lục tĩnh của báo cáo:
 - Bảng 2.3. Ma trận vai trò – quyền phát cảnh báo của AEGIS-EBS
 - Bảng 2.4. Ánh xạ các trường chính của CAP 1.2 sang mô hình cảnh báo AEGIS-EBS
 - Bảng 2.5. Ánh xạ nội dung giáo trình CMP180 vào các mục lý thuyết và module của hệ thống
+- Bảng 3.1. Yêu cầu chức năng của hệ thống AEGIS-EBS
+- Bảng 3.2. Yêu cầu phi chức năng của hệ thống AEGIS-EBS
+- Bảng 3.3. Bản đồ module và trách nhiệm chính
+- Bảng 3.4. Cổng và kênh truyền của hệ thống
+- Bảng 3.5. Phân nhóm 26 bảng của schema AEGIS-EBS
+- Bảng 3.6. Khóa duy nhất và bất biến cốt lõi của schema
+- Bảng 3.7. Danh mục 28 loại thông điệp EBSP/2.0
+- Bảng 3.8. Tham số giao thức và cấu hình mặc định
+- Bảng 3.9. Chuyển trạng thái incident hợp lệ
+- Bảng 3.10. Thứ hạng trạng thái delivery (rank guard)
+- Bảng 3.11. Môi trường phát triển, kiểm thử và thư viện
+- Bảng 3.12. Ngân sách thời gian fresh install (ước tính tham khảo)
+- Bảng 3.13. Kiểm kê test theo module và kết quả các lần chạy gần nhất
+- Bảng 3.14. Ma trận kiểm thử chấp nhận T-01…T-30
+- Bảng 3.15. Kết quả peer-review độc lập
+- Bảng 3.16. Ma trận chaos C01…C16 và ánh xạ kiểm thử
+- Bảng 3.17. Preset kịch bản lỗi của aegis-simulator
+- Bảng 3.18. Chỉ số tải 100 client [TODO: số đo chính thức]
+- Bảng 3.19. Kết quả benchmark fanout thật (TCP/multicast/unicast)
+- Bảng 3.20. Danh mục bằng chứng thực nghiệm
 
 ## DANH MỤC HÌNH
 
@@ -106,6 +136,14 @@ Khung mục lục tĩnh của báo cáo:
 - Hình 2.1. Mô hình hỏi–đáp giữa client và server (vẽ lại theo [1, Hình 5.1])
 - Hình 2.2. Cấu trúc khung truyền EBSP/2.0 với tiền tố độ dài 4 byte
 - Hình 2.3. Cây phân phối multicast: nhân bản gói tin trong mạng (theo [1, Hình 8.1])
+- Hình 3.1. Kiến trúc bốn mặt phẳng của AEGIS-EBS
+- Hình 3.2. Mô hình triển khai trong LAN
+- Hình 3.3. Mô hình đồng thời của server
+- Hình 3.4. ERD rút gọn: chuỗi topology, alert–delivery và operation–audit
+- Hình 3.5. Máy trạng thái incident
+- Hình 3.6. Máy trạng thái delivery
+- Hình 3.7. Tuần tự publish → fanout → ACK → retry → recovery
+- Hình 3.8. Ảnh dashboard 3D nghiệm thu [TODO: ảnh từ lần chạy thật]
 
 ## CHƯƠNG 1. TỔNG QUAN
 
@@ -410,11 +448,1050 @@ Thứ tự kiểm tra khi nhận (cài đặt trong `FrameCodecImpl.readFrame`):
 Các nguồn ngoài giáo trình: [3] (ExecutorService, JSSE/TLS) → 2.3, 2.8; [4] (SQLite WAL) → 2.5; [5] (OWASP RBAC/phiên/mật khẩu) → 2.9; [6] (RFC 8085) → 2.6; [2] (CAP 1.2) → 2.10; [7] (Three.js) → dashboard (1.1, 1.2.3).
 
 ## CHƯƠNG 3. KẾT QUẢ THỰC NGHIỆM
-3.1 Yêu cầu hệ thống (FR/NFR) · 3.2 Phân tích & thiết kế (kiến trúc 4 plane, sơ đồ module, thiết kế lớp, ERD 26 bảng, giao thức EBSP/2.0, state machine) · 3.3 Cài đặt (môi trường JDK24/Maven/Node, cấu trúc thư mục, mã nguồn tiêu biểu: FrameCodec, TransactionalPublisher, AckLedger/RetryPolicy, TLS gateway, multicast) · 3.4 Hướng dẫn biên dịch/chạy · 3.5 Kiểm thử & kết quả THẬT (bảng test pass, chaos C01–C16, p50/p95/p99, tỷ lệ ACK, ảnh dashboard 3D) · 3.6 Ưu điểm/hạn chế.
-[TODO: điền số liệu đo thật + runId/commit SHA/máy đo; KHÔNG bịa số]
+
+Chương này trình bày kết quả thực nghiệm của đồ án theo trình tự: yêu cầu hệ thống (3.1), phân tích và thiết kế (3.2), cài đặt (3.3), hướng dẫn biên dịch/chạy (3.4), kiểm thử và số liệu đo (3.5), cuối cùng là ưu điểm và hạn chế (3.6). Toàn bộ mô tả thiết kế và cài đặt được đối chiếu trực tiếp với mã nguồn của repository `aegis-ebs` tại commit `9f0dad2` (ngày 21/11/2026) và các tài liệu đặc tả `docs/ARCHITECTURE.md`, `docs/ERD.md`, `docs/PROTOCOL.md`, `docs/TEST-PLAN.md`, `docs/SECURITY.md`.
+
+**Nguyên tắc trung thực số liệu (NFR-018).** Mọi số liệu đo đạc trình bày trong chương này đều phải là kết quả của lần chạy thật, kèm điều kiện đo (runId, commit SHA, cấu hình máy, thời điểm). Những hạng mục đã có bằng chứng thật (kiểm kê test từ mã nguồn, kết quả peer-review trong `docs/reviews/`, báo cáo benchmark `target/lab-report/fanout-report.json`, lần chạy test dashboard được xác minh lại) được trích dẫn đúng nguồn. Những hạng mục chưa có lần chạy nghiệm thu chính thức — kết quả verify toàn reactor trên máy đo, ma trận acceptance T-01…T-30, 16 kịch bản chaos có seed, tải 100 client với p50/p95/p99 và tỷ lệ ACK, ảnh dashboard — được giữ nguyên dạng placeholder `[TODO: số thật từ docs/evidence/, runId/SHA/máy]`; thư mục `docs/evidence/` chưa tồn tại tại thời điểm viết báo cáo. Tuyệt đối không điền số liệu ước đoán hay bịa đặt vào các placeholder này. Hệ thống là **SIMULATION/TRAINING**, không thay thế hệ thống báo cháy/sơ tán đã chứng nhận.
+
+### 3.1 Yêu cầu hệ thống
+
+#### 3.1.1 Yêu cầu chức năng (FR)
+
+Yêu cầu chức năng được tổng hợp từ mục tiêu cụ thể của đồ án (mục 1.2.3), đặc tả giao thức `docs/PROTOCOL.md` và ma trận kiểm soát bảo mật `docs/SECURITY.md`. Bảng 3.1 đánh số FR-01…FR-14 theo quy ước của báo cáo; cột cuối cùng ghi mã yêu cầu gốc được tham chiếu trong tài liệu thiết kế (FR-001…FR-033) và bài kiểm thử tương ứng trong `docs/TEST-PLAN.md`, bảo đảm truy vết hai chiều.
+
+**Bảng 3.1.** Yêu cầu chức năng của hệ thống AEGIS-EBS.
+
+| Mã | Yêu cầu | Tiêu chí chấp nhận | Tham chiếu thiết kế / kiểm thử |
+|---|---|---|---|
+| FR-01 | Xác thực và cổng auth | Mọi thông điệp ứng dụng trước xác thực bị từ chối (`NOT_AUTHENTICATED`); operator/thiết bị xác thực trong kênh TLS; tài khoản/thiết bị `enabled=0` không bao giờ xác thực | FR-001, FR-003; T-05, T-06 |
+| FR-02 | Phân quyền RBAC theo phạm vi | Năm vai trò; phạm vi phát tin suy từ CSDL (không từ payload client); mặc định từ chối; lệnh ngoài phạm vi bị `FORBIDDEN` kèm audit | FR-006, NFR-008; T-07, C08 |
+| FR-03 | Vòng đời incident | Tạo/chuyển trạng thái theo bảng chuyển hợp lệ; chuyển trái phép trả `CONFLICT`; dòng sự kiện `incident_events` append-only; replay chỉ đọc | T-27 |
+| FR-04 | Vòng đời alert | Create/publish/update/cancel; revision tăng nghiêm ngặt; nội dung bất biến theo revision; update/cancel nguyên tử | FR-016; T-09, T-10 |
+| FR-05 | Khoanh vùng mục tiêu | Target snapshot bất biến tại thời điểm activation theo tòa nhà/tầng/zone; tập đích rỗng trả lỗi rõ ràng (`NO_TARGETS`), không phát thầm lặng | FR-009; T-08 |
+| FR-06 | Phân phối ưu tiên một-nhiều | Bốn mức INFO < WARNING < EMERGENCY < CRITICAL; ưu tiên nghiêm ngặt kèm công bằng chống bỏ đói (MAX_BURST = 8); hàng đợi writer bị chặn 256 với chính sách slow-client tất định | NFR-011; T-22, T-23, C11, C16 |
+| FR-07 | ACK hai tầng | `ACK_RECEIVED` (máy đã nhận và lưu bền vững) tách biệt `ACK_USER` (thao tác xác nhận của người); ACK chỉ làm trạng thái tiến, không lùi | T-11, T-12 |
+| FR-08 | Thử lại idempotent | Lịch 3s/6s/12s + jitter, tối đa 3 lần thử lại sau lần gửi đầu rồi FAILED; mỗi lần thử `messageId` mới, `deliveryId`/`alertId`/`revision` ổn định; client khử trùng, không hiển thị lặp | T-13, T-14; C01–C03 |
+| FR-09 | Kết nối lại và đồng bộ | Heartbeat chu kỳ 10s, suspect sau 3 lần lỡ; reconnect gửi `SYNC_REQUEST` kèm revision đã biết; tombstone hủy/hết hạn chặn hiển thị lại tin cũ | FR-004, FR-015, FR-017, NFR-007; T-15–T-17, C05, C12 |
+| FR-10 | Khôi phục sau sự cố | Công bố nguyên tử (transactional outbox trên bảng `deliveries`); quét khôi phục các delivery PENDING/SENT/RETRY_SCHEDULED/FAILED sau khởi động lại; không tuyên bố exactly-once | T-18, T-19; C06, C07 |
+| FR-11 | Nhật ký kiểm toán | Audit append-only mọi thao tác quản trị và mọi lần từ chối (actor/action/scope/outcome/correlationId); không ghi secret vào log | FR-020, NFR-016; T-28, C08 |
+| FR-12 | Discovery và hint không tin cậy | UDP discovery có nonce, chỉ chấp nhận server sau xác minh TLS ghim chứng chỉ; multicast `ALERT_HINT` chỉ là gợi ý, nội dung hiển thị phải xác thực qua TLS; có fallback unicast | FR-031, FR-032; T-24, T-25, C13, C14 |
+| FR-13 | Dashboard digital twin | Tòa nhà 10 tầng × 4 zone dựng 3D bằng Three.js [7]; nhận `STATUS_SNAPSHOT`/`STATUS_DELTA` qua WebSocket `status/1`; funnel đếm đúng bản ghi delivery, không đếm trùng sau retry | FR-025; T-26 |
+| FR-14 | Đo lường và tái lập thực nghiệm | Metrics p50/p95/p99 độ trễ phân phối, bộ đếm monotonic; chaos tiêm lỗi có seed tái lập được; bằng chứng kèm runId/SHA/máy đo | NFR-014, NFR-018; T-20, T-21, T-29 |
+
+#### 3.1.2 Yêu cầu phi chức năng (NFR)
+
+Các yêu cầu phi chức năng ràng buộc chất lượng vận hành và tính kiểm chứng của hệ thống. Bảng 3.2 nêu tiêu chí đo được và cách kiểm chứng; các mã NFR-007…NFR-018 là mã gốc được tham chiếu trong `docs/ARCHITECTURE.md` và `docs/SECURITY.md`.
+
+**Bảng 3.2.** Yêu cầu phi chức năng của hệ thống AEGIS-EBS.
+
+| Mã | Yêu cầu | Tiêu chí / ràng buộc | Kiểm chứng |
+|---|---|---|---|
+| NFR-01 | Độ trễ phân phối | Đo p50/p95/p99 từ publish đến `ACK_RECEIVED` (đồng hồ monotonic); cửa sổ mẫu bị chặn 4096 mẫu gần nhất | T-20, T-21; số thật mục 3.5.5 [TODO] |
+| NFR-02 | Phục hồi kết nối | Client reconnect trong ≤ 15s sau khi mạng phục hồi (backoff mũ + jitter, không retry khi bị từ chối xác thực vĩnh viễn) | NFR-007; T-15 |
+| NFR-03 | Tài nguyên bị chặn | Khung ≤ 65536 byte, từ chối quá cỡ trước cấp phát; hàng đợi writer 256/phiên; giới hạn 512 kết nối TLS, TTL pre-auth 10s; ≤ 64 subscriber WebSocket | NFR-010, NFR-011; T-01–T-04, T-23; C10, C16 |
+| NFR-04 | Bền vững | SQLite WAL [4]; inbox client `synchronous=FULL`; commit CSDL trước ACK và trước enqueue mạng; `foreign_keys=ON` trên mọi kết nối; `busy_timeout=5000` | T-11, T-18, T-19; C06, C07 |
+| NFR-05 | Bảo mật kênh và danh tính | TLS truststore ghim (pinning), không trust-all; mật khẩu băm Argon2id (demo t=2, m=16 MiB, p=1; triển khai thật cần ≥ 19 MiB theo OWASP [5]); xóa mảng ký tự mật khẩu sau dùng | NFR-009; T-05, T-06, T-28; C09 |
+| NFR-06 | Lỗi typed và sanitize | Mã lỗi tường minh + correlationId; không lộ chi tiết nội bộ (SQL/đường dẫn) hay secret ra wire/log | NFR-016, NFR-017; T-28; C10 |
+| NFR-07 | Tái lập thực nghiệm | Chaos seed xác định: mỗi quyết định tiêm lỗi tiêu thụ đúng 4 số ngẫu nhiên theo thứ tự cố định; cùng (profile, seed) cho cùng chuỗi quyết định | T-29; C01–C16 |
+| NFR-08 | Cài đặt mới nhanh | Fresh install < 30 phút trên máy sạch (CI đặt timeout 30 phút) | NFR-015; T-30; Bảng 3.12 |
+| NFR-09 | Trung thực bằng chứng | Mọi số đo kèm runId, commit SHA, cấu hình máy, timestamp; không bịa số; placeholder cho hạng mục chưa đo | NFR-018; mục 3.5.8 |
+| NFR-10 | Retention có giới hạn | Audit/metrics/hộp thư có giới hạn lưu trữ; eviction theo vòng đời alert (một phần còn hạn chế — mục 3.6) | NFR-012 |
+
+### 3.2 Phân tích và thiết kế
+
+#### 3.2.1 Kiến trúc tổng thể: bốn mặt phẳng
+
+AEGIS-EBS được tổ chức theo kiểu **modular monolith** bằng Java: một tiến trình server duy nhất trong LAN, chia thành các module Maven có ranh giới trách nhiệm rõ ràng, dùng chung hợp đồng giao thức và schema bất biến. Trục đánh giá của học phần CMP180 là tự xây dựng giao thức tầng ứng dụng trên TCP/UDP [1, Bài 5, Bài 7, Bài 8]; hệ thống không dùng cloud push hay message broker làm kênh truyền tải chính. Kiến trúc tách thành **bốn mặt phẳng (four planes)**, mỗi mặt phẳng có trách nhiệm, ranh giới tin cậy và cơ chế bảo vệ riêng (Hình 3.1):
+
+1. **Command plane (mặt phẳng lệnh)** — điều khiển có thẩm quyền: đăng nhập operator (`AuthService`), kiểm tra vai trò và phạm vi (`RbacService` gọi `ScopedRBAC` của core), quản lý vòng đời incident (`IncidentService`), tạo/phát/cập nhật/hủy alert (`AlertService` điều phối `TransactionalPublisher`). Mọi lệnh đi qua EBSP/2.0 trên TLS và được trả lời bằng `COMMAND_RESULT` với mã lỗi typed. RBAC được thực thi **trước** khi dịch vụ alert chạy; phạm vi target suy từ CSDL qua `TargetResolver`, không bao giờ từ metadata role/floor do client gửi lên. Lệnh ngoài phạm vi bị từ chối và ghi audit.
+2. **Delivery plane (mặt phẳng phân phối)** — phân phối tin cậy tới các phiên thiết bị đã xác thực: quản lý phiên (`SessionRegistry`), fanout theo ưu tiên (`FanoutEngine` + `PriorityScheduler`), hàng đợi writer bị chặn mỗi phiên (`BoundedWriterQueue`), thử lại có backoff (`RetryPolicy`), tiếp nhận ACK và đồng bộ lại sau reconnect (`SyncService`). Mỗi thiết bị đích có đúng một bản ghi `deliveries` cho mỗi bộ `(alertId, revision, deviceId)`; mỗi lần thử truyền dùng `messageId` mới nhưng giữ nguyên `deliveryId` logic.
+3. **Persistence & Observability plane (mặt phẳng lưu trữ và quan sát)** — nguồn sự thật bền vững và đo lường: SQLite WAL 26 bảng [4], công bố nguyên tử (`TransactionalPublisher`), khôi phục sau crash (`RecoveryScanner`), audit append-only (`AuditService`), nhật ký sự kiện incident cho replay chỉ đọc, metrics (`MetricsRegistry`) và cầu nối feed trạng thái dashboard (`StatusNotifier` → `StatusFeedService`, WebSocket `status/1`). Điểm nghẽn một writer của SQLite được thừa nhận tường minh và giảm thiểu bằng giao dịch ngắn, `busy_timeout` và pool worker bị chặn.
+4. **Discovery & Experiment plane (mặt phẳng khám phá và thực nghiệm)** — khám phá server và thực nghiệm mạng có kiểm soát trên LAN demo cô lập: UDP `DISCOVER_EBS` cổng 9999 (nonce, protocolVersion, clientType; phản hồi chứa serverId, host, tlsPort, nonce echo) và multicast `ALERT_HINT` tới nhóm `239.10.10.10:9998` (dải quản trị 239/8, TTL = 1). Cả hai đều **không được tin cậy**: hint chỉ kích hoạt `SYNC_REQUEST` qua TLS; client luôn xác minh danh tính server bằng truststore trước khi xác thực. Chaos lab (drop/delay ACK, duplicate, force disconnect, reorder ở tầng mô phỏng thông điệp, restart server) chạy qua simulator và các adapter của gateway, có seed để tái lập tất định.
+
+```
+        COMMAND PLANE                 DELIVERY PLANE
+  Operator ──AUTH/ALERT_*──► AuthService/RbacService     SessionRegistry (heartbeat)
+        │                        │                            │
+        │                  IncidentService              FanoutEngine + PriorityScheduler
+        │                        │                            │
+        │                  AlertService                 BoundedWriterQueue (256/phiên)
+        │                        │                            │
+        ▼                        ▼                            ▼ ALERT_PUSH (TLS :9443)
+  PERSISTENCE & OBSERVABILITY PLANE                      Device clients / Simulator
+  TransactionalPublisher ──BEGIN IMMEDIATE…COMMIT──► SQLite WAL (26 bảng)
+  RecoveryScanner ──recoverEnqueue khi khởi động──► FanoutEngine
+  AuditService + incident_events · MetricsRegistry + StatusFeedService
+        │
+        └──WebSocket status/1 :9444──► Dashboard web + Three.js
+
+  DISCOVERY & EXPERIMENT PLANE (không tin cậy — advisory)
+  UDP DISCOVER_EBS :9999 ┄┄► client (phải xác minh lại qua TLS)
+  Multicast ALERT_HINT 239.10.10.10:9998 ┄┄► client (kích hoạt SYNC_REQUEST)
+  Chaos lab + simulator ┄┄► tiêm lỗi có seed vào delivery plane
+```
+
+**Hình 3.1.** Kiến trúc bốn mặt phẳng của AEGIS-EBS (vẽ lại theo `docs/ARCHITECTURE.md` §2; nét đứt là kênh không tin cậy).
+
+Bản đồ module hiện hành gồm bảy module Java trong Maven reactor và một dashboard Node độc lập (Bảng 3.3). Quan hệ phụ thuộc: `protocol ← core ← {persistence, server, client, simulator}`; `server ← {protocol, core, persistence}`; `network-lab ← protocol`; dashboard chỉ giao tiếp qua WebSocket `status/1`, không phải backend thứ hai.
+
+**Bảng 3.3.** Bản đồ module và trách nhiệm chính.
+
+| Module | Công nghệ | Trách nhiệm chính |
+|---|---|---|
+| `aegis-protocol` | Java, Jackson | Hợp đồng wire EBSP/2.0: `FrameCodec`, `Envelope`, `MessageType`, `Priority`, `Role`; framing length-prefix, validation chặt |
+| `aegis-core` | Java thuần (không I/O) | Logic dùng chung hai phía: `ScopedRBAC`, `Grants`, `TargetResolver`, `PriorityScheduler`, `RetryPolicy`, `DedupIndex`, `AckLedger` |
+| `aegis-persistence` | Java, sqlite-jdbc | `Db` (WAL + pragmas), `MigrationRunner` (001 + 002), các repo, `TransactionalPublisher`, `RecoveryScanner`, `DeliveryEnqueuer` |
+| `aegis-server` | Java, SLF4J/Logback, argon2-jvm | Gateway TLS, `ClientSession`, `SessionRegistry`, `MessageRouter`, `BoundedWriterQueue`, `FanoutEngine`, `AuthService`/`RbacService`, `AlertService`, `IncidentService`, `SyncService`, `AuditService`, `MetricsRegistry`, `StatusFeedService`/`StatusFeedServer`, `ServerStore` |
+| `aegis-client` | Java, JavaFX 24, sqlite-jdbc | `AlertClientEngine` (engine headless), `InboxStore` (hộp thư bền vững), `ClientApp` (JavaFX), `TlsSupport`, reconnect + ACK |
+| `aegis-simulator` | Java | Đội thiết bị headless số lượng lớn (mục tiêu 100, mở rộng 200–500) + tiêm lỗi có seed (`SimAgent`, `FaultInjector`, `FaultProfile`, `SimStats`) |
+| `aegis-network-lab` | Java | UDP discovery, multicast/unicast hint, TLS lab, probe multicast, fallback, benchmark fanout (`LabMain` CLI) |
+| `aegis-dashboard` | Node, Vite 8, Three.js | Digital twin web 2D/3D; client tham chiếu của feed `status/1` (`src/data.js`, `src/ws.js`); chaos mock, replay, funnel, reports |
+
+Mô hình triển khai vật lý là một LAN demo cô lập (Hình 3.2): một server Java nắm toàn bộ trạng thái bền vững trong file `aegis.db`; operator JavaFX, các floor agent, simulator và dashboard đều là client của server. Bảng 3.4 liệt kê cổng và mức tin cậy của từng kênh — chỉ kênh TLS 9443 là kênh xác thực duy nhất.
+
+```
+                    LAN demo cô lập — SIMULATION / TRAINING
+  Operator JavaFX ─────┐
+  Floor agents ×N ─────┤── EBSP/2.0 · TCP+TLS :9443 ──► AEGIS Server ──JDBC──► aegis.db
+  Simulator 100–500 ───┘                                   │   │              (SQLite WAL,
+                                                           │   │               26 bảng)
+  Dashboard web + Three.js ◄── WebSocket status/1 :9444 ───┘   │
+        (Vite dev :5173)                                       │
+  Floor agents ◄┄┄ UDP DISCOVER_EBS :9999 ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┤
+  Floor agents ◄┄┄ Multicast ALERT_HINT 239.10.10.10:9998 ┄┄┄┄┘
+```
+
+**Hình 3.2.** Mô hình triển khai trong LAN (theo `docs/ARCHITECTURE.md` §3).
+
+**Bảng 3.4.** Cổng và kênh truyền của hệ thống.
+
+| Cổng | Vận chuyển | Mục đích | Mức tin cậy |
+|---|---|---|---|
+| 9443 | TCP + TLS | EBSP/2.0: handshake, lệnh operator, ALERT_PUSH/CANCEL_PUSH, ACK, SYNC, HEARTBEAT, STATUS_SUBSCRIBE | Xác thực qua truststore ghim + credential ứng dụng; kênh chính duy nhất |
+| 9444 | TCP + WebSocket | Feed `status/1` cho dashboard: STATUS_SNAPSHOT / STATUS_DELTA | Chỉ đọc; giới hạn 64 subscriber; cầu nối từ trạng thái EBSP của server |
+| 9999 | UDP | DISCOVER_EBS / phản hồi discovery (serverId, host, tlsPort, nonce echo) | Không tin cậy; chỉ là gợi ý tìm server |
+| 9998 | UDP multicast, nhóm 239.10.10.10 | ALERT_HINT {alertId, revision, serverId}, TTL = 1 | Không tin cậy; advisory, không hiển thị trực tiếp |
+| 5173 | TCP + HTTP | Vite dev server của dashboard (chỉ môi trường phát triển) | Không phải kênh nghiệp vụ |
+
+#### 3.2.2 Thiết kế lớp chính và mô hình đồng thời
+
+**Thiết kế lớp theo module.** Mỗi module tách phần logic thuần khỏi phần I/O để kiểm thử độc lập được:
+
+- *aegis-protocol*: `FrameCodec` (interface) / `FrameCodecImpl` (codec length-prefix), `Envelope` (record phong bì bất biến), `Protocol` (hằng số VERSION = 2, MAX_FRAME_BYTES = 65536, PREFIX_BYTES = 4), `MessageType` (enum 28 loại), `Priority` (INFO/WARNING/EMERGENCY/CRITICAL), `Role` (năm vai trò), `FrameException`.
+- *aegis-core*: `ScopedRBAC.canPublish(role, grants, buildingId, floorId)` thuần logic; `Grants` record bất biến sao chép phòng thủ; `TargetResolver` resolve thiết bị theo building/floor/zone từ registry nạp từ CSDL; `PriorityScheduler<T>` hàng đợi bốn tầng có fairness; `RetryPolicy` backoff mũ + jitter bão hòa không tràn số, RNG tiêm được; `DedupIndex` khử trùng theo revision max, thread-safe bằng `ConcurrentHashMap.compute`; `AckLedger` sổ ACK chỉ tiến, phương thức `synchronized`.
+- *aegis-persistence*: `Db` (factory kết nối áp pragmas), `MigrationRunner` (idempotent nhờ bảng sentinel), các repo (`AlertRepo`, `DeliveryRepo`, `DeviceRepo`, `UserRepo`, `RoleGrantRepo`, `AuditRepo`) đều dùng `PreparedStatement` bind tham số và có `insertOn(Connection, row)` để ghi composite chia sẻ một giao dịch; `TransactionalPublisher` (công bố nguyên tử), `DeliveryEnqueuer` (interface giao hàng cho scheduler), `RecoveryScanner` (quét chỉ đọc).
+- *aegis-server*: `TlsGateway` (accept loop + reader), `ClientSession` (một writer duy nhất/phiên, trạng thái `volatile`/`AtomicBoolean`, đóng một lần), `SessionRegistry` (online/suspect/offline), `MessageRouter` (dispatch theo MessageType, kiểm role trước khi gọi service), `BoundedWriterQueue`, `FanoutEngine` (dispatch + retry + recovery + dedup gate), các service nghiệp vụ, `ServerStore` (truy vấn/ghi composite nguyên tử), `StatusFeedService`/`StatusFeedServer`/`WsConnection` (cầu nối WebSocket), `MetricsRegistry`, `AuditService`, `Argon2idHasher`.
+- *aegis-client*: `AlertClientEngine` (vòng kết nối headless: handshake → đọc frame → xử lý durable-first → ACK → reconnect/SYNC), `InboxStore` (SQLite cục bộ WAL/FULL), `AlertRecord` (validate payload chặt), `TlsSupport` (SSLContext từ truststore ghim), `ClientApp` (JavaFX, nhãn SIMULATION vĩnh viễn, cập nhật UI qua `Platform.runLater`).
+- *aegis-simulator*: `SimAgent` (một thiết bị mô phỏng trên virtual thread), `FaultInjector`/`FaultProfile`/`FaultDecision` (tiêm lỗi tất định theo seed), `SimStats` (bộ đếm tổng kết), `SimulatorConfig`/`SimulatorMain` (CLI orchestrator).
+- *aegis-network-lab*: `DiscoveryServer`/`DiscoveryClient` (nonce + trust gate TLS), `LabDatagramCodec` (JSON object duy nhất, UTF-8 chặt, ≤ 1024 byte), `MulticastConfig` (validate lớp D, cổng, TTL), `MulticastHintPublisher`/`MulticastHintSubscriber`, `UnicastHintPublisher`/`UnicastHintSubscriber`, `MulticastSupport` (probe gửi/nhận thật), `FallbackHintBus`, `VerifiedAlertSubscriber` (hint → fetch TLS → chỉ hiển thị nội dung đã xác minh), `LabTlsServer`/`LabTlsClient`/`LabTlsContexts`, `FanoutBenchmark`, `LabMain`.
+
+**Mô hình đồng thời phía server** (Hình 3.3) hiện thực đúng nguyên tắc server tương tranh [1, Bài 6] kết hợp thread pool hiện đại [3]: một accept loop trên `SSLServerSocket`; mỗi kết nối được chấp nhận tạo thành một `ClientSession` và được gán một reader task riêng trong `ExecutorService` — cài đặt dùng virtual thread (`Executors.newVirtualThreadPerTaskExecutor()`), cho phép hàng nghìn kết nối đồng thời mà không kiệt tài nguyên ngăn xếp như mô hình thread-per-connection cổ điển. Mỗi phiên có **đúng một writer thread** chạy `writerLoop()`: lấy khung từ `BoundedWriterQueue` rồi ghi ra luồng xuất — bảo đảm các khung không bao giờ đan xen byte trên cùng socket (quy tắc "một SessionWriter sở hữu toàn bộ ghi lên một stream"). Bộ hẹn giờ `ScheduledExecutorService` (2 thread) lên lịch retry theo `next_retry_at`, quét heartbeat suspect và gom batch feed trạng thái (mặc định 500 ms). Logic thời gian thuần được tiêm `Clock` để kiểm thử tất định.
+
+```
+  Accept loop (SSLServerSocket :9443)
+        │ mỗi socket mới → ClientSession (UNAUTHENTICATED → OPERATOR/DEVICE)
+        ▼
+  Reader task / kết nối (virtual thread)          ScheduledExecutorService (2 thread)
+        │ FrameCodec.readFrame → validate          retry · heartbeat sweep · status batch 500ms
+        │ → MessageRouter → service theo role              │
+        ▼                                                  ▼
+  send(priority, envelope) ──► BoundedWriterQueue (256, ưu tiên + FIFO trong tầng)
+                                     │ take() (chặn)
+                                     ▼
+                          Writer thread duy nhất / phiên ──writeFrame──► TLS socket → client
+```
+
+**Hình 3.3.** Mô hình đồng thời của server: accept loop, reader mỗi kết nối, writer mỗi phiên, bộ hẹn giờ.
+
+**Hàng đợi writer bị chặn và chính sách slow-client.** `BoundedWriterQueue` (mặc định 256 phần tử/phiên) hiện thực chính sách tất định với ba kết quả `offer`: `ACCEPTED` (chưa đầy, FIFO trong cùng tầng ưu tiên); `EVICTED_LOWER` (đầy và khung mới outrank khung ưu tiên thấp nhất đang xếp — đuổi khung thấp nhất, nhờ đó lũ INFO không bao giờ chặn khung CRITICAL); `REJECTED_SLOW` (đầy và không thể evict — gọi `onSlowClient` ngắt kết nối client chậm, kèm audit `SLOW_CLIENT_DISCONNECT` và metric). Một client chậm không được làm đình trệ các client khác. Thứ tự ưu tiên là application-level (`Priority` enum), không phải Java thread priority.
+
+**Điều phối ưu tiên toàn cục có fairness.** `PriorityScheduler` dispatch theo thứ tự CRITICAL > EMERGENCY > WARNING > INFO, FIFO trong tầng. Quy tắc công bằng: tối đa `MAX_BURST = 8` lần dispatch liên tiếp từ tầng cao nhất không rỗng, rồi một lần từ tầng thấp hơn, xoay vòng qua các tầng thấp theo thứ tự giảm dần — với k tầng thấp còn hàng, mỗi tầng được phục vụ ít nhất một lần trong mỗi (8+1)×k dispatch, không tầng nào bị bỏ đói. `FanoutEngine` áp dụng scheduler toàn cục này trước khi đưa khung vào hàng đợi writer mỗi phiên.
+
+**Kỷ luật đồng thời SQLite WAL.** WAL cho phép đọc song song với ghi nhưng chỉ một writer commit tại một thời điểm [4]. `Db.open()` áp dụng trên mọi kết nối: `PRAGMA foreign_keys=ON` (đặt trong giao dịch sẽ vô hiệu), `PRAGMA busy_timeout=5000` **trước** khi chuyển `journal_mode=WAL` (khắc phục race first-open phát hiện qua peer-review), xác minh WAL được chấp nhận (ném lỗi nếu bị từ chối), kèm retry SQLITE_BUSY trong ngân sách busy_timeout và khóa khởi tạo theo từng file DB trong JVM. Kết nối ngắn sống (try-with-resources); giao dịch ghi dùng `BEGIN IMMEDIATE`/`COMMIT`/`ROLLBACK` thủ công để giành write-lock ngay; không thực hiện I/O mạng bên trong giao dịch; enqueue mạng chỉ xảy ra sau COMMIT.
+
+**Đồng thời phía client.** `AlertClientEngine` dùng cùng mô hình reader/writer tách biệt; inbox cục bộ SQLite WAL (`synchronous=FULL`) commit **trước** khi gửi `ACK_RECEIVED` (durable-first). Reconnect dùng backoff mũ + jitter (`RetryPolicy`), sau đó `SYNC_REQUEST` để nhận trạng thái authoritative và gửi lại các ACK còn pending. UI JavaFX cập nhật qua `Platform.runLater`, tách khỏi luồng I/O. Heartbeat phía client theo chu kỳ server quảng cáo; watchdog đếm khoảng im lặng, vượt 3 lần chu kỳ thì coi như suspect và reconnect.
+
+#### 3.2.3 Thiết kế cơ sở dữ liệu — ERD 26 bảng
+
+Nguồn sự thật của schema là hai script migration trong `aegis-persistence/src/main/resources/db/`: `001_base_schema.sql` (12 bảng nền v1) và `002_showcase_expansion.sql` (14 bảng mở rộng v2, additive), áp dụng tuần tự bởi `MigrationRunner.migrate()` — tổng cộng **26 bảng**, idempotent nhờ bảng sentinel (`buildings`, `demo_scenarios`), không có bảng bookkeeping. Đặc tả đầy đủ (tên bảng, cột, khóa, ràng buộc) nằm trong `docs/ERD.md`; báo cáo này tóm tắt các quyết định thiết kế chính.
+
+**Quy ước chung.** Khóa chính/khóa ngoại kiểu `TEXT` chứa UUID; timestamp `TEXT` chuẩn UTC ISO-8601 (độ rộng cố định sau khắc phục lỗi sắp xếp lexicographic phát hiện qua peer-review); cờ boolean `INTEGER` với `CHECK (x IN (0,1))`; enum diễn đạt bằng `CHECK` ngay trong schema; `PRAGMA foreign_keys=ON` trên mỗi kết nối. Bất biến chéo building/zone và trình tự thời gian do tầng ứng dụng thực thi (SQLite không diễn đạt được bằng FK đơn thuần).
+
+**Bảng 3.5.** Phân nhóm 26 bảng của schema AEGIS-EBS.
+
+| Nhóm | Bảng | Số lượng |
+|---|---|---|
+| Building / Zone (topology vật lý) | `buildings`, `floors`, `zones`, `zone_devices` | 4 |
+| Identity / RBAC (danh tính, phân quyền) | `users`, `role_grants`, `devices` | 3 |
+| Incident (sự cố và dòng sự kiện) | `incidents`, `incident_events`, `incident_alerts` | 3 |
+| Alert / Delivery (cảnh báo và phân phối) | `alerts`, `alert_revisions`, `alert_targets`, `deliveries`, `delivery_attempts`, `device_acks`, `alert_templates`, `alert_template_locales` | 8 |
+| Operation / Audit (thao tác và vết) | `alert_operations`, `operation_receipts`, `alert_approvals`, `audit_events` | 4 |
+| Chaos / Metrics (thực nghiệm và đo lường) | `network_fault_runs`, `network_fault_events`, `metrics_samples`, `demo_scenarios` | 4 |
+| **Tổng** | | **26** |
+
+Chuỗi topology `Building → Floor → Zone → ZoneDevice → Device`; `devices` thuộc nhóm Identity vì mang `credential_hash`/`enrolled_at`, đồng thời tham chiếu `floors` và được gán vào zone qua bảng nối `zone_devices`. Hình 3.4 vẽ ERD rút gọn của chuỗi cảnh báo – phân phối (quan hệ đầy đủ của cả 26 bảng xem `docs/ERD.md`).
+
+```
+  buildings ──< floors ──< zones ──< zone_devices >── devices ──< role_grants >── users
+      │            │                                     │  │                        │
+      │            └──────────< devices.floor_id         │  │                        │
+      ▼                                                  │  │                        ▼
+  incidents ──< incident_events                          │  │                   alert_operations
+      │                                                  │  │                        │
+  incident_alerts (alert_id UNIQUE)                      │  │                        ▼
+      │                                                  │  │                 operation_receipts
+      ▼                                                  ▼  ▼
+  alerts ──< alert_revisions (PK alert_id+revision)   deliveries ──< delivery_attempts
+      │         alert_targets (UK alert+rev+device)     │  ▲
+      │                                                 │  └── device_acks (UK device+alert+rev+kind)
+      └──< alert_operations (request_id UNIQUE)         └── (alert_id, revision, device_id) UNIQUE
+  audit_events (append-only) · network_fault_runs ──< network_fault_events · metrics_samples
+```
+
+**Hình 3.4.** ERD rút gọn: chuỗi topology, alert–delivery và operation–audit (ký hiệu `──<` là quan hệ một–nhiều).
+
+Schema có **36 ràng buộc khóa ngoại** và **9 chỉ mục** phục vụ các truy vấn nóng: quét retry/recovery theo `deliveries(state, next_retry_at)`, sync theo thiết bị `deliveries(device_id, state)`, audit theo thời gian, timeline incident, receipt chưa ACK, dòng sự kiện fault run, chuỗi thời gian metrics (danh sách đầy đủ trong `docs/ERD.md` §3, §6). Các khóa duy nhất mang bất biến cốt lõi được tóm tắt trong Bảng 3.6.
+
+**Bảng 3.6.** Khóa duy nhất và bất biến cốt lõi của schema.
+
+| Bảng | UNIQUE | Bất biến / ý nghĩa |
+|---|---|---|
+| `deliveries` | `(alert_id, revision, device_id)` | Tối đa một delivery cho mỗi thiết bị trên mỗi revision — bất biến cốt lõi của fanout |
+| `alert_targets` | `(alert_id, revision, device_id)` | Snapshot đích không trùng thiết bị, bất biến sau activation |
+| `device_acks` | `(device_id, alert_id, revision, ack_kind)` | ACK idempotent theo loại (RECEIVED/USER/CANCEL) |
+| `alert_operations` | `request_id` | Idempotency key toàn cục của thao tác; trùng requestId không tạo alert mới |
+| `incident_alerts` | `alert_id` | Mỗi alert thuộc tối đa một incident |
+| `floors` | `(building_id, floor_number)` | Số tầng duy nhất trong tòa |
+| `zones` | `(floor_id, zone_code)` | Mã zone duy nhất trong tầng |
+| `users` / `devices` / `buildings` | `username` / `device_code` / `code` | Định danh duy nhất |
+
+**Các quyết định thiết kế đáng chú ý.** (i) *Transactional outbox không bảng riêng*: bảng `deliveries` chính là hàng đợi dispatch bền vững — `TransactionalPublisher` ghi alert + revision + snapshot + deliveries + operation trong một `BEGIN IMMEDIATE`, chỉ enqueue mạng sau COMMIT; `RecoveryScanner` dựng lại lịch từ bốn trạng thái chưa hoàn tất sau restart. (ii) *Snapshot bất biến*: `alert_targets` cố định tại thời điểm activation; mapping `zone_devices` thay đổi về sau không hồi tố target của alert đã phát; màn hình aggregate dùng snapshot, không dùng số client online làm mẫu số ACK. (iii) *Nội dung bất biến theo revision*: `alert_revisions` lưu title/body/metadata cho từng revision, `alerts.current_revision` chỉ là con trỏ; update tạo revision mới, không sửa dòng cũ. (iv) *Audit và event log append-only*: `audit_events`, `incident_events` không bị sửa/xóa trong luồng nghiệp vụ; replay chỉ đọc. (v) *Tách biệt ngữ nghĩa ưu tiên*: `alerts.priority` (điều phối mạng) khác CAP `severity`/`urgency`/`certainty` [2] (metadata trong `metadata_json`/payload). (vi) Một số tham chiếu là *logic, không có FK* (ví dụ `audit_events.actor_id`, `device_acks.user_id`) để nhật ký không bị chặn bởi vòng đời user; tính nhất quán do tầng ứng dụng bảo đảm.
+
+#### 3.2.4 Giao thức ứng dụng EBSP/2.0
+
+**Đóng khung.** Mỗi khung gồm tiền tố độ dài `uint32 big-endian L` (L ∈ 1…65536) nối tiếp `L byte JSON UTF-8 chặt` (cấu trúc khung xem Hình 2.2, Chương 2). Hằng số giao thức tập trung trong lớp `Protocol`: `VERSION = 2`, `MAX_FRAME_BYTES = 65536`, `PREFIX_BYTES = 4`. Thứ tự kiểm tra khi nhận (cài đặt trong `FrameCodecImpl.readFrame`/`decodeBody`): (1) `readFully` 4 byte tiền tố — chịu được header về làm nhiều mẩu nhỏ; (2) kiểm tra L ∈ 1…65536 và **từ chối khung quá cỡ trước khi cấp phát** bộ đệm thân; (3) `readFully` đúng L byte thân — không đụng khung đã dính kế tiếp; (4) giải mã UTF-8 chế độ REPORT (ném lỗi với byte dị dạng, không thay thế âm thầm); (5) phân tích JSON: phải là một object duy nhất, không token thừa sau object; (6) kiểm tra `version == 2` (integer chặt), `type` thuộc enum, `messageId`/`sentAt` không rỗng, `payload` hiện diện. Mọi vi phạm ném `FrameException`; gateway gửi `ERROR {code: BAD_FRAME}` rồi đóng kết nối — không bao giờ "cố hiểu" dữ liệu lỗi.
+
+**Phong bì.** `{version: 2, type, messageId, correlationId?, sentAt (UTC ISO-8601), payload}`. `messageId` định danh từng lần vận chuyển; `correlationId` liên kết đáp ứng với yêu cầu (ví dụ ACK trỏ về messageId của ALERT_PUSH). Danh mục **28 loại thông điệp** (enum `aegis.protocol.MessageType`) được nhóm trong Bảng 3.7.
+
+**Bảng 3.7.** Danh mục 28 loại thông điệp EBSP/2.0.
+
+| Nhóm | MessageType | Số lượng |
+|---|---|---|
+| Phiên và xác thực | `HELLO`, `SERVER_HELLO`, `AUTH_OPERATOR`, `AUTH_DEVICE`, `AUTH_RESULT`, `LOGOUT`, `ERROR` | 7 |
+| Lệnh (command plane) | `INCIDENT_CREATE`, `INCIDENT_TRANSITION`, `ALERT_CREATE`, `ALERT_PUBLISH`, `ALERT_UPDATE`, `ALERT_CANCEL`, `COMMAND_RESULT` | 7 |
+| Phân phối và xác nhận | `ALERT_PUSH`, `ACK_RECEIVED`, `ACK_USER`, `CANCEL_PUSH`, `ACK_CANCEL`, `SYNC_REQUEST`, `SYNC_RESULT`, `HEARTBEAT`, `HEARTBEAT_ACK` | 9 |
+| Quan sát và sự kiện | `STATUS_SUBSCRIBE`, `STATUS_SNAPSHOT`, `STATUS_DELTA`, `INCIDENT_EVENT`, `METRIC_SAMPLE` | 5 |
+| **Tổng** | | **28** |
+
+**Định danh và idempotency.** Lệnh CREATE mang `requestId` duy nhất (cột `request_id UNIQUE` của `alert_operations`; công bố trùng requestId bị rollback tất định, payload khác fingerprint trả kết quả duplicate/conflict tùy ngữ nghĩa operation). Mỗi delivery có `deliveryId` + `alertId` + `revision` ổn định qua mọi lần thử; mỗi lần thử vận chuyển dùng `messageId` mới để phân biệt attempt (ghi vào `delivery_attempts`). Client khử trùng theo bộ định danh này và lưu hộp thư bền vững, nên `ACK_RECEIVED` (máy đã nhận, đã lưu) tách biệt với `ACK_USER` (thao tác xác nhận của con người, kèm `userId` để quy trách nhiệm). ACK chỉ làm trạng thái tiến lên; hủy/hết hạn để lại tombstone ngăn hiển thị lại tin cũ sau SYNC.
+
+**Mã lỗi typed.** Đáp ứng lỗi dùng mã tường minh kèm correlationId để truy vết mà không lộ nội bộ (NFR-017): router hiện dùng `NOT_AUTHENTICATED`, `FORBIDDEN`, `NOT_FOUND`, `BAD_PAYLOAD`, `UNKNOWN_TYPE`, `UNSUPPORTED`, `INTERNAL` (đã sanitize sau peer-review); đặc tả thiết kế đầy đủ trong `docs/SECURITY.md` gồm `AUTH_REQUIRED`, `ACCESS_DENIED`, `INVALID_SCOPE`, `INVALID_FRAME`, `INVALID_VERSION`, `MESSAGE_TOO_LARGE`, `RATE_LIMITED`, `CONFLICT`, `EXPIRED`, `SERVER_BUSY`, `INTERNAL_ERROR`.
+
+**Bảng 3.8.** Tham số giao thức và cấu hình mặc định (nguồn: `docs/PROTOCOL.md`, `ServerConfig`, `LabDefaults`, `MetricsRegistry`, `StatusFeedServer`).
+
+| Tham số | Giá trị | Ghi chú |
+|---|---|---|
+| Phiên bản giao thức | 2 | `version == 2` kiểm tra chặt integer |
+| Độ dài khung L | 1…65536 byte | uint32 big-endian; từ chối quá cỡ trước cấp phát |
+| Cổng TLS / WS / discovery / multicast | 9443 / 9444 / 9999 / 9998 | Bảng 3.4; cổng 0 (ephemeral) dùng trong kiểm thử |
+| Nhóm multicast / TTL | 239.10.10.10 / 1 | Dải quản trị 239/8, chỉ trong liên kết LAN |
+| Datagram lab | ≤ 1024 byte | Dưới MTU Ethernet, không phân mảnh IP [1, Bài 7]; RFC 8085 [6] |
+| Heartbeat | Chu kỳ 10s; suspect sau 3 lần lỡ | `SessionRegistry`, logic thuần trên `Clock` tiêm được |
+| Retry | 3s/6s/12s + jitter đều [0, base); tối đa 3 retry sau lần gửi đầu rồi FAILED | Initial + 3 retry = 4 attempt; mỗi attempt một messageId mới |
+| Hàng đợi writer | 256 phần tử/phiên | ACCEPTED / EVICTED_LOWER / REJECTED_SLOW |
+| MAX_BURST | 8 | Ưu tiên nghiêm ngặt + fairness chống bỏ đói |
+| Gom batch status | 500 ms | `StatusFeedService` |
+| Giới hạn kết nối / pre-auth | 512 kết nối; TTL pre-auth 10s | Khắc phục S-07 (DoS pre-auth) |
+| Subscriber WebSocket | ≤ 64 | Khắc phục S-05 (read-plane bị chặn) |
+| Reservoir latency | 4096 mẫu gần nhất | Percentile nearest-rank p50/p95/p99 |
+| Argon2id (demo) | t=2, m=16 MiB (16384 KiB), p=1 | Triển khai thật cần nâng m ≥ 19 MiB theo OWASP [5] |
+| Chứng chỉ demo | RSA 2048, CN=localhost, SAN=dns:localhost,ip:127.0.0.1, PKCS12 | Tự ký, ghim bằng truststore; chỉ dùng lab |
+
+#### 3.2.5 Máy trạng thái incident / alert / delivery
+
+**Máy trạng thái incident.** `IncidentService` định nghĩa bảng chuyển trạng thái hợp lệ ngay trong mã nguồn (Bảng 3.9); chuyển trái phép trả `CONFLICT`, không ghi gì. Mỗi chuyển trạng thái hợp lệ commit **đồng thời** dòng sự kiện timeline (`incident_events`) trong một giao dịch (khắc phục S-09), kèm audit và broadcast `INCIDENT_EVENT`. `CLOSED` và `ABORTED` là trạng thái kết thúc; `ABORTED` dành cho kịch bản SIMULATION. Đóng incident không tương đương force-ACK thiết bị; replay timeline chỉ đọc, không gọi Publish.
+
+**Bảng 3.9.** Chuyển trạng thái incident hợp lệ (nguồn: `IncidentService.TRANSITIONS`).
+
+| Trạng thái hiện tại | Được chuyển sang |
+|---|---|
+| DRAFT | OPEN, ABORTED |
+| OPEN | INVESTIGATING, CONTAINED, RESOLVED, ABORTED |
+| INVESTIGATING | CONTAINED, RESOLVED, ABORTED |
+| CONTAINED | RESOLVED, INVESTIGATING, ABORTED |
+| RESOLVED | CLOSED, INVESTIGATING |
+| CLOSED | (không — kết thúc) |
+| ABORTED | (không — kết thúc) |
+
+```
+  DRAFT ──► OPEN ──► INVESTIGATING ──► CONTAINED ──► RESOLVED ──► CLOSED
+    │         │            │               │             │
+    │         │            │               └─► INVESTIGATING (mở lại điều tra)
+    │         └────────────┴──► CONTAINED / RESOLVED (nhảy tắt hợp lệ)
+    └────────────────────────┴──► ABORTED (kết thúc, SIMULATION)
+```
+
+**Hình 3.5.** Máy trạng thái incident (mũi tên nhảy tắt hợp lệ theo Bảng 3.9).
+
+**Máy trạng thái alert.** `alerts.state` ∈ {DRAFT, ACTIVE, CANCELLED, EXPIRED, SUPERSEDED}: alert được công bố ở ACTIVE với revision 1; `ALERT_UPDATE` tạo revision mới (tăng nghiêm ngặt, nội dung bất biến theo revision) và có thể supersede revision cũ; `ALERT_CANCEL` là operation ngữ nghĩa riêng (operationId/revision mới, tombstone + `CANCEL_PUSH` + `ACK_CANCEL`, theo dõi receipt độc lập trong `operation_receipts`); hết hạn theo `expires_at`. Alert expired/cancelled/superseded không bao giờ được enqueue như alert active mới và không tái hiển thị sau SYNC. Update/cancel được gói nguyên tử trong một `BEGIN IMMEDIATE` (các phương thức ghi vòng đời alert của `ServerStore`, khắc phục S-09) — crash giữa chừng không để lại revision lệch delivery.
+
+**Máy trạng thái delivery.** `deliveries.state` gồm tám trạng thái với thứ hạng (rank) tăng nghiêm ngặt (Bảng 3.10). Ngữ nghĩa "ACK only advances state" được bảo vệ ở **cả hai chiều ghi**: (i) chiều ACK — `DeliveryRepo.recordAck` kiểm tra delivery thuộc đúng `(deviceId, alertId, revision)` trước khi ghi (chặn ACK chéo thiết bị), INSERT ack dùng `ON CONFLICT DO NOTHING` (ACK lặp là no-op lành tính của vận chuyển at-least-once, trả cờ `inserted` để router báo `duplicate` và audit `DUPLICATE`), rồi UPDATE trạng thái kèm rank guard SQL — chỉ ghi khi rank đích cao hơn rank hiện tại; (ii) chiều dispatcher — chuyển SENT/RETRY_SCHEDULED bị guard vào các trạng thái pre-ack, nên một commit dispatch đến muộn không bao giờ kéo RECEIVED thụt lùi về SENT (khắc phục race S-02 phát hiện qua peer-review).
+
+**Bảng 3.10.** Thứ hạng trạng thái delivery (rank guard trong `DeliveryRepo`).
+
+| Rank | Trạng thái | Ngữ nghĩa |
+|---|---|---|
+| 0 | PENDING | Đã commit bền vững, chưa gửi lần nào |
+| 1 | SENT, RETRY_SCHEDULED | Đã gửi / đang chờ lần thử lại kế tiếp |
+| 2 | RECEIVED | Thiết bị đã nhận và lưu bền vững (ACK_RECEIVED) |
+| 3 | ACKNOWLEDGED, FAILED | Người dùng đã xác nhận (ACK_USER) / hết ngân sách retry |
+| 4 | EXPIRED, CANCELLED | Kết thúc theo vòng đời alert (tombstone) |
+
+```
+                 (dispatcher)              (ACK_RECEIVED)        (ACK_USER)
+  PENDING ──► SENT ──────────────► RECEIVED ──────────────► ACKNOWLEDGED
+     │          │  ▲                    │                        │
+     │          ▼  │ (retry đến hạn)    │                        │
+     │     RETRY_SCHEDULED ──┘          │                        │
+     │          │                       │                        │
+     │          └── hết 3 retry ──► FAILED                       │
+     │                                │                          │
+     └────────────► EXPIRED / CANCELLED (tombstone, rank 4) ◄────┘
+  Guard: ACK chỉ tiến (rank đích > rank hiện tại); dispatcher chỉ ghi pre-ack;
+  ACK_RECEIVED ≠ ACK_USER; hủy/hết hạn không hồi sinh bởi retry của push cũ.
+```
+
+**Hình 3.6.** Máy trạng thái delivery với các nhánh retry và tombstone.
+
+**Bất biến trọng yếu** (theo `docs/ARCHITECTURE.md` §6.8, đã được kiểm thử và peer-review xác nhận): mỗi thiết bị trong snapshot có nhiều nhất một dòng deliveries cho `(alertId, revision, deviceId)`; mỗi lần gửi có messageId riêng, dùng lại deliveryId ổn định; ACK chỉ được chấp nhận đúng thiết bị đã xác thực + alert + revision + deliveryId và chỉ tiến trạng thái; `ACK_USER` không suy ra từ `ACK_RECEIVED`; requestId duy nhất toàn cục theo operation, fingerprint payload chặn reuse xung đột; client không bao giờ tin multicast/UDP như lệnh operator; alert expired/cancelled/superseded không tái hiển thị như alert active mới sau sync; mỗi hàng đợi writer bị chặn có chính sách slow-client, một client chậm không làm đình trệ các client khác; priority của alert và CAP severity/urgency/certainty là các ngữ nghĩa tách biệt [2].
+
+**Luồng tổng hợp publish → fanout → ACK → retry → recovery** được vẽ trong Hình 3.7 (dạng tuần tự rút gọn; sơ đồ mermaid đầy đủ trong `docs/ARCHITECTURE.md` §6.7).
+
+```
+  Operator        Server(RBAC)      TransactionalPublisher     SQLite        FanoutEngine      Device
+     │ ALERT_PUBLISH   │                    │                     │                │              │
+     │────────────────►│ scope suy từ DB    │                     │                │              │
+     │                 │───────────────────►│ BEGIN IMMEDIATE     │                │              │
+     │                 │                    │────────────────────►│ alerts+rev+    │              │
+     │                 │                    │                     │ targets+       │              │
+     │                 │                    │                     │ deliveries+    │              │
+     │                 │                    │                     │ operations     │              │
+     │                 │                    │ COMMIT              │                │              │
+     │                 │                    │────────────────────►│                │              │
+     │                 │                    │ enqueue CHỈ sau COMMIT               │              │
+     │                 │                    │─────────────────────────────────────►│              │
+     │                 │                    │                     │   PriorityScheduler (burst≤8) │
+     │                 │                    │                     │                │─ALERT_PUSH──►│
+     │                 │                    │                     │                │   dedup+commit
+     │                 │                    │                     │                │   inbox trước│
+     │                 │                    │                     │                │◄─ACK_RECEIVED│
+     │                 │                    │                     │◄─recordAck─────│  (rank guard)│
+     │                 │                    │                     │  PENDING→SENT→RECEIVED        │
+     │                 │                    │                     │  ACK_USER → ACKNOWLEDGED      │
+     │                 │                    │   [ACK thất lạc]    │                │              │
+     │                 │                    │                     │  RetryPolicy 3/6/12s+jitter   │
+     │                 │                    │                     │  (≤3 retry, messageId mới)    │
+     │                 │                    │                     │  hết retry → FAILED           │
+     │                 │                    │   [server crash sau COMMIT → restart]│              │
+     │                 │                    │                     │◄─RecoveryScanner.scan()───────│
+     │                 │                    │                     │  PENDING/SENT/RETRY_SCHEDULED/FAILED
+     │                 │                    │                     │  recoverEnqueue — không tạo alert mới
+```
+
+**Hình 3.7.** Tuần tự publish nguyên tử → fanout ưu tiên → ACK hai tầng → retry idempotent → khôi phục sau crash.
+
+#### 3.2.6 Quan sát, feed trạng thái và dashboard
+
+`MetricsRegistry` đo lường phía server bằng bộ đếm monotonic (published, ackReceived, ackUser, retries, failed, slowClientDrops, slowClientDisconnects) và reservoir độ trễ bị chặn 4096 mẫu gần nhất, tính percentile nearest-rank p50/p95/p99 cho độ trễ đầu-cuối publish → ACK_RECEIVED (đơn vị ms, đồng hồ monotonic). `StatusNotifier` là giao diện hook mà `FanoutEngine` gọi để giữ feed hiện hành (`pushWritten`, `ackReceived`, `deliveryFailed`, `alertsChanged`, `connectivityChanged`); `StatusFeedService` gom batch 500 ms và phát qua WebSocket :9444.
+
+Hợp đồng `status/1` (đặc tả trong `aegis-dashboard/docs/status-contract.md`): envelope `{version: 1, type, buildingId, ts}`; `STATUS_SNAPSHOT` gửi ngay khi client kết nối (và sau resync), `STATUS_DELTA` chỉ chứa phần thay đổi; `activeAlerts` thay toàn bộ danh sách khi hiện diện; delta đến trước snapshot bị loại bỏ. Severity của zone suy theo quy tắc chuẩn tắc từ các bộ đếm delivery thật — cài đặt trong `ZoneStatus.deriveSeverity` và phản chiếu trong `data.js` của dashboard: `offline` khi online = 0; `critical` khi failed > 0 và (failed/max(received,1) ≥ 0,2 hoặc acknowledged/max(received,1) < 0,6); `warning` khi online < devicesTotal hoặc failed > 0 hoặc acknowledged < received; còn lại `online`. **Không dùng số client online làm mẫu số ACK.** Dashboard đếm funnel targeted/written/received/user-ack từ bản ghi delivery thật, không đếm trùng sau retry (FR-025). Sau khắc phục S-05, `STATUS_SUBSCRIBE` qua TLS bị kiểm role/scope (EMPLOYEE/DEVICE bị từ chối, FLOOR_MANAGER nhận snapshot lọc theo grants) và feed WebSocket bị giới hạn 64 subscriber. Audit append-only và replay incident (`incident_events` chỉ đọc) hoàn thiện mặt phẳng quan sát.
+
+### 3.3 Cài đặt
+
+#### 3.3.1 Môi trường phát triển và kiểm thử
+
+Toàn bộ hệ thống Java biên dịch với `maven.compiler.release=24` (JDK 24); dashboard phát triển trên Node.js ≥ 20.19 và kiểm thử trên Node 26. Bảng 3.11 ghi nhận môi trường thật của máy phát triển tại thời điểm viết báo cáo (kiểm chứng bằng `java -version`, `mvn -version`, `node -v` ngày 21/11/2026) và môi trường CI. Các phiên bản thư viện lấy từ `pom.xml` gốc và `aegis-dashboard/package.json`.
+
+**Bảng 3.11.** Môi trường phát triển, kiểm thử và thư viện.
+
+| Thành phần | Máy phát triển (đã kiểm chứng) | CI (`.github/workflows/ci.yml`) |
+|---|---|---|
+| Hệ điều hành | macOS 15.7.3 (aarch64, host Macbook-Tinh) | ubuntu-latest |
+| JDK | 24.0.1 (build 24.0.1+9-30); `release=24` | Temurin 24 |
+| Maven | 3.10.1 | 3.9+ (setup-java cache maven) |
+| Node.js | v26.7.0 | 26 |
+| Jackson | 2.17.2 | như pom |
+| JUnit | 5.10.3 (Jupiter + params) | như pom |
+| sqlite-jdbc | 3.46.1.0 | như pom |
+| SLF4J / Logback | 2.0.13 / 1.5.6 | như pom |
+| argon2-jvm | 2.11 | như pom |
+| JavaFX | 24.0.1 (controls, graphics) | như pom; test headless không khởi động toolkit |
+| Vite / Three.js | 8.3.8 / 0.187.0 | npm ci theo lockfile |
+
+Lưu ý: Maven có thể chạy trên JDK mới hơn (ví dụ 27) vẫn biên dịch đúng `release=24`; các lần peer-review và benchmark trong báo cáo này chạy trên Homebrew OpenJDK 27.0.1.1 với cùng `release=24` (ghi rõ trong từng báo cáo review và trong trường `environment` của báo cáo benchmark). Toàn bộ test Java hiện tại chạy headless, không cần X server; GUI JavaFX chỉ khởi động khi chạy `javafx:run` với màn hình thật.
+
+#### 3.3.2 Cấu trúc thư mục
+
+Repository là Maven reactor bảy module Java cùng dashboard Node độc lập; mỗi module Java theo cấu trúc chuẩn `src/main/java` và `src/test/java`:
+
+```
+aegis-ebs/
+├── pom.xml                    # reactor 7 module, release=24, dependencyManagement
+├── aegis-protocol/            # EBSP/2.0: FrameCodec, Envelope, MessageType, Protocol…
+├── aegis-core/                # logic thuần: ScopedRBAC, PriorityScheduler, RetryPolicy,
+│                              # DedupIndex, AckLedger, TargetResolver, Grants
+├── aegis-persistence/         # Db, MigrationRunner, repos, TransactionalPublisher,
+│   └── src/main/resources/db/ #   001_base_schema.sql, 002_showcase_expansion.sql, seed_demo.sql
+├── aegis-server/              # TlsGateway, ClientSession, FanoutEngine, MessageRouter,
+│                              # services, StatusFeedServer, MetricsRegistry, ServerMain
+├── aegis-client/              # AlertClientEngine, InboxStore, TlsSupport, ClientApp (JavaFX)
+├── aegis-simulator/           # SimAgent, FaultInjector, FaultProfile, SimStats, SimulatorMain
+├── aegis-network-lab/         # Discovery*, Multicast*, Unicast*, FallbackHintBus,
+│                              # VerifiedAlertSubscriber, FanoutBenchmark, LabMain
+├── aegis-dashboard/           # digital twin Node/Vite/Three.js
+│   ├── src/                   #   data.js, ws.js, chaos.js, replay.js, funnel.js,
+│   │                          #   reports.js, events.js, panels.js, main.js, three/
+│   ├── test/logic.test.js     #   14 test (node --test)
+│   └── docs/status-contract.md#   hợp đồng feed status/1
+├── scripts/                   # dev.sh, test.sh, initdb.sh, gen-server-cert.sh
+├── certs/                     # keystore + truststore demo (vật liệu TLS đã gitignore)
+├── docs/                      # ARCHITECTURE, ERD, PROTOCOL, TEST-PLAN, SECURITY, BUILD,
+│   │                          # DEMO-RUNBOOK, SLIDES, BAO-CAO (báo cáo này)
+│   └── reviews/               # 4 báo cáo peer-review độc lập
+├── target/                    # artifact build: surefire-reports/, lab-report/ (benchmark)
+└── .github/workflows/ci.yml   # CI: mvn verify toàn reactor + dashboard build
+```
+
+#### 3.3.3 Mã nguồn tiêu biểu
+
+Các đoạn mã dưới đây trích nguyên văn từ mã nguồn tại commit `9f0dad2` (đường dẫn ghi trước mỗi đoạn), minh họa những kỹ thuật then chốt của Chương 2. Phần phân tích sau mỗi đoạn chỉ rõ liên hệ với giáo trình [1] và tài liệu tham khảo.
+
+**Đoạn mã 3.1 — Đóng khung length-prefix và chặn oversize trước cấp phát** (`aegis-protocol/src/main/java/aegis/protocol/FrameCodecImpl.java`):
+
+```java
+  @Override
+  public Envelope readFrame(InputStream in) throws FrameException, IOException {
+    DataInputStream din = (in instanceof DataInputStream d) ? d : new DataInputStream(in);
+    byte[] header = new byte[Protocol.PREFIX_BYTES];
+    din.readFully(header); // handles partial header reads (e.g. 4 x 1-byte chunks)
+    int len = readLength(header, 0);
+    checkLength(len); // CHẶN oversize TRƯỚC khi cấp phát body
+    byte[] body = new byte[len];
+    din.readFully(body); // handles partial body reads; leaves coalesced frames untouched
+    return decodeBody(body);
+  }
+
+  private static void checkLength(int len) throws FrameException {
+    if (len < 1 || len > Protocol.MAX_FRAME_BYTES) {
+      throw new FrameException("frame length out of range 1.." + Protocol.MAX_FRAME_BYTES + ": " + len);
+    }
+  }
+```
+
+`DataInputStream.readFully` phong tỏa tới khi đọc đủ số byte yêu cầu [1, Bài 2] — công cụ then chốt để đọc khung trên dòng byte TCP vốn không có ranh giới thông điệp [1, Bài 5]. Tiền tố 4 byte được diễn giải big-endian bằng phép dịch bit thủ công (`readLength`), không phụ thuộc thứ tự byte nền tảng. Điểm bảo mật quan trọng: `checkLength` được gọi **trước** `new byte[len]`, nên một tiền tố độ dài giả mạo khổng lồ (ví dụ 0xFFFFFFFF) bị từ chối ngay mà không cấp phát bộ nhớ — chống cạn kiệt tài nguyên (NFR-010). Phần giải mã thân dùng UTF-8 chế độ REPORT:
+
+```java
+    String json;
+    try {
+      json = StandardCharsets.UTF_8.newDecoder()
+          .onMalformedInput(CodingErrorAction.REPORT)
+          .onUnmappableCharacter(CodingErrorAction.REPORT)
+          .decode(ByteBuffer.wrap(body))
+          .toString();
+    } catch (CharacterCodingException ex) {
+      throw new FrameException("invalid UTF-8 in frame body", ex);
+    }
+```
+
+Byte UTF-8 dị dạng (overlong, surrogate cụt, ngoài dải Unicode) ném lỗi thay vì được thay thế âm thầm — bảo đảm hợp đồng "strict UTF-8" của EBSP/2.0 và loại bỏ lớp tấn công smuggling qua bảng mã.
+
+**Đoạn mã 3.2 — Công bố nguyên tử kiểu transactional outbox** (`aegis-persistence/src/main/java/aegis/persistence/TransactionalPublisher.java`, phần thân `publish`):
+
+```java
+    try (Connection c = db.open(); Statement s = c.createStatement()) {
+      s.execute("BEGIN IMMEDIATE");
+      try {
+        AlertRepo.insertOn(c, alert);
+        AlertRepo.insertRevisionOn(c, revision);
+        for (AlertTarget target : targets) {
+          AlertRepo.insertTargetOn(c, target);
+        }
+        for (Delivery delivery : deliveries) {
+          DeliveryRepo.insertOn(c, delivery);
+        }
+        if (req.requestId() != null) {
+          insertOperation(c, alert, req, deviceIds, now);
+        }
+        s.execute("COMMIT");
+      } catch (SQLException | RuntimeException e) {
+        try {
+          s.execute("ROLLBACK");
+        } catch (SQLException rollback) {
+          e.addSuppressed(rollback);
+        }
+        throw e;
+      }
+    }
+
+    // Only after COMMIT: hand the durable PENDING deliveries to the scheduler.
+    enqueuer.enqueue(List.copyOf(deliveries));
+    return new Result(alert, revision, List.copyOf(deliveries));
+```
+
+Năm nhóm bản ghi (alert, revision, target snapshot, deliveries, operation idempotency) được ghi trong **một** giao dịch `BEGIN IMMEDIATE` trên cùng một kết nối — giành write-lock ngay từ đầu, tránh leo thang khóa giữa chừng [4]. Mọi thất bại dẫn đến `ROLLBACK` sạch (kể cả lỗi FK giữa chừng), không gì được enqueue. `DeliveryEnqueuer.enqueue` chỉ được gọi **sau COMMIT**: nếu tiến trình chết giữa commit và enqueue, các dòng vẫn bền vững và `RecoveryScanner` dựng lại lịch khi khởi động — không mất alert, không phát trùng ngoài khử trùng. Bản ghi `alert_operations` mang `request_id UNIQUE` và `payload_hash` SHA-256 trên dạng JSON canonical (thứ tự khóa cố định, escape chuẩn, phủ toàn bộ trường) để chặn reuse requestId với payload xung đột. Đây là hiện thực trực tiếp của nguyên tắc durable-first và "không tuyên bố exactly-once" (mục 2.5).
+
+**Đoạn mã 3.3 — Sổ ACK chỉ tiến, đồng bộ hóa bằng synchronized** (`aegis-core/src/main/java/aegis/core/AckLedger.java`):
+
+```java
+    /** Records an ack; {@code true} only if state newly advanced. Idempotent. */
+    public synchronized boolean ack(String alertId, String clientId) {
+        Objects.requireNonNull(alertId, "alertId");
+        Objects.requireNonNull(clientId, "clientId");
+        Entry entry = entries.get(alertId);
+        if (entry == null || !entry.expected.contains(clientId)) {
+            return false;
+        }
+        return entry.acked.add(clientId);
+    }
+```
+
+Phương thức `synchronized` bảo đảm tại một thời điểm chỉ một thread thực thi trên cùng đối tượng khóa [1, Bài 3.4]; `Set.add` trả `true` chỉ khi phần tử chưa tồn tại, nên ACK lặp hoặc ACK từ client ngoài tập expected bị bỏ qua idempotent — đúng ngữ nghĩa "ACK only advances state". Tập expected được sao chép phòng thủ và bọc `unmodifiableSet` khi `open`, chặn sửa đổi từ bên ngoài.
+
+**Đoạn mã 3.4 — Backoff mũ có jitter, bão hòa không tràn số** (`aegis-core/src/main/java/aegis/core/RetryPolicy.java`):
+
+```java
+    /** Delay before the next attempt: exponential backoff plus bounded jitter, saturating. */
+    public long delayMs(int attemptsSoFar) {
+        requireNonNegative(attemptsSoFar);
+        long exponential = Math.min(baseDelayMs, DELAY_CAP);
+        int shifts = Math.min(attemptsSoFar, 63);
+        for (int i = 0; i < shifts && exponential < DELAY_CAP; i++) {
+            exponential = exponential > DELAY_CAP / 2 ? DELAY_CAP : exponential * 2;
+        }
+        long jitter = 0;
+        if (baseDelayMs > 0) {
+            RandomGenerator rng = jitterSource != null ? jitterSource : ThreadLocalRandom.current();
+            jitter = rng.nextLong(baseDelayMs);
+        }
+        long total = exponential + jitter;
+        return total < 0 ? Long.MAX_VALUE : total; // overflow guard for huge baseDelayMs
+    }
+```
+
+Với `baseDelayMs = 3000`, chuỗi delay cho các lần thử lại kế tiếp là 3s/6s/12s cộng jitter đều trong `[0, base)` — đúng lịch demo của `docs/PROTOCOL.md`. `DELAY_CAP = Long.MAX_VALUE/2` cùng guard `total < 0` bảo đảm không tràn số với số attempt lớn (đã được peer-review kiểm chứng bằng probe tràn số). `RandomGenerator` tiêm được giúp test tất định. Lưu ý quy ước index: `delayMs` nhận số lần thử đã thực hiện (0-based); `FanoutEngine.windowMs(attempt)` gọi với `attempt − 1` nên hành vi thực tế đúng initial + 3 retry rồi FAILED (peer-review server đã đo kiểm cửa sổ retry và xác nhận khớp PROTOCOL; ngữ nghĩa javadoc của core và cách gọi của server là điểm cần chuẩn hóa khi bảo trì — mục 3.6).
+
+**Đoạn mã 3.5 — Hàng đợi writer bị chặn với chính sách slow-client tất định** (`aegis-server/src/main/java/aegis/server/BoundedWriterQueue.java`):
+
+```java
+  public synchronized OfferResult offer(Priority priority, Envelope envelope) {
+    if (closed) return OfferResult.REJECTED_SLOW;
+    if (items.size() < capacity) {
+      items.add(new Item(priority, seq++, envelope));
+      notifyAll();
+      return OfferResult.ACCEPTED;
+    }
+    Item lowest = items.last();
+    if (priority.ordinal() > lowest.priority().ordinal()) {
+      items.remove(lowest);
+      evicted++;
+      items.add(new Item(priority, seq++, envelope));
+      notifyAll();
+      return OfferResult.EVICTED_LOWER;
+    }
+    return OfferResult.REJECTED_SLOW;
+  }
+```
+
+Cấu trúc `TreeSet` sắp theo ưu tiên giảm dần rồi số thứ tự tăng dần (FIFO trong tầng); `wait()/notifyAll()` phối hợp producer–consumer đúng kỹ thuật [1, Bài 3.5]. Khi hàng đợi đầy, khung ưu tiên cao hơn thay chỗ khung thấp nhất (`EVICTED_LOWER`) — lũ INFO không bao giờ chặn CRITICAL; không thay được thì `REJECTED_SLOW` và gateway ngắt kết nối client chậm kèm audit/metric. Sức chứa mặc định 256/phiên chặn tăng trưởng bộ nhớ vô hạn từ client không drain socket.
+
+**Đoạn mã 3.6 — Gateway TLS: SSLContext từ keystore và accept loop có giới hạn** (`aegis-server/src/main/java/aegis/server/TlsGateway.java`):
+
+```java
+  /** Builds an SSLContext from the configured PKCS12/JKS keystore. */
+  public static SSLContext sslContext(ServerConfig config) throws Exception {
+    KeyStore ks = KeyStore.getInstance(config.keystore().toString().endsWith(".p12") ? "PKCS12" : "JKS");
+    try (InputStream in = new FileInputStream(config.keystore().toFile())) {
+      ks.load(in, config.keystorePassword().toCharArray());
+    }
+    KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+    kmf.init(ks, config.keystorePassword().toCharArray());
+    SSLContext ctx = SSLContext.getInstance("TLS");
+    ctx.init(kmf.getKeyManagers(), null, null);
+    return ctx;
+  }
+```
+
+Quy trình `KeyStore → KeyManagerFactory → SSLContext.init` đúng chuẩn JSSE [3]; `SSLServerSocket` tạo từ factory của context này, `setNeedClientAuth(false)` vì xác thực ứng dụng (AUTH_OPERATOR/AUTH_DEVICE) diễn ra sau bắt tay TLS. Phía client, `TlsSupport.clientContext` nạp truststore ghim qua `TrustManagerFactory` — chỉ tin đúng chứng chỉ server demo, không có trust-all. Đoạn accept loop thể hiện hai lớp bảo vệ chống DoS pre-auth (khắc phục S-07):
+
+```java
+        SSLSocket socket = (SSLSocket) serverSocket.accept();
+        // S-07: hard connection cap (pre-auth sessions included) — excess
+        // sockets are dropped immediately instead of lingering unauthenticated.
+        if (sessions.size() >= config.maxConnections()) {
+          LOG.warn("connection cap {} reached; rejecting {}", config.maxConnections(),
+              socket.getRemoteSocketAddress());
+          socket.close();
+          continue;
+        }
+        socket.setUseClientMode(false);
+        socket.setTcpNoDelay(true);
+        // S-07: pre-auth read timeout; cleared once the session authenticates
+        // (authenticated liveness is owned by the heartbeat sweep).
+        socket.setSoTimeout((int) Math.min(config.preAuthTimeoutMs(), Integer.MAX_VALUE));
+        ClientSession session = new ClientSession(Json.uuid(), socket, codec,
+            config.writerQueueCapacity(), clock, executor,
+            this::onSessionClosed, this::onSlowClient);
+        sessions.register(session);
+        executor.execute(() -> readLoop(session));
+```
+
+Giới hạn cứng 512 kết nối (kể cả chưa xác thực), `setSoTimeout` cho phiên pre-auth và TTL tuyệt đối 10s trong `readLoop` (khung keepalive không kéo dài đời kết nối chưa xác thực); sau xác thực, soTimeout trả về 0 và liveness thuộc về heartbeat sweep. `setTcpNoDelay(true)` vô hiệu hóa Nagle, giảm độ trễ thông điệp điều khiển khẩn cấp [1, Bài 5.3.4]. Mỗi kết nối được giao một reader task riêng trên virtual thread executor — mô hình server tương tranh [1, Bài 6] với thread pool hiện đại [3].
+
+**Đoạn mã 3.7 — Kỷ luật pragmas trên mọi kết nối SQLite** (`aegis-persistence/src/main/java/aegis/persistence/Db.java`, phần thân `open`):
+
+```java
+      Connection c = DriverManager.getConnection(url);
+      try (Statement s = c.createStatement()) {
+        s.execute("PRAGMA foreign_keys=ON");
+        // Arm the busy handler BEFORE the WAL switch so ordinary lock waits
+        // (BEGIN IMMEDIATE, writes) ride out contention instead of failing.
+        s.execute("PRAGMA busy_timeout=" + BUSY_TIMEOUT_MILLIS);
+        switchToWal(s);
+      } catch (SQLException | RuntimeException e) {
+        try {
+          c.close();
+        } catch (SQLException close) {
+          e.addSuppressed(close);
+        }
+        throw e;
+      }
+      return c;
+```
+
+`foreign_keys=ON` phải đặt ngoài giao dịch mới có hiệu lực; `busy_timeout=5000` được đặt **trước** khi chuyển WAL để cửa sổ chuyển chế độ không bị SQLITE_BUSY tức thì (thứ tự này là kết quả khắc phục issue L1 của peer-review persistence). `switchToWal` xác minh kết quả trả về đúng "wal" (ném lỗi nếu bị từ chối) và retry SQLITE_BUSY với backoff trong ngân sách 5s; toàn bộ khối được bao bởi khóa khởi tạo theo từng file DB (`OPEN_LOCKS`) để nhiều thread mở lần đầu file mới không đua nhau tạo header/WAL sidecar [4].
+
+**Đoạn mã 3.8 — Rank guard SQL: ACK chỉ tiến trạng thái** (`aegis-persistence/src/main/java/aegis/persistence/DeliveryRepo.java`, trong `recordAck`):
+
+```java
+          try (PreparedStatement ps = c.prepareStatement(
+              "UPDATE deliveries SET state=? WHERE id=? AND device_id=? AND alert_id=? AND revision=? AND "
+                  + "CASE state WHEN 'PENDING' THEN 0 WHEN 'SENT' THEN 1 WHEN 'RETRY_SCHEDULED' THEN 1 "
+                  + "WHEN 'RECEIVED' THEN 2 WHEN 'ACKNOWLEDGED' THEN 3 WHEN 'FAILED' THEN 3 "
+                  + "WHEN 'EXPIRED' THEN 4 WHEN 'CANCELLED' THEN 4 END < ?")) {
+            ps.setString(1, target.name());
+            ps.setString(2, deliveryId);
+            ps.setString(3, deviceId);
+            ps.setString(4, alertId);
+            ps.setInt(5, revision);
+            ps.setInt(6, targetRank);
+            // 0 rows = state already at/above target rank: monotonic no-op, not an error.
+            ps.executeUpdate();
+          }
+```
+
+UPDATE ràng buộc đủ bộ khóa sở hữu `(id, device_id, alert_id, revision)` và chỉ ghi khi rank hiện tại nhỏ hơn rank đích (Bảng 3.10) — 0 dòng bị ảnh hưởng là no-op đơn điệu, không phải lỗi. Trước đó trong cùng giao dịch, `recordAck` SELECT kiểm tra delivery thuộc đúng thiết bị/alert/revision (chặn ACK chéo thiết bị — khắc phục M1) và INSERT ack với `ON CONFLICT(device_id,alert_id,revision,ack_kind) DO NOTHING`, trả cờ `inserted` để router phân biệt ACK mới với ACK lặp (hợp đồng S-01: wire `duplicate`, audit `DUPLICATE`). Toàn bộ ack row + chuyển trạng thái commit trong một `BEGIN IMMEDIATE`.
+
+**Đoạn mã 3.9 — Multicast publisher bằng API hiện đại** (`aegis-network-lab/src/main/java/aegis/networklab/MulticastHintPublisher.java`, phần khởi tạo và `publish`):
+
+```java
+    this.socket = new MulticastSocket(null);
+    boolean ok = false;
+    try {
+      socket.setOption(StandardSocketOptions.SO_REUSEADDR, true);
+      socket.bind(new InetSocketAddress(0));
+      socket.setOption(StandardSocketOptions.IP_MULTICAST_LOOP, cfg.loop());
+      socket.setOption(StandardSocketOptions.IP_MULTICAST_TTL, cfg.ttl());
+      if (ni != null) socket.setOption(StandardSocketOptions.IP_MULTICAST_IF, ni);
+      socket.joinGroup(target, ni);
+      ok = true;
+    } finally {
+      if (!ok) socket.close();
+    }
+```
+
+```java
+  @Override
+  public void publish(AlertHint hint) throws IOException, LabCodecException {
+    byte[] data = codec.encode(hint);
+    socket.send(new DatagramPacket(data, data.length, group, cfg.port()));
+    packets.incrementAndGet();
+    bytes.addAndGet(data.length);
+  }
+```
+
+Đây là trình tự gửi multicast của [1, Bài 8.3.1] viết bằng API hiện đại thay cho dạng cũ `joinGroup(InetAddress)`/`setTimeToLive`: `joinGroup(SocketAddress, NetworkInterface)` và các tùy chọn `StandardSocketOptions.IP_MULTICAST_TTL/IF/LOOP`, `SO_REUSEADDR` cho phép nhiều tiến trình thuê bao chia sẻ cổng nhóm trên cùng máy. Nhóm 239.10.10.10 (dải quản trị 239/8), cổng 9998, TTL = 1 — chỉ trong liên kết LAN [1, Bài 8.1.2]. Điểm mấu chốt định lượng: `publish` gửi **đúng một datagram cho mỗi hint bất kể số thuê bao**, đồng thời đếm packets/bytes tại nguồn để chứng minh nhân bản xảy ra trong mạng chứ không ở nguồn (Hình 2.3); kết quả đo thật trình bày ở mục 3.5.6.
+
+**Khám phá multicast và fallback.** Trên macOS loopback (lo0), join + send thành công nhưng không bao giờ giao được gói. `MulticastSupport.probe` phát hiện bằng phép thử gửi/nhận thật: gia nhập nhóm trên cổng ephemeral (không làm nhiễu thuê bao thật), gửi `LAB_PROBE` tới chính mình và chờ với `setSoTimeout(800)`, thử tối đa 3 lần vì UDP không đảm bảo giao hàng [1, Bài 7.1.3]; cả 3 lần thất bại thì kết luận không có multicast route và `FallbackHintBus` chuyển sang phát hint UDP unicast từng thuê bao (`UnicastHintPublisher`/`UnicastHintSubscriber`) — vẫn giữ nguyên tắc "hint không phải nội dung".
+
+**Mẫu hình hint–verify an toàn.** `VerifiedAlertSubscriber.onHint` hiện thực nguyên tắc của mục 2.7: nhận hint advisory → bỏ qua hint stale (revision ≤ revision đã xác minh) hoặc trùng (revision đã fetch) → fetch nội dung thẩm quyền qua phiên TLS đã xác thực (`LabTlsClient.fetchAlert`) → chỉ đưa nội dung đã xác minh vào sink hiển thị, cập nhật `lastVerifiedRevision`. Các bộ đếm `hintsReceived/fetchesIssued/verifiedDelivered/staleIgnored/fetchMisses/fetchFailures` cho phép quan sát toàn bộ hành vi. Hint giả mạo cùng lắm gây một lần fetch; không thể tiêm nội dung hiển thị. Phía discovery, `DiscoveryClient.discoverTrusted` chỉ chấp nhận server sau khi bắt tay TLS với truststore ghim, trao đổi HELLO/SERVER_HELLO lặp nonce **trong phiên TLS đó** và kiểm tra CN chứng chỉ trùng `serverId` — phúc đáp UDP giả mạo không thể chuyển hướng client (kiểm thử T-24/C13).
+
+**Durable-first phía client.** `AlertClientEngine.handleAlert` xử lý push theo thứ tự đã được peer-review xác nhận từng dòng: kiểm tra `DedupIndex.seen` (seed từ inbox bền vững khi khởi động, kể cả tombstone) → nếu trùng: re-ACK idempotent để server ngừng retry nhưng **không hiển thị lại**; nếu mới: `inbox.store(a)` commit bền vững **trước**, rồi `fireAlert(a, true)` thông báo UI, rồi `sendAckReceived`, rồi `markAckReceivedSent`. Gửi ACK thất bại để lại dòng `ack_received_sent_at IS NULL`, được `resendPendingAcks()` gửi lại khi reconnect — crash giữa commit và ACK không mất xác nhận. `InboxStore` áp dụng trên mọi kết nối cục bộ: `journal_mode=WAL`, `synchronous=FULL`, `busy_timeout=5000`, ghi bằng `BEGIN IMMEDIATE` [4]. `ACK_USER` là thao tác riêng từ nút bấm UI: mark bền vững trước, gửi sau, offline thì pending; không bao giờ suy ra từ ACK_RECEIVED. Hủy được xử lý bằng tombstone (`applyCancel` chỉ nhận revision ≥ revision đã lưu và > cancel_revision trước đó; alert chưa biết vẫn tạo tombstone chặn push stale về sau). Reconnect gửi `SYNC_REQUEST` kèm `knownRevisions` rồi nhận `SYNC_RESULT` (alerts + tombstones); xác thực bị từ chối (`ok=false`) là lỗi vĩnh viễn, fail-fast không retry.
+
+#### 3.3.4 Dashboard digital twin
+
+Dashboard là ứng dụng web độc lập (Vite 8 + Three.js 0.187 [7]), không mở backend riêng: `src/data.js` giữ hợp đồng `status/1` và quy tắc severity chuẩn tắc (phản chiếu `ZoneStatus.deriveSeverity` của server), `src/ws.js` quản lý kết nối WebSocket với backoff reconnect 1s → 15s + jitter và chế độ MOCK sau 3 lần kết nối thất bại (badge `MOCK FEED`, tự chuyển về LIVE khi nối lại server); `src/three/` dựng tòa nhà 10 tầng × 4 zone bằng Three.js, tô màu zone theo severity và trạng thái thiết bị/phân phối; `src/funnel.js` đếm targeted/written/received/user-ack từ bản ghi delivery thật (không double-count sau retry); `src/replay.js` phát lại timeline incident chỉ đọc; `src/chaos.js` cung cấp ba lệnh chaos trên mock feed (DROP_ACK, DELAY_ACK, DISCONNECT) phục vụ trình diễn khi chưa có server thật; `src/reports.js` xuất báo cáo/CSV; `src/events.js` quản lý event store có seq và giới hạn kích thước. Kiểm chứng logic bằng `node --test test/logic.test.js` (14 test, mục 3.5.1); build production bằng `npm run build` ra `dist/`.
+
+### 3.4 Hướng dẫn biên dịch và chạy
+
+Trình tự dưới đây tái lập được từ máy sạch (chi tiết đầy đủ trong `docs/BUILD.md`; CI chạy đúng các lệnh này trên ubuntu-latest). Mọi lệnh chạy từ thư mục gốc repository.
+
+**Bước 1 — Cài môi trường.** macOS (Homebrew): `brew install maven` (kéo theo OpenJDK), tùy chọn `brew install --cask temurin@24` để đúng JDK 24 như CI, `brew install node` (Node 26.x); sqlite3 có sẵn. Linux (Ubuntu/Debian): `sudo apt-get update && sudo apt-get install -y maven sqlite3 git`, cài Temurin 24 (adoptium.net) và Node 26 (nodejs.org hoặc nvm). Kiểm tra: `mvn -version` phải thấy JDK ≥ 24 (Maven có thể chạy trên JDK khác `java -version`).
+
+**Bước 2 — Build và test toàn reactor.**
+
+```bash
+mvn -B -ntp verify
+```
+
+Kết quả mong đợi `BUILD SUCCESS`; số liệu test chính xác đọc từ XML trong `<module>/target/surefire-reports/` (cờ `-q` ẩn số liệu console). Kiểm kê test hiện hành của mã nguồn xem Bảng 3.13. Lệnh tắt: `./scripts/dev.sh` = `mvn -q -DskipTests package`; `./scripts/test.sh` = `mvn -q test`.
+
+**Bước 3 — Dashboard.**
+
+```bash
+cd aegis-dashboard
+npm ci            # cài đúng package-lock.json
+npm run build     # production vào dist/ (cảnh báo chunk > 500 kB của Three.js là benign)
+npm test          # node --test test/logic.test.js (14 test)
+cd ..
+```
+
+**Bước 4 — Tạo CSDL demo 26 bảng.**
+
+```bash
+./scripts/initdb.sh                 # tạo aegis.db ở gốc repo; hoặc ./scripts/initdb.sh /duong/dan/aegis.db
+```
+
+Script in `TABLES=26` và chạy `PRAGMA foreign_key_check` sạch. **Lưu ý:** script `rm -f` file DB đích trước khi tạo — không trỏ vào DB thật. Server cũng tự khởi tạo schema qua `MigrationRunner` khi chạy; `seed_demo.sql` chỉ dùng cho chế độ dataset offline (MODE 2 trong chú thích đầu file — hash placeholder, không xác thực được; không nạp chồng lên DB server đã seed vì sẽ chặn mọi đăng nhập).
+
+**Bước 5 — Sinh chứng chỉ TLS demo.**
+
+```bash
+./scripts/gen-server-cert.sh        # certs/aegis-server.p12 + aegis-server.crt + aegis-truststore.p12
+```
+
+keytool sinh RSA 2048, CN=localhost, SAN=dns:localhost,ip:127.0.0.1, keystore PKCS12, mật khẩu mặc định `aegis-demo` — vật liệu demo/lab, đã gitignore.
+
+**Bước 6 — Chạy server.**
+
+```bash
+mvn -q -DskipTests package
+mvn -q -pl aegis-server dependency:build-classpath -Dmdep.outputFile=cp.txt
+java -cp "aegis-server/target/classes:$(cat cp.txt)" aegis.server.ServerMain \
+  --db aegis.db --keystore certs/aegis-server.p12 --storepass aegis-demo
+```
+
+Server lắng nghe EBSP/2.0 TLS :9443 và feed `status/1` :9444; mặc định tự seed thế giới demo (tòa AEGIS-BLD-A, 10 tầng × 4 zone × 12 thiết bị = 480 thiết bị `DEV-A-F{nn}-{A..D}-{01..12}`; operator `admin`/`secops`/`floor7`/`employee` với mật khẩu demo tương ứng `*-demo-secret`, credential thiết bị `device-demo-secret` — toàn bộ là giá trị công khai chỉ dùng lab). Các tùy chọn: `--tls-port --ws-port --building --devices-per-zone --no-seed --heartbeat-ms --retry-base-ms`.
+
+**Bước 7 — Chạy client JavaFX (máy trạm).**
+
+```bash
+mvn -pl aegis-client javafx:run -Djavafx.args="--host localhost --port 9443 \
+  --device-id DEV-A-F05-A-01 --truststore certs/aegis-truststore.p12 \
+  --truststore-password aegis-demo --inbox client-inbox.db --sound"
+```
+
+Client hiển thị banner SIMULATION/TRAINING vĩnh viễn, popup cảnh báo (không hiển thị lại bản trùng), nút "Acknowledge" gửi ACK_USER tách biệt; `--sound` bật beep (mặc định tắt). Cần màn hình thật; phần logic/engine chạy headless được trong test.
+
+**Bước 8 — Chạy simulator tạo tải (100 client mô phỏng).**
+
+```bash
+mvn -pl aegis-simulator org.codehaus.mojo:exec-maven-plugin:3.2.0:exec \
+  -Dexec.executable=java -Dexec.args="-classpath %classpath aegis.simulator.SimulatorMain \
+  --agents 100 --scenario mixed --seed 42 --host localhost --port 9443 \
+  --truststore certs/aegis-truststore.p12 --truststore-password aegis-demo --duration 30"
+```
+
+Bắt buộc dùng `exec:exec` (fork JVM riêng) vì `SimulatorMain` gọi `System.exit` với mã 0/1/2 — `exec:java` sẽ giết Maven giữa chừng. Kịch bản: `clean | lossy | delayed | duplicate | flaky | mixed` (Bảng 3.17); mặc định agents=100, seed=42, duration=20s, stagger=5ms, định danh `SIM-DEV-0001…`. Đội simulator dùng credential mô phỏng và phải được server demo cho phép (demo mode + allowlist thiết bị) trước khi chạy tải; cờ `simulation` trong payload không phải ranh giới bảo mật. Kết thúc in bảng tổng kết `SimStats` (connects, reconnects, alerts received, duplicate pushes, ACK sent/dropped/delayed, disconnects, SYNC requests, heartbeats, auth rejections).
+
+**Bước 9 — Phòng thí nghiệm mạng và benchmark.**
+
+```bash
+mvn -q -pl aegis-network-lab compile exec:java \
+  -Dexec.mainClass=aegis.networklab.LabMain -Dexec.args="bench --subscribers 8 --messages 200"
+```
+
+Các lệnh khác: `probe` (thử multicast thật), `serve` (discovery + TLS lab), `discover`, `publish`, `subscribe` — hướng dẫn đầy đủ trong `aegis-network-lab/src/main/resources/lab-guide.md`. Benchmark ghi báo cáo `target/lab-report/fanout-report.json` và `.md` (số liệu thật trích ở mục 3.5.6). Trên một host macOS, probe multicast loopback có thể thất bại (lo0 không có multicast route) — khi đó benchmark vẫn chạy chế độ TCP và unicast fallback; demo multicast thật cần LAN hỗ trợ multicast (hoặc cấu hình interface/TTL phù hợp).
+
+**Bước 10 — Chạy dashboard.**
+
+```bash
+cd aegis-dashboard && npm run dev     # http://localhost:5173, tự nối ws://localhost:9444
+# hoặc sau khi build: npm run preview
+```
+
+Chưa có server thì dashboard chạy MOCK FEED (badge hiển thị rõ); có server thì nhận snapshot/delta thật và tô màu digital twin theo trạng thái phân phối.
+
+**Chạy test từng module và đếm số liệu.** Từ gốc repo, dùng `-am` để Maven tự build module thượng nguồn: `mvn -B -ntp -pl aegis-protocol test`, `mvn -B -ntp -pl aegis-core -am test`, … (tương tự cho persistence/server/client/simulator/network-lab). Đếm chính xác từ surefire XML: `grep -h "tests=" <module>/target/surefire-reports/*.xml`. Lưu ý quy trình: chạy `-pl` không `-am` sẽ resolve module phụ thuộc từ jar đã install trong `~/.m2` — kết quả có thể lệch nếu jar cũ; nghiệm thu nên chạy toàn reactor hoặc `-am` (khuyến nghị R0 của peer-review server).
+
+**Ngân sách fresh install (NFR-015).** Bảng 3.12 là ngân sách tham khảo trên máy sạch, mạng bình thường (theo `docs/BUILD.md`) — đây là **ước tính lập kế hoạch**, không phải số đo; phép đo fresh install thật (T-30) ghi nhận ở mục 3.5.2.
+
+**Bảng 3.12.** Ngân sách thời gian fresh install (ước tính tham khảo, không phải số đo).
+
+| Bước | Thời gian ước tính |
+|---|---|
+| Cài JDK 24 + Maven + Node 26 + sqlite3 | 5–10 phút |
+| `mvn -B -ntp verify` lần đầu (tải dependency + test toàn reactor) | 5–10 phút |
+| `npm ci && npm run build` (dashboard) | 1–2 phút |
+| `scripts/initdb.sh` (26 bảng) | < 1 giây |
+
+CI đặt `timeout-minutes: 30` để bám NFR-015; các lần build sau nhanh hơn nhờ cache Maven `~/.m2` và npm `~/.npm`.
+
+**Xử lý sự cố thường gặp** (theo `docs/BUILD.md` §5): `invalid target release: 24` → JDK < 24, cài Temurin 24+ và kiểm tra `mvn -version`; `npm ci` lỗi EUSAGE/lockfile → chạy `npm install` đồng bộ lockfile; cảnh báo `native access` của sqlite-jdbc trên JDK mới là benign; cảnh báo chunk > 500 kB khi vite build là benign (Three.js bundle lớn); file `aegis.db-wal`/`aegis.db-shm` là sidecar WAL, đã gitignore, không commit; test persistence chạy song song phải dùng `@TempDir` DB riêng, không trỏ chung một file.
+
+### 3.5 Kiểm thử và kết quả thực nghiệm
+
+Chiến lược kiểm thử của đồ án gồm năm tầng: (i) unit test logic thuần (core, protocol) viết theo TDD với Clock/RNG tiêm được; (ii) integration test persistence trên SQLite thật (`@TempDir` DB riêng mỗi test) và server trên TLS loopback thật; (iii) ma trận 30 bài kiểm thử chấp nhận T-01…T-30 ánh xạ tới module/lệnh trong `docs/TEST-PLAN.md`; (iv) 16 kịch bản chaos C01…C16 tiêm lỗi có seed tái lập được; (v) peer-review độc lập từng module kèm probe đối kháng chạy thật. Mọi kết quả định lượng phải kèm runId/commit SHA/máy đo (NFR-018); hạng mục chưa có lần chạy nghiệm thu chính thức giữ placeholder `[TODO]`, không điền số ước đoán.
+
+#### 3.5.1 Kiểm kê test và kết quả unit/integration
+
+**Kiểm kê từ mã nguồn (HEAD `9f0dad2`).** Đếm toàn bộ annotation `@Test` trong `src/test` của bảy module Java được **318 phương thức test**; riêng `FrameCodecFixtureTest` có 4 phương thức `@ParameterizedTest` nhận `@MethodSource("fixtures")` với đúng 5 fixture thông điệp (kiểm tra `assertEquals(5, args.size())` trong mã nguồn), đóng góp 4 × 5 = 20 lượt thực thi. Tổng số lượt test Java của toàn reactor: **318 + 20 = 338**, phân bố theo Bảng 3.13. Dashboard có **14 test** trong `test/logic.test.js` chạy bằng `node --test`.
+
+**Bảng 3.13.** Kiểm kê test theo module và kết quả các lần chạy gần nhất.
+
+| Module | Số lượt test (đếm từ mã nguồn) | Surefire gần nhất trên đĩa (tests/failures) | Nguồn đối chiếu |
+|---|---|---|---|
+| aegis-protocol | 56 (36 @Test + 4 × 5 fixture) | chưa có XML trong target/ | review-a chạy lại 56/56 pass (21/11, HEAD `1f6777d`) |
+| aegis-core | 73 | 73 / 0 | surefire 6 suite + review-a |
+| aegis-persistence | 52 | 52 / 0 | surefire 18 XML (kể cả @Nested của RepositoriesTest, PeerReviewFixesTest) |
+| aegis-server | 63 | 63 / 0 | surefire 9 suite (có ServerSecurityFixesTest 10 test sau khắc phục peer-review) |
+| aegis-client | 43 | 43 / 0 | surefire 5 suite (ClientEngineTest 20, InboxStoreTest 12…) |
+| aegis-simulator | 20 | 20 / 0 | surefire 3 suite (SimulatorSmokeTest chạy TLS loopback thật) |
+| aegis-network-lab | 31 | 31 / 0 | surefire 7 suite (DiscoveryTrustTest, LabDatagramCodecTest…) |
+| **Tổng Java** | **338** | **282 / 0** (thiếu 56 lượt protocol) | commit `f68f9e2` ghi nhận "full reactor 338 tests green" |
+| aegis-dashboard | 14 | 14 / 0 (chạy lại ngày 21/11/2026) | `npm test` → node --test, exit 0, 232,6 ms |
+
+Cơ sở của con số 338: commit khắc phục peer-review server `f68f9e2` (*fix(server): peer-review S-01..S-10 … full reactor 338 tests green*) ghi nhận toàn reactor xanh tại thời điểm đó; mã nguồn hiện tại (`9f0dad2`, chỉ pin phiên bản plugin Maven sau commit này) vẫn đếm đúng 338 lượt. Các báo cáo surefire trong `target/` là artifact cục bộ của những lần chạy gần nhất trên máy phát triển, **không kèm runId/máy đo chính thức** và hiện thiếu XML của aegis-protocol, nên chưa đối chiếu đủ 338 lượt trên đĩa. Kết quả nghiệm thu chính thức:
+
+[TODO: bảng kết quả `mvn -B -ntp verify` chính thức — runId, commit SHA, máy đo (OS/CPU/RAM/JDK/Maven), timestamp, tests/failures/errors/skipped và thời gian chạy từng module; lưu XML surefire vào docs/evidence/. KHÔNG bịa số]
+
+**Test dashboard (đã chạy thật khi viết báo cáo).** Ngày 21/11/2026, người viết báo cáo chạy lại `npm test` trong `aegis-dashboard` trên máy phát triển (macOS 15.7.3, Node v26.7.0, HEAD `9f0dad2`): kết quả **14 test pass / 0 fail / 0 skipped**, thời gian 232,65 ms, exit 0. Phạm vi phủ của 14 test: quy tắc severity chuẩn tắc (`deriveSeverity`), hợp nhất delta (`applyDelta`), event store (seq/giới hạn kích thước/subscriber), suy sự kiện từ delta, mock incident tất định, vá trạng thái zone không đột biến input, replay controller (load/step/seek/stop/play), ba lệnh chaos mock (DROP_ACK/DELAY_ACK/DISCONNECT), command log tới acknowledged, funnel clamp theo targeted, metrics history/CSV escape/sparkline, và tính nhất quán của mock delta + chaos transform.
+
+#### 3.5.2 Kiểm thử chấp nhận T-01…T-30
+
+Ma trận acceptance trong `docs/TEST-PLAN.md` ánh xạ 30 bài kiểm thử chấp nhận vào module phụ trách và lệnh/verify (Bảng 3.14). Nhiều kịch bản đã được phủ bởi test tự động hiện có (ví dụ: T-01…T-04 bởi 56 lượt test protocol; T-07 bởi ScopedRBACTest 13 test; T-09/T-10 bởi TransactionalPublisherTest 6 test; T-18/T-19 bởi RecoveryScannerTest 4 test và TlsLoopbackIntegrationTest crash-recovery; T-22 bởi PrioritySchedulerTest 13 test; T-23 bởi BoundedWriterQueueTest 6 test và integration slow-client; T-24/T-25 bởi DiscoveryTrustTest/MulticastLoopbackTest/UnicastFallbackTest). Tuy nhiên, **nghiệm thu end-to-end theo đúng lệnh/verify của TEST-PLAN trên máy đo chính thức chưa được thực hiện** — cột kết quả giữ placeholder.
+
+**Bảng 3.14.** Ma trận kiểm thử chấp nhận T-01…T-30 (theo `docs/TEST-PLAN.md`).
+
+| Test | Kịch bản | Module phụ trách | Lệnh/verify | Kết quả chính thức |
+|---|---|---|---|---|
+| T-01…04 | Framing fragment/coalesce/oversize/invalid | aegis-protocol | `mvn -pl aegis-protocol test` (FrameCodecStream/Validation) | [TODO] |
+| T-05, 06 | TLS cert giả / device disabled | aegis-server | integration loopback TLS | [TODO] |
+| T-07 | RBAC out-of-scope | aegis-core/server | ScopedRBACTest + server deny | [TODO] |
+| T-08 | Target snapshot floors 4–6 | aegis-core/persistence | TargetResolverTest + TransactionalPublisherTest | [TODO] |
+| T-09, 10 | requestId idempotency/conflict | aegis-persistence | TransactionalPublisherTest | [TODO] |
+| T-11, 12 | Durable inbox / RECEIVED ≠ ACK_USER | aegis-client | client inbox test | [TODO] |
+| T-13, 14 | Retry drop ACK / dedup | aegis-core/server | RetryPolicyTest + integration | [TODO] |
+| T-15, 16, 17 | Reconnect / expire / cancel tombstone | aegis-server/client | SYNC integration | [TODO] |
+| T-18, 19 | Crash recovery | aegis-persistence/server | RecoveryScannerTest + restart | [TODO] |
+| T-20, 21 | 100 client / latency | aegis-simulator/server | load run + metrics | [TODO] |
+| T-22 | Priority burst | aegis-core | PrioritySchedulerTest | [TODO] |
+| T-23 | Slow client queue | aegis-server | bounded queue test | [TODO] |
+| T-24, 25 | UDP spoof / multicast block | aegis-network-lab | lab test | [TODO] |
+| T-26, 27 | Digital twin counts / replay | aegis-dashboard/server | WS contract + replay | [TODO] |
+| T-28 | Secrets in logs | aegis-server | log scan | [TODO] |
+| T-29 | Deterministic chaos | aegis-simulator | seeded run | [TODO] |
+| T-30 | Fresh install | scripts/README | boot < 30 phút (ngân sách ước tính Bảng 3.12) | [TODO] |
+
+[TODO: kết quả thật từng bài T-01…T-30 từ lần chạy nghiệm thu — runId/commit SHA/máy đo, log/ảnh bằng chứng lưu docs/evidence/. KHÔNG bịa số]
+
+#### 3.5.3 Peer-review độc lập và vòng lặp khắc phục
+
+Bốn module/nhóm module được review bởi các reviewer độc lập **không phải tác giả**, cùng ngày 21/11/2026, theo quy trình: chạy lại test và đối chiếu surefire XML (không dựa console `-q`), audit đọc từng dòng mã nguồn trọng tâm, viết probe đối kháng chạy thật trong scratch (không sửa source module, không git commit), đối chiếu ngữ nghĩa với PROTOCOL/SECURITY/status-contract. Kết quả lưu trong `docs/reviews/` (Bảng 3.15).
+
+**Bảng 3.15.** Kết quả peer-review độc lập (nguồn: `docs/reviews/*.md`, ngày 21/11/2026).
+
+| Review | Module | Commit được review | Chạy lại test | Kiểm thử đối kháng | Verdict ban đầu | Issue | Commit khắc phục |
+|---|---|---|---|---|---|---|---|
+| review-a | protocol + core | `5eeca68` / `a6e7b04` (HEAD `1f6777d`) | 129/129 pass (56 + 73) | 249 check: 249 PASS / 0 FAIL / 7 quirk xác nhận | PASS | 0 critical, 0 major, 11 minor | khuyến nghị hardening (một phần còn mở — mục 3.6) |
+| review-b | persistence | `5bf5feb` | 35/35 pass × 2 lần | 27 check: 15 PASS / 5 WEAK / 7 INFO / 0 FAIL | PASS | 1 MEDIUM + 4 LOW + 8 INFO | `df0241b` (M1, L1–L4; 49 test) |
+| review-c | server | `251b2a8` | 52 test: 2 fail (jar persistence cũ); 4 fail × 2 lần (jar đã fix M1) | 33 probe wire TLS loopback thật: 33 PASS / 0 FAIL (gap được xác nhận tồn tại) | **FAIL** | 1 HIGH + 9 MEDIUM + 12 LOW + 6 INFO | `f68f9e2` (S-01…S-10; server 63 test) |
+| review-d | client + simulator | `251b2a8` | 56/56 pass (37 client + 19 simulator) | 6 probe (RNG draw, tombstone, watchdog…) | PASS | 1 MEDIUM + 4 LOW + 6 INFO | `4d1bd69` (M1, L1–L4; 63 test) |
+
+Vòng lặp **review → khắc phục → chạy lại** là một đóng góp quy trình đáng kể của đồ án. Các phát hiện quan trọng nhất và cách khắc phục (đã kiểm chứng bằng test mới):
+
+- **M1 (persistence, MEDIUM):** `recordAck` không ràng buộc delivery ↔ device/alert/revision, cho phép thiết bị này ACK nhầm delivery của thiết bị khác. Khắc phục `df0241b`: SELECT guard sở hữu + UPDATE bind đủ bộ khóa; đồng thời L1 (thứ tự pragma busy_timeout trước WAL), L2 (timestamp fixed-width), L3 (ACK lặp idempotent bằng `ON CONFLICT DO NOTHING`), L4 (payload_hash canonical v2 phủ đủ trường).
+- **S-01 (server, HIGH — regression tích hợp tất định):** router suy `duplicate=true` bằng cách bắt ngoại lệ UNIQUE, nhưng fix M1 đổi INSERT sang `ON CONFLICT DO NOTHING` làm mất tín hiệu này. Khắc phục `f68f9e2`: chốt hợp đồng `recordAck` trả cờ `inserted`, router báo wire `duplicate` và audit `DUPLICATE` đúng; test integration cập nhật.
+- **S-02 (server, MEDIUM — race trạng thái):** dispatcher ghi SENT sau khi frame lên socket, có thể commit muộn hơn ACK và kéo RECEIVED thụt lùi về SENT. Khắc phục: chuyển trạng thái dispatcher bị guard vào các trạng thái pre-ack (`updateDispatchState`), test poll SENT trước khi ACK.
+- **S-04…S-10:** sanitize lỗi INTERNAL không lộ `e.getMessage()` ra wire; phân quyền read-plane (STATUS_SUBSCRIBE theo role/scope, WS giới hạn 64 subscriber); xác minh `userId` của ACK_USER; TTL pre-auth 10s + giới hạn 512 kết nối; timestamp fixed-width phía server; update/cancel/incident ghi nguyên tử một giao dịch; chốt ngân sách retry khi recovery.
+- **Client M1 (MEDIUM):** controller thread chết lặng khi gặp frame malformed (push thiếu title giết engine vĩnh viễn, state vẫn ONLINE). Khắc phục `4d1bd69`: bọc dispatch chịu lỗi frame dị dạng + regression test; kèm L1 watchdog theo interval đàm phán, L2 cột User-ACK bền vững sau reload, L3 javadoc `exec:exec`, L4 agent fail-fast khi auth bị từ chối.
+
+Sau khắc phục, kiểm kê test tăng tương ứng: server 52 → 63 (thêm `ServerSecurityFixesTest` 10 test), persistence 35 → 49 → 52, client 37 → 43, simulator 19 → 20; commit `f68f9e2` ghi nhận toàn reactor **338 test xanh**. Peer-review cũng xác nhận bằng probe nhiều bảo đảm cốt lõi: oversize-before-allocation, readFully/coalesced, strict UTF-8 (9 mẫu dị dạng bị từ chối, tiếng Việt + emoji round-trip nguyên vẹn), dedup atomic 64 thread, RBAC không bypass, scheduler không starvation (flood 5000 CRITICAL + 3 tầng dưới, relief đúng chu kỳ), retry đúng cửa sổ 3/6/12 + jitter (đo với base 200 ms: 260/522/989 ms), 4 messageId phân biệt mỗi attempt, TLS cert lạ bị từ chối (PKIX), slow-client eviction có audit/metric, không log secret thật. Các issue mức minor/LOW còn mở được ghi nhận trung thực ở mục 3.6.
+
+#### 3.5.4 Kiểm thử chaos C01…C16
+
+Mười sáu kịch bản chaos (blueprint §12, ánh xạ trong `docs/TEST-PLAN.md`) được tiêm lỗi qua simulator (FaultInjector có seed), các adapter của gateway và điều khiển mạng lab. Bảng 3.16 liệt kê kịch bản, cơ chế tiêm và module/test liên quan hiện có; **kết quả chạy end-to-end chính thức từng kịch bản (seed, lệnh, runId, log/report/ảnh) chưa có** — giữ placeholder.
+
+**Bảng 3.16.** Ma trận chaos C01…C16 và ánh xạ kiểm thử.
+
+| Mã | Kịch bản | Cơ chế tiêm | Module/test liên quan hiện có | Kết quả chính thức |
+|---|---|---|---|---|
+| C01 | Drop ACK | simulator `lossy` (dropRate 0,3) | RetryPolicyTest, FanoutEngineTest, ClientEngineTest (T-13) | [TODO] |
+| C02 | Delay ACK | simulator `delayed` (500 ms + jitter 1500) | MetricsRegistry percentile; dashboard DELAY_ACK (mock) | [TODO] |
+| C03 | Duplicate | simulator `duplicate` (rate 0,5 × 2 bản) | DedupIndexTest, InboxStoreTest concurrent, TlsLoopback idempotent replay (T-14) | [TODO] |
+| C04 | Disconnect 20% | simulator `flaky` 0,3 / `mixed` 0,2 | SessionRegistryTest, ClientEngineTest reconnect | [TODO] |
+| C05 | Reconnect | simulator + backoff client engine | ClientEngineTest reconnect/SYNC, resendPendingAcks (T-15) | [TODO] |
+| C06 | Kill sau commit | restart server; enqueuer lỗi sau COMMIT | TransactionalPublisherTest, RecoveryScannerTest, TlsLoopback crashRecoveryRedeliversAfterRestart (T-18) | [TODO] |
+| C07 | Kill sau write | client crash giữa commit inbox và ACK | ClientEngineTest crashBetweenCommitAndAckResendsPendingAckOnReconnect (T-19) | [TODO] |
+| C08 | Unauthorized | lệnh ngoài scope / EMPLOYEE publish | ScopedRBACTest, RbacServiceTest, ServerSecurityFixesTest (T-07) | [TODO] |
+| C09 | Cert giả | truststore chỉ chứa chứng chỉ khác | ClientTlsSmokeTest untrustedServerCertificateIsRejected, TlsLoopback, DiscoveryTrustTest (T-05) | [TODO] |
+| C10 | Oversize fuzz | prefix 0/65537/0x80000000/0xFFFFFFFF; UTF-8 dị dạng; JSON thừa token | FrameCodecValidationTest/StreamTest, ServerSecurityFixesTest (T-01…04) | [TODO] |
+| C11 | Priority burst | flood CRITICAL + INFO | PrioritySchedulerTest, BoundedWriterQueueTest, FanoutEngineTest (T-22) | [TODO] |
+| C12 | Cancel offline | ALERT_CANCEL khi device offline → tombstone + SYNC | SyncService, ClientEngineTest cancelTombstone, TlsLoopback (T-16/17) | [TODO] |
+| C13 | UDP forged | discovery response giả mạo nonce/serverId | DiscoveryTrustTest, DiscoveryNonceEchoTest (T-24) | [TODO] |
+| C14 | Multicast block | probe thất bại / chặn nhóm → fallback | MulticastLoopbackTest, UnicastFallbackTest, MulticastSupport (T-25) | [TODO] |
+| C15 | SQLite contention | nhiều writer đồng thời; first-open race | DbTest, PeerReviewFixesTest$ConcurrentFirstOpen, harness busy_timeout | [TODO] |
+| C16 | Slow client | client không drain socket, flood 320 × 8 KB | BoundedWriterQueueTest, TlsLoopback slowClientIsDisconnectedWhenQueueOverflows (T-23) | [TODO] |
+
+**Preset tiêm lỗi của simulator** (`FaultProfile.preset`, mọi rate ∈ [0,1], delay theo ms):
+
+**Bảng 3.17.** Preset kịch bản lỗi của aegis-simulator.
+
+| Scenario | dropRate | delayBase + jitter | duplicateRate × count | disconnectRate |
+|---|---|---|---|---|
+| clean | 0 | 0 + 0 | 0 × 1 | 0 |
+| lossy | 0,3 | 0 + 0 | 0 × 1 | 0 |
+| delayed | 0 | 500 + 1500 | 0 × 1 | 0 |
+| duplicate | 0 | 0 + 0 | 0,5 × 2 | 0 |
+| flaky | 0 | 0 + 0 | 0 × 1 | 0,3 |
+| mixed | 0,15 | 300 + 1200 | 0,3 × 2 | 0,2 |
+
+**Tính tất định (T-29).** `FaultInjector.decide()` tiêu thụ **đúng 4 số ngẫu nhiên double theo thứ tự cố định** (drop, delay-jitter, duplicate, disconnect) bất kể rate/timing/thread; mỗi agent nhận RNG dẫn xuất tất định từ master seed (`master.nextLong()` theo index). Probe độc lập của review-d đếm 1000 quyết định → đúng 4000 draw, hai fleet cùng seed cho chuỗi quyết định giống hệt; smoke `lossy` hai lần chạy seed 99 cho **số liệu tổng kết giống hệt end-to-end**; `hundredAgentFleetSmoke` chạy thật 100 agent với 200 ACK chính xác. Giới hạn trung thực (INFO I3 của review-d): với kịch bản có disconnect (`flaky`/`mixed`), chuỗi quyết định vẫn tất định nhưng **số liệu tổng kết có thể dao động** giữa các run cùng seed vì backoff reconnect dùng jitter thời gian thực và deadline wall-clock; muốn tái lập tuyệt đối cả mixed cần tiêm seeded RNG vào backoff và dùng virtual clock (hướng phát triển, Chương 4). Ba lệnh chaos của dashboard (DROP_ACK/DELAY_ACK/DISCONNECT) hoạt động trên mock feed, chỉ phục vụ trình diễn UI — không phải tiêm lỗi mạng thật.
+
+[TODO: kết quả thật 16 kịch bản C01…C16 — mỗi kịch bản ghi seed, lệnh chạy, runId, commit SHA, máy đo, log/report/ảnh vào docs/evidence/. KHÔNG bịa số]
+
+#### 3.5.5 Tải 100 client và độ trễ phân phối
+
+**Phương pháp đo (đã cài đặt sẵn trong hệ thống).** Chạy simulator đội 100 agent (`--agents 100 --scenario clean --seed 42`, sau đó lặp với `mixed` và các preset lỗi) nối TLS thật tới server; server đo độ trễ đầu-cuối publish → ACK_RECEIVED bằng `MetricsRegistry` (reservoir 4096 mẫu gần nhất, percentile nearest-rank p50/p95/p99, đồng hồ monotonic) và các bộ đếm published/ackReceived/ackUser/retries/failed/slowClient; simulator in tổng kết `SimStats` (connects ok/failed, reconnects, alerts received, duplicate pushes, ACK sent/dropped/delayed/extra copies, fault disconnects, SYNC requests, heartbeats answered, auth rejections). Tỷ lệ ACK tính trên **target snapshot** (số thiết bị đích của alert), không trên số client online. Dashboard đối chiếu funnel targeted/written/received/user-ack từ bản ghi delivery thật.
+
+**Bằng chứng hiện có.** `SimulatorSmokeTest` (5 test; toàn module simulator 20/20 pass trên surefire) chạy thật đội 30/12/8/100 agent trên TLS loopback (~30 s), trong đó `hundredAgentFleetSmoke` xác nhận 100 agent hoàn thành với 200 ACK chính xác và `sameSeedReproducesIdenticalFaultAccounting` xác nhận tái lập số liệu lossy. Đây là bằng chứng năng lực chịu tải ở mức smoke, **chưa phải phép đo định lượng chính thức** với đầy đủ metrics và điều kiện máy đo.
+
+**Bảng 3.18.** Chỉ số tải 100 client — chờ số đo chính thức.
+
+| Chỉ số | Đơn vị | Giá trị |
+|---|---|---|
+| Độ trễ phân phối p50 (publish → ACK_RECEIVED) | ms | [TODO: số thật từ docs/evidence/, runId/SHA/máy] |
+| Độ trễ phân phối p95 | ms | [TODO: số thật từ docs/evidence/, runId/SHA/máy] |
+| Độ trễ phân phối p99 | ms | [TODO: số thật từ docs/evidence/, runId/SHA/máy] |
+| Tỷ lệ ACK_RECEIVED (received/targeted) | % | [TODO: số thật từ docs/evidence/, runId/SHA/máy] |
+| Tỷ lệ ACK_USER (user-ack/targeted) | % | [TODO: số thật từ docs/evidence/, runId/SHA/máy] |
+| Số lần thử lại / số delivery FAILED | lượt | [TODO: số thật từ docs/evidence/, runId/SHA/máy] |
+| Thông lượng phân phối | alert/s hoặc msg/s | [TODO: số thật từ docs/evidence/, runId/SHA/máy] |
+| CPU / RSS / số thread của server | % / MB / thread | [TODO: số thật từ docs/evidence/, runId/SHA/máy] |
+| Kích thước WAL sau tải | MB | [TODO: số thật từ docs/evidence/, runId/SHA/máy] |
+| Thời gian reconnect sau phục hồi mạng (NFR-007 ≤ 15s) | s | [TODO: số thật từ docs/evidence/, runId/SHA/máy] |
+
+[TODO: chạy tải chính thức 100 client (clean + mixed, seed ghi rõ), mở rộng 200–500 nếu máy đo cho phép; ghi runId/commit SHA/cấu hình máy (OS/CPU/RAM/JDK)/timestamp; lưu metrics CSV + log + ảnh dashboard vào docs/evidence/. KHÔNG bịa số]
+
+#### 3.5.6 Benchmark fanout: TCP so với multicast và unicast UDP (số liệu thật)
+
+**Nguồn bằng chứng.** Báo cáo benchmark thật tồn tại trong repository: `target/lab-report/fanout-report.json` và `fanout-report.md`, sinh bởi `FanoutBenchmark` (lệnh `LabMain bench`) với metadata đầy đủ: thời điểm `2026-11-21T11:20:55.354251Z` (18:20:55 +07); môi trường `Mac OS X 15.7.3 (aarch64), Java 27.0.1.1, host Macbook-Tinh`; cấu hình 8 thuê bao × 200 thông điệp × payload ≈ 512 byte; nhóm 239.10.10.10:9998, TTL = 1, loop = true, interface mặc định; probe multicast **AVAILABLE** (xác minh loopback thật ở attempt 1, cổng ephemeral 49811). Ba chế độ đo cùng JVM/host bằng `System.nanoTime` (so sánh được): TCP_FANOUT chở toàn bộ nội dung (khung EBSP ALERT_PUSH) N lần; MULTICAST chở một datagram ALERT_HINT advisory cho mỗi thông điệp; UNICAST_UDP_FALLBACK chở N bản hint phi liên kết.
+
+**Bảng 3.19.** Kết quả benchmark fanout thật (nguồn: `target/lab-report/fanout-report.json`, 21/11/2026; 8 thuê bao × 200 thông điệp).
+
+| Chế độ | Gói tại nguồn | Byte tại nguồn | Bản nhận (tổng thuê bao) | Byte nhận | Latency avg (µs) | p50 (µs) | p95 (µs) | max (µs) | Wall fanout (ms) |
+|---|---|---|---|---|---|---|---|---|---|
+| TCP_FANOUT | 1600 | 823848 | 1600 | 823848 | 7195,8 | 7672,8 | 10489,5 | 12100,8 | 19 |
+| MULTICAST | 200 | 17892 | 1600 | 143136 | 14175,8 | 14933,1 | 19484,0 | 29066,1 | 33 |
+| UNICAST_UDP_FALLBACK | 1600 | 143136 | 1600 | 143136 | 78,8 | 67,2 | 142,3 | 650,5 | 13 |
+
+**Phân tích.** Multicast giảm **87,5% số gói** (1600 → 200) và **97,8% số byte** (823848 → 17892) trên link nguồn so với TCP fanout, trong khi vẫn giao đủ 1600 bản tới 8 thuê bao — bằng chứng định lượng trực tiếp cho lý thuyết cây phân phối multicast [1, Bài 8.1.1, Hình 8.1]: tại mỗi thời điểm trên link nguồn chỉ có một gói, việc nhân bản xảy ra trong mạng/kernel chứ không ở nguồn. Cần đọc đúng hai khác biệt ngữ nghĩa: (i) TCP chở **toàn bộ nội dung** (~512 byte payload + phong bì), còn multicast/unicast chở **hint advisory nhỏ** (~89 byte/gói) — kiến trúc thật dùng hint để kích hoạt fetch nội dung thẩm quyền qua TLS, chi phí fetch đó không tính trong benchmark transport này; (ii) latency multicast trên loopback cao hơn TCP (avg 14,2 ms so với 7,2 ms) do đường đi kernel/IGMP của datagram, trong khi unicast UDP nhanh nhất (avg 78,8 µs) vì phi liên kết, không handshake — nhưng unicast vẫn nhân bản N lần tại nguồn và không đảm bảo giao hàng [1, Bài 7.1.3]. Kết luận kiến trúc được số liệu ủng hộ: TCP/TLS là kênh nội dung tin cậy; multicast hint giảm tải nguồn khi fanout lớn; unicast fallback giữ hệ thống hoạt động khi mạng chặn multicast.
+
+**Các lưu ý bắt buộc khi trích dẫn số liệu (ghi rõ trong báo cáo benchmark).** Đo trên MỘT host loopback: phần nhân bản của multicast do kernel thực hiện cho các socket đã joinGroup; trên mạng thật việc nhân bản xảy ra tại switch/router theo cây multicast — số gói trên link nguồn vẫn là 1. Latency là nanoTime điểm gửi → điểm nhận trong cùng JVM, chưa gồm hàng đợi ứng dụng phía subscriber. TCP bench không bật TLS để cô lập chi phí fanout transport (kênh production có thêm handshake + record overhead mỗi kết nối). UDP không đảm bảo giao hàng: receivedCopies < N×M sẽ phản ánh mất gói thật (lần chạy này đủ 1600/1600 ở cả ba chế độ).
+
+[TODO: runId/commit SHA tại thời điểm chạy benchmark (báo cáo hiện chỉ ghi environment + timestamp); chạy lại trên LAN hai máy thật (Win + Mac, multicast được switch hỗ trợ) để xác nhận nhân bản trong mạng và đo latency đầu-cuối thật; lưu báo cáo vào docs/evidence/. KHÔNG bịa số]
+
+#### 3.5.7 Dashboard digital twin và quan sát
+
+Các chức năng dashboard đã được kiểm chứng bằng 14 test logic (mục 3.5.1) và hợp đồng `status/1`: dựng tòa nhà 10 tầng × 4 zone bằng Three.js [7], tô màu zone theo severity chuẩn tắc từ bộ đếm delivery thật, funnel targeted/written/received/user-ack không đếm trùng sau retry, replay timeline incident chỉ đọc, chaos mock ba lệnh, xuất báo cáo/CSV, badge MOCK FEED/LIVE phân biệt rõ nguồn dữ liệu. Ảnh chụp nghiệm thu từ lần chạy thật với server + client + simulator:
+
+**Hình 3.8.** [TODO: ảnh chụp dashboard 3D từ lần chạy thật — ghi runId/commit SHA/máy đo, trạng thái LIVE, funnel và severity từng zone; lưu vào docs/evidence/. KHÔNG dùng ảnh mock thay ảnh thật]
+
+#### 3.5.8 Tổng hợp bằng chứng thực nghiệm
+
+**Bảng 3.20.** Danh mục bằng chứng: hiện trạng và hạng mục còn thiếu.
+
+| Hạng mục | Nguồn hiện có | Trạng thái |
+|---|---|---|
+| Kiểm kê 338 lượt test Java + 14 dashboard | Đếm annotation/fixture tại HEAD `9f0dad2`; commit `f68f9e2` ghi nhận 338 xanh; `npm test` chạy lại 21/11/2026 (14/14 pass) | Đã có kiểm kê + kết quả dashboard; kết quả verify chính thức [TODO] |
+| Peer-review độc lập 4 nhóm module | `docs/reviews/*.md` (21/11/2026) + commit khắc phục `df0241b`, `4d1bd69`, `f68f9e2` | Đã có |
+| Benchmark fanout 3 chế độ | `target/lab-report/fanout-report.{json,md}` (18:20 21/11/2026, environment đầy đủ) | Đã có (loopback một host); runId/SHA + LAN thật [TODO] |
+| Acceptance T-01…T-30 | TEST-PLAN + test tự động phủ từng kịch bản | Kết quả nghiệm thu [TODO] |
+| Chaos C01…C16 có seed | FaultInjector/preset + test liên quan; smoke tất định đã chạy | Kết quả chạy end-to-end [TODO] |
+| Tải 100 client, p50/p95/p99, tỷ lệ ACK | MetricsRegistry/SimStats + smoke 100 agent (200 ACK) | Số đo chính thức [TODO] |
+| Fresh install < 30 phút (T-30) | Ngân sách ước tính BUILD.md + CI timeout 30 | Số đo thật [TODO] |
+| Ảnh dashboard 3D nghiệm thu | Chưa có | [TODO] |
+| Thư mục bằng chứng chuẩn hóa | `docs/evidence/` chưa tồn tại | [TODO: tạo docs/evidence/ — mỗi lần chạy ghi runId, commit SHA, máy đo, timestamp, log, XML surefire, metrics CSV, ảnh] |
+
+### 3.6 Ưu điểm và hạn chế
+
+#### 3.6.1 Ưu điểm
+
+- **Giao thức ứng dụng tự xây dựng, hợp đồng tường minh và bất biến.** EBSP/2.0 đóng khung length-prefix chặt, UTF-8 REPORT, validate version/enum/trường bắt buộc, 28 loại thông điệp; từ chối oversize trước cấp phát. Hợp đồng được kiểm thử độc lập (56 lượt test protocol, fixture round-trip mọi thông điệp mẫu) và peer-review đối kháng 249 check — đúng trục đánh giá tự xây dựng giao thức trên TCP/UDP của CMP180 [1].
+- **Tin cậy phân phối ở tầng ứng dụng, không tuyên bố quá mức.** Transactional outbox trên bảng deliveries (commit trước enqueue), ACK hai tầng tách biệt máy-người, rank guard bảo vệ "chỉ tiến" ở cả hai chiều ghi, retry idempotent 3/6/12s + jitter có ngân sách, khử trùng phía nhận seed từ inbox bền vững, tombstone chặn tin cũ, recovery sau crash — ngữ nghĩa at-least-once + dedup được phát biểu trung thực, không claim exactly-once.
+- **Tài nguyên bị chặn ở mọi tầng.** Frame 64 KiB, hàng đợi writer 256/phiên với chính sách slow-client tất định (evict ưu tiên thấp, ngắt client chậm kèm audit/metric), reservoir 4096 mẫu, giới hạn 512 kết nối TLS + TTL pre-auth 10s, 64 subscriber WS — chống cạn kiệt bộ nhớ và DoS pre-auth bằng thiết kế, đã probe xác nhận.
+- **Bảo mật nhiều lớp phù hợp ngữ cảnh LAN lab.** TLS ghim chứng chỉ (không trust-all), RBAC năm vai trò với scope suy từ CSDL, Argon2id + wipe mảng mật khẩu, audit append-only cả lần từ chối, lỗi typed sanitize không lộ nội bộ, không secret trong log (peer-review grep + probe xác nhận).
+- **Quan sát được và trực quan.** Metrics monotonic + percentile cửa sổ trượt, feed `status/1` chuẩn tắc (snapshot/delta, severity suy từ delivery thật, funnel không double-count), digital twin 3D [7] phản ánh trạng thái từng tầng/zone theo thời gian thực, replay incident chỉ đọc.
+- **Thực nghiệm tái lập và quy trình kiểm chứng độc lập.** Chaos seed với 4 RNG draw cố định thứ tự, benchmark ghi báo cáo JSON/MD kèm environment; bốn vòng peer-review độc lập chạy lại surefire + probe đối kháng thật đã phát hiện và khắc phục cả regression tích hợp tất định (S-01) lẫn race trạng thái (S-02) — minh chứng giá trị của quy trình review chéo trong đồ án nhóm.
+- **Kiến trúc kiểm thử được.** Logic thuần tách I/O (aegis-core) test tất định với Clock/RNG tiêm; persistence test trên SQLite thật @TempDir; server test trên TLS loopback thật; toàn bộ test Java headless chạy CI không cần X server; schema 26 bảng kiểm chứng bằng test migration + foreign_key_check.
+- **Tài liệu đặc tả đầy đủ, ánh xạ hai chiều.** ARCHITECTURE/ERD/PROTOCOL/SECURITY/TEST-PLAN/BUILD/RUNBOOK đối chiếu trực tiếp với mã nguồn và test; báo cáo này trích dẫn đúng nguồn cho mọi khẳng định.
+
+#### 3.6.2 Hạn chế
+
+- **Một nút (single-node) — điểm lỗi đơn.** Server chết là ngừng phân phối tới khi khởi động lại; crash recovery trên node không tương đương high availability. Kiến trúc thừa nhận tường minh điều này; cluster/floor relay chỉ là hạng mục nghiên cứu tùy chọn.
+- **SQLite một writer.** Điểm nghẽn ghi khi tải lớn; giao dịch ngắn + busy_timeout + khóa first-open giảm thiểu nhưng không loại bỏ; chưa có replication hay phân tán CSDL.
+- **TLS tự ký + pinning chỉ phù hợp lab.** Không PKI thực, không quản lý vòng đời chứng chỉ; raw SSLSocket chưa bật hostname verification (defense-in-depth, INFO I1 của review-d) — an toàn trong lab nhờ ghim đúng leaf cert SAN localhost/127.0.0.1 nhưng cần hardening khi triển khai thật.
+- **Multicast giới hạn LAN.** TTL = 1, nhóm quản trị 239/8, không đi qua router; macOS lo0 gửi được nhưng không giao được (phải fallback unicast); mạng hội trường/VLAN lạ có thể chặn multicast nếu chưa cấu hình IGMP snooping/định tuyến.
+- **Tham số bảo mật demo dưới ngưỡng khuyến nghị.** Argon2id m = 16 MiB < tối thiểu ~19 MiB của OWASP [5]; API hasher nhận String (không wipe được bản sao trong heap) — issue S-20 mức LOW còn mở.
+- **Một số minor codec còn mở (review-a).** JSON trùng key được chấp nhận last-wins (MINOR-1, rủi ro nhập nhằng chính sách giữa các parser); `sentAt` chỉ kiểm non-blank, chưa validate UTC ISO-8601 tại codec (MINOR-2); lone surrogate escape `\uD800` trong payload lọt qua strict UTF-8 (MINOR-3, rủi ro tương tác giữa các bộ cài).
+- **Vòng đời bộ nhớ và bộ đếm.** `AckLedger`/`DedupIndex` chưa có close/evict theo vòng đời alert (MINOR-10/11) — chạy dài ngày sẽ phình bộ nhớ; bộ đếm feed phía server còn phụ thuộc vòng đời tiến trình và đếm received theo attempt (S-17, LOW) — dashboard clamp funnel nhưng số liệu server reset sau restart.
+- **Rủi ro bảo trì do ngữ nghĩa retry (S-13, LOW).** Hành vi hiện đúng (initial + 3 retry, cửa sổ 3/6/12s) nhưng javadoc core và cách gọi server ngược quy ước index; `Math.max(1, maxRetries)` khiến cấu hình 0 vẫn retry 1 lần — cần chuẩn hóa để tránh off-by-one tương lai.
+- **Phiên operator chưa TTL tuyệt đối/renew sessionId khi đổi quyền (S-19, LOW); banner ServerMain in credential demo công khai (S-21, lab-only).** Đây là các điểm hardening đã ghi nhận, không phải lỗ hổng trong ngữ cảnh lab một server tin cậy.
+- **Chưa xuất bản tin CAP XML chuẩn [2]** (mới tham khảo ngữ nghĩa metadata); chưa đánh giá an toàn mật mã hình thức; chưa điều khiển thiết bị vật lý thật.
+- **Bằng chứng định lượng chính thức chưa đầy đủ.** Acceptance T-01…T-30, chaos C01…C16 end-to-end, tải 100 client với p50/p95/p99/tỷ lệ ACK và ảnh dashboard nghiệm thu còn ở dạng placeholder; `docs/evidence/` chưa tồn tại; benchmark mới đo trên một host loopback. Báo cáo chưa thể kết luận định lượng về độ tin cậy phân phối trên tải thật cho tới khi các lần chạy này hoàn tất.
 
 ## CHƯƠNG 4. KẾT LUẬN VÀ KIẾN NGHỊ
-[TODO: kết quả đạt được so mục tiêu; hạn chế (single-node, multicast LAN, TLS self-signed); hướng phát triển (HA, CAP export chuẩn, PostgreSQL)]
+
+### 4.1 Kết quả đạt được so với mục tiêu
+
+Đối chiếu với mười mục tiêu cụ thể đã đặt ra ở mục 1.2.3, kết quả của đồ án như sau:
+
+1. **Giao thức EBSP/2.0 trên TCP/TLS — đạt.** Khung length-prefix uint32 big-endian L ∈ 1…65536, thân JSON UTF-8 chặt, phong bì `{version, type, messageId, correlationId, sentAt, payload}`, danh mục 28 loại thông điệp; từ chối khung quá cỡ trước cấp phát. Bằng chứng: 56 lượt test protocol (fixture/stream/validation), peer-review PASS với 249 check đối kháng, Đoạn mã 3.1.
+2. **Phân phối một-nhiều theo mục tiêu, bốn mức ưu tiên có công bằng — đạt.** Target snapshot bất biến theo tòa nhà/tầng/zone; PriorityScheduler ưu tiên nghiêm ngặt + MAX_BURST 8 chống bỏ đói; hàng đợi writer 256 với chính sách slow-client. Bằng chứng: TargetResolverTest 14, PrioritySchedulerTest 13, BoundedWriterQueueTest 6, FanoutEngineTest; probe flood 5000 CRITICAL + 20.000 ops ngẫu nhiên không starvation.
+3. **ACK hai tầng, trạng thái chỉ tiến — đạt.** ACK_RECEIVED tách biệt ACK_USER; rank guard SQL chiều ACK + guard pre-ack chiều dispatcher (sau khắc phục S-02); client commit inbox trước ACK. Bằng chứng: ClientEngineTest/InboxStoreTest, peer-review review-d xác nhận từng dòng thứ tự durable-first.
+4. **Thử lại idempotent — đạt.** Lịch 3s/6s/12s + jitter, tối đa 3 retry rồi FAILED; messageId mới mỗi attempt, deliveryId/alertId/revision ổn định; client khử trùng không hiển thị lặp. Bằng chứng: RetryPolicyTest 11, probe đo cửa sổ retry khớp PROTOCOL (base 200 ms → 260/522/989 ms), 4 messageId phân biệt.
+5. **Kết nối lại và đồng bộ — đạt.** Heartbeat 10s/suspect sau 3 lần lỡ; reconnect SYNC kèm knownRevisions; tombstone hủy/hết hạn chặn tin cũ; watchdog client theo interval đàm phán (sau khắc phục L1). Bằng chứng: ClientEngineTest reconnect/watchdog, probe tombstone C/D của review-d.
+6. **Khôi phục sau sự cố — đạt.** Công bố nguyên tử BEGIN IMMEDIATE, enqueue chỉ sau COMMIT; RecoveryScanner dựng lại lịch từ PENDING/SENT/RETRY_SCHEDULED/FAILED; không tuyên bố exactly-once. Bằng chứng: TransactionalPublisherTest 6, RecoveryScannerTest 4, TlsLoopback crashRecoveryRedeliversAfterRestart, harness review-b "enqueuer chết sau COMMIT vẫn bền vững và recover đủ".
+7. **Bảo mật và phân quyền — đạt ở mức lab.** TLS ghim chứng chỉ, RBAC năm vai trò scope từ CSDL, Argon2id, audit append-only, sanitize lỗi. Bằng chứng: TlsLoopbackIntegrationTest 10, RbacServiceTest 5, ServerSecurityFixesTest 10, Argon2idHasherTest 5, probe wire S1/S2/S6. Hạn chế demo (self-signed, Argon2 16 MiB, hostname verification) ghi trung thực ở mục 3.6 và kiến nghị nâng cấp ở 4.3.
+8. **Phòng thí nghiệm UDP/multicast — đạt.** Discovery nonce + trust gate TLS; multicast ALERT_HINT advisory, hint–verify chỉ hiển thị nội dung đã xác thực; probe multicast thật + fallback unicast. Bằng chứng: 31 lượt test network-lab (DiscoveryTrustTest, MulticastLoopbackTest, UnicastFallbackTest, VerifiedAlertSubscriberTest), benchmark ba chế độ có số liệu thật (Bảng 3.19).
+9. **Đo lường tin cậy (100 client, p50/p95/p99, tỷ lệ ACK, 16 chaos) — đạt một phần.** Hạ tầng đo đã cài đặt đầy đủ (MetricsRegistry, SimStats, FaultInjector seed tất định) và smoke 100 agent/200 ACK đã chạy thật; **các phép đo định lượng chính thức và 16 kịch bản chaos end-to-end chưa có bằng chứng nghiệm thu** — giữ placeholder [TODO] ở mục 3.5, không kết luận vượt quá bằng chứng.
+10. **Dashboard digital twin — đạt.** Tòa nhà 10 tầng × 4 zone Three.js [7], feed status/1 snapshot/delta, severity chuẩn tắc, funnel đúng bản ghi delivery, replay/chaos mock/reports. Bằng chứng: 14/14 test dashboard pass (chạy lại 21/11/2026), hợp đồng status/1 đối chiếu server; ảnh nghiệm thu [TODO].
+
+Tóm lại, đồ án đã **hoàn thành phần xây dựng và kiểm chứng chức năng của cả mười mục tiêu**: một hệ thống client–server hoàn chỉnh bằng Java vận dụng tổng hợp kiến thức chín bài của giáo trình [1] (framing trên luồng I/O, đa tuyến và đồng bộ, socket TCP/UDP, multicast, địa chỉ mạng, đối sánh RMI) cùng các thực hành hiện đại [2]–[7] (TLS/JSSE, ExecutorService/virtual thread, RBAC/OWASP, RFC 8085, SQLite WAL, CAP ngữ nghĩa, Three.js). Đóng góp nổi bật về phương pháp là quy trình peer-review độc lập bốn vòng với probe đối kháng chạy thật — đã phát hiện và khắc phục cả regression tích hợp tất định lẫn race trạng thái trước nghiệm thu — và benchmark multicast định lượng chứng minh trực tiếp lý thuyết cây phân phối của Bài 8. Phần **định lượng độ tin cậy phân phối trên tải thật** (mục tiêu 9) là hạng mục còn dở dang về bằng chứng, được nêu trung thực và lên kế hoạch hoàn thiện ở mục 4.3.
+
+### 4.2 Hạn chế chính
+
+Ba hạn chế kiến trúc lớn nhất, đã được thừa nhận tường minh từ thiết kế:
+
+- **Single-node.** Một server duy nhất trong LAN là điểm lỗi đơn; khôi phục sau crash trên node (transactional outbox + RecoveryScanner) bảo đảm không mất trạng thái phân phối nhưng **không tương đương tính sẵn sàng cao** — trong thời gian server chết, cảnh báo mới không được phân phối. SQLite một writer tiếp tục là điểm nghẽn ghi khi mở rộng tải.
+- **Multicast phạm vi LAN.** Nhóm quản trị 239.10.10.10 với TTL = 1 chỉ hoạt động trong liên kết; không đi qua router/NAT, phụ thuộc cấu hình IGMP snooping/định tuyến multicast của switch; trên macOS loopback phải fallback unicast. Hệ thống không hứa hẹn multicast hoạt động trên mạng hội trường/VLAN lạ — demo có phương án dự phòng (unicast fallback, video quay từ lần chạy thật).
+- **TLS self-signed.** Chứng chỉ tự ký ghim bằng truststore là mô hình tin cậy tối giản phù hợp lab một server: không có CA, không quản lý vòng đời/thu hồi chứng chỉ, chưa bật hostname verification trên raw SSLSocket, tham số Argon2id demo dưới ngưỡng OWASP. Triển khai production đòi hỏi PKI thực và hardening đầy đủ (mục 4.3).
+
+Ngoài ra, bằng chứng định lượng chính thức (acceptance/chaos/load/ảnh dashboard) chưa đầy đủ tại thời điểm viết báo cáo; các minor còn mở của codec và vòng đời bộ nhớ được liệt kê ở mục 3.6.2. Những hạn chế này không phá vỡ các bảo đảm cốt lõi trong phạm vi lab đã kiểm chứng, nhưng giới hạn phạm vi kết luận của đồ án.
+
+### 4.3 Kiến nghị và hướng phát triển
+
+1. **Tính sẵn sàng cao (HA).** Mở rộng từ single-node sang cụm dự phòng: active–passive với leader election hoặc floor relay cho tầng mất kết nối cục bộ (hạng mục nghiên cứu P3 của blueprint); chia sẻ hàng đợi outbox bền vững giữa các nút (CSDL tập trung hoặc replication). Hợp đồng idempotency hiện tại (requestId UNIQUE, deliveryId ổn định, dedup phía nhận, rank guard) là nền đúng để chuyển đổi mà không phá wire contract — nhiều nút có thể cùng dispatch mà không tạo bản trùng ngoài khử trùng.
+2. **Xuất bản tin CAP 1.2 chuẩn [2].** Xây dựng bộ xuất XML đầy đủ từ mô hình alert hiện có theo ánh xạ Bảng 2.4 (identifier/sender/sent, msgType Alert/Update/Cancel, info.severity/urgency, area.geocode, expires/references), dùng `status = Exercise/Test` cho diễn tập, validate theo schema OASIS. Việc này mở đường liên thông với hệ thống cảnh báo khác mà không thay đổi EBSP/2.0 nội bộ.
+3. **Chuyển sang PostgreSQL khi cần đa writer/replication.** Schema 26 bảng chuyển đổi additive (giữ UUID TEXT và UTC ISO-8601), giữ nguyên transactional outbox và rank guard (SQL CASE tương thích), thay cơ chế busy_timeout một writer bằng hàng đợi giao dịch thật; cân nhắc partition audit/metrics theo thời gian và retention có giới hạn. SQLite WAL vẫn phù hợp giai đoạn lab/đào tạo nhờ zero-configuration [4].
+4. **Hardening bảo mật production.** PKI thực + quản lý vòng đời chứng chỉ; bật hostname verification (`SSLParameters.setEndpointIdentificationAlgorithm("HTTPS")`); nâng Argon2id m ≥ 19 MiB theo OWASP [5] và chuyển API sang char[] wipe được; TTL tuyệt đối cho phiên operator + renew sessionId khi đổi quyền; bộ lọc masking log tập trung; xác minh chặt userId của ACK_USER; khắc phục các minor codec (STRICT_DUPLICATE_DETECTION, validate sentAt ISO-8601, chặn lone surrogate).
+5. **Mở rộng phạm vi mạng.** Cấu hình IGMP snooping/PIM cho LAN thật để multicast hoạt động đúng cây phân phối; khi đi WAN/NAT, chuyển hint sang unicast có kiểm soát hoặc push qua TLS; tuân thủ RFC 8085 [6] về giới hạn kích thước thông điệp và kiểm soát tắc nghẽn khi tăng quy mô; đo lại benchmark trên LAN hai máy thật để xác nhận nhân bản trong mạng (thay vì kernel loopback).
+6. **Hoàn thiện các issue còn mở.** Eviction AckLedger/DedupIndex theo vòng đời alert (chống phình bộ nhớ khi chạy dài ngày); chuẩn hóa quy ước RetryPolicy (`maxRetries + 1` truyền vào core, bỏ clamp hoặc tài liệu hóa); bộ đếm feed bền vững hoặc suy từ CSDL (không reset sau restart); ngân sách recovery cho delivery FAILED tường minh; inject seeded RNG + virtual clock vào simulator để kịch bản mixed tái lập tuyệt đối cả số liệu tổng kết.
+7. **Hoàn thiện bằng chứng thực nghiệm (ưu tiên trước bảo vệ).** Chạy nghiệm thu chính thức toàn bộ T-01…T-30 và C01…C16 có seed, tải 100 client (clean + mixed, mở rộng 200–500 nếu máy đo cho phép) trên máy đo chuẩn; sinh `docs/evidence/` chuẩn hóa mỗi lần chạy gồm runId, commit SHA, cấu hình máy (OS/CPU/RAM/JDK/Maven/Node), timestamp, log, XML surefire, metrics CSV và ảnh dashboard; điền các placeholder [TODO] của Chương 3 bằng đúng số liệu đó; tự động hóa quy trình evidence trong CI để mọi tuyên bố định lượng đều tái lập được.
+8. **Hướng nghiên cứu tiếp theo.** Ứng dụng di động/push notification thương mại cho cảnh báo ngoài LAN; tích hợp thiết bị vật lý (còi, đèn, thang máy) với chứng nhận an toàn tương ứng; quan sát mở rộng (OpenTelemetry, trace phân phối đầu-cuối); đánh giá an toàn hình thức cho máy trạng thái phân phối; mở rộng digital twin sang nhiều tòa nhà/campus.
+
+### 4.4 Kết luận chung
+
+Đồ án đã xây dựng thành công AEGIS-EBS — một hệ thống thông báo khẩn cấp mô phỏng/đào tạo hoàn chỉnh theo mô hình client–server, trong đó giao thức ứng dụng EBSP/2.0 tự xây dựng trên TCP/TLS kết hợp UDP discovery và multicast hint đúng tinh thần học phần CMP180 [1]; các bài toán kinh điển của hệ phân tán quy mô LAN (framing, idempotency, ACK hai tầng, retry có ngân sách, ưu tiên có công bằng, công bố nguyên tử và khôi phục sau crash) được giải quyết bằng thiết kế tường minh và kiểm chứng bằng test, peer-review độc lập và benchmark thật. Báo cáo giữ vững nguyên tắc trung thực: mọi khẳng định đều bám mã nguồn và bằng chứng hiện có, mọi số đo chưa thực hiện đều để placeholder thay vì bịa đặt. Với các hạn chế được nêu thẳng thắn (single-node, multicast LAN, TLS self-signed, bằng chứng định lượng còn thiếu) và lộ trình phát triển cụ thể (HA, CAP chuẩn, PostgreSQL, hardening, evidence tự động), kết quả đồ án có thể tái sử dụng làm nền tảng học tập và nghiên cứu tiếp theo. Hệ thống là **SIMULATION/TRAINING** — không thay thế và không được dùng thay thế bất kỳ hệ thống báo cháy, cảnh báo sơ tán hay thiết bị an toàn sinh mạng nào đã được chứng nhận.
 
 ## TÀI LIỆU THAM KHẢO
 
