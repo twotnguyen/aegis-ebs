@@ -1,0 +1,76 @@
+{
+  "runId": "verify-8f01589",
+  "commit": "8f01589",
+  "command": "mvn -B -ntp verify",
+  "result": "BUILD SUCCESS",
+  "capturedAt": "2026-11-21T14:38:07Z",
+  "machine": {
+    "os": "macOS 15.7.3",
+    "cpu": "Apple M3 Pro",
+    "cores": 12,
+    "ramGB": 18,
+    "arch": "arm64",
+    "java": "24.0.1",
+    "maven": "Apache Maven 3.10.1 (3afd8084b5629f80b97750906a719879ed4cd283)"
+  },
+  "modules": [
+    {
+      "module": "aegis-protocol",
+      "tests": 56,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "aegis-core",
+      "tests": 73,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "aegis-persistence",
+      "tests": 52,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "aegis-server",
+      "tests": 63,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "aegis-client",
+      "tests": 43,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "aegis-simulator",
+      "tests": 20,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "aegis-network-lab",
+      "tests": 31,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "totalJavaTests": 338,
+  "totalFailures": 0,
+  "totalErrors": 0,
+  "dashboardTests": {
+    "tests": 14,
+    "pass": 14,
+    "fail": 0
+  },
+  "note": "Official full-reactor verification on measurement machine; surefire XML preserved per module. TlsLoopbackIntegrationTest teardown hardened (UncheckedIOException catch) this run."
+}

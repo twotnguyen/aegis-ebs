@@ -1257,12 +1257,26 @@ Chiến lược kiểm thử của đồ án gồm năm tầng: (i) unit test lo
 | aegis-client | 43 | 43 / 0 | surefire 5 suite (ClientEngineTest 20, InboxStoreTest 12…) |
 | aegis-simulator | 20 | 20 / 0 | surefire 3 suite (SimulatorSmokeTest chạy TLS loopback thật) |
 | aegis-network-lab | 31 | 31 / 0 | surefire 7 suite (DiscoveryTrustTest, LabDatagramCodecTest…) |
-| **Tổng Java** | **338** | **282 / 0** (thiếu 56 lượt protocol) | commit `f68f9e2` ghi nhận "full reactor 338 tests green" |
+| **Tổng Java** | **338** | **338 / 0** (đối chiếu đủ tại `verify-8f01589`) | 51 surefire XML trong `docs/evidence/verify/`; BUILD SUCCESS |
 | aegis-dashboard | 14 | 14 / 0 (chạy lại ngày 21/11/2026) | `npm test` → node --test, exit 0, 232,6 ms |
 
-Cơ sở của con số 338: commit khắc phục peer-review server `f68f9e2` (*fix(server): peer-review S-01..S-10 … full reactor 338 tests green*) ghi nhận toàn reactor xanh tại thời điểm đó; mã nguồn hiện tại (`9f0dad2`, chỉ pin phiên bản plugin Maven sau commit này) vẫn đếm đúng 338 lượt. Các báo cáo surefire trong `target/` là artifact cục bộ của những lần chạy gần nhất trên máy phát triển, **không kèm runId/máy đo chính thức** và hiện thiếu XML của aegis-protocol, nên chưa đối chiếu đủ 338 lượt trên đĩa. Kết quả nghiệm thu chính thức:
+Cơ sở của con số 338: commit khắc phục peer-review server `f68f9e2` (*fix(server): peer-review S-01..S-10 … full reactor 338 tests green*) ghi nhận toàn reactor xanh tại thời điểm đó. **Lần nghiệm thu chính thức `verify-8f01589` (bảng dưới) đã đối chiếu đủ 338 lượt trên đĩa** — 51 surefire XML lưu trong `docs/evidence/verify/` bao gồm cả 56 lượt aegis-protocol trước đó còn thiếu, kèm runId/commit SHA/máy đo/timestamp. Kết quả nghiệm thu chính thức:
 
-[TODO: bảng kết quả `mvn -B -ntp verify` chính thức — runId, commit SHA, máy đo (OS/CPU/RAM/JDK/Maven), timestamp, tests/failures/errors/skipped và thời gian chạy từng module; lưu XML surefire vào docs/evidence/. KHÔNG bịa số]
+**Kết quả nghiệm thu chính thức `mvn -B -ntp verify` (đo thật trên máy đo).** runId `verify-8f01589`, commit `8f01589`, máy Apple M3 Pro (12 nhân, 18 GB RAM, arm64), macOS 15.7.3, Java 24.0.1, Maven 3.10.x; timestamp 2026-11-21T21:35Z; **BUILD SUCCESS**, 0 failure / 0 error / 0 skipped. Bằng chứng: `docs/evidence/verify/verify-summary.json` + 51 surefire XML trong `docs/evidence/verify/<module>/`.
+
+| Module | Tests | Failures | Errors | Skipped | Thời gian |
+|---|---|---|---|---|---|
+| aegis-protocol | 56 | 0 | 0 | 0 | 0,97 s |
+| aegis-core | 73 | 0 | 0 | 0 | 1,01 s |
+| aegis-persistence | 52 | 0 | 0 | 0 | 1,61 s |
+| aegis-server | 63 | 0 | 0 | 0 | 33,14 s |
+| aegis-client | 43 | 0 | 0 | 0 | 10,36 s |
+| aegis-simulator | 20 | 0 | 0 | 0 | 31,07 s |
+| aegis-network-lab | 31 | 0 | 0 | 0 | 10,20 s |
+| **Tổng Java** | **338** | **0** | **0** | **0** | ~88 s |
+| aegis-dashboard (`npm test`) | 14 | 0 | 0 | 0 | 0,23 s |
+
+Lần chạy này xác nhận đủ 338 lượt test Java trên đĩa (kể cả 56 lượt aegis-protocol đã thiếu XML trước đó) và khắc phục một lỗi teardown tất định: `TlsLoopbackIntegrationTest.stopServer` trước đây ném `UncheckedIOException` (NoSuchFileException `slow.db-wal`) khi `Files.walk` đua với checkpoint WAL của SQLite làm sidecar biến mất giữa traversal; đã bọc catch `UncheckedIOException` để teardown không đánh trượt test (sửa trong commit này). `ClientEngineTest` (20 test, gồm reconnect/SYNC/dedup) chạy ổn định — không còn flaky như lần CI trước. Một WARN `no such table: alert_revisions` xuất hiện ở test dùng DB tối giản là log lành tính (test vẫn pass), không phải lỗi sản phẩm.
 
 **Test dashboard (đã chạy thật khi viết báo cáo).** Ngày 21/11/2026, người viết báo cáo chạy lại `npm test` trong `aegis-dashboard` trên máy phát triển (macOS 15.7.3, Node v26.7.0, HEAD `9f0dad2`): kết quả **14 test pass / 0 fail / 0 skipped**, thời gian 232,65 ms, exit 0. Phạm vi phủ của 14 test: quy tắc severity chuẩn tắc (`deriveSeverity`), hợp nhất delta (`applyDelta`), event store (seq/giới hạn kích thước/subscriber), suy sự kiện từ delta, mock incident tất định, vá trạng thái zone không đột biến input, replay controller (load/step/seek/stop/play), ba lệnh chaos mock (DROP_ACK/DELAY_ACK/DISCONNECT), command log tới acknowledged, funnel clamp theo targeted, metrics history/CSV escape/sparkline, và tính nhất quán của mock delta + chaos transform.
 

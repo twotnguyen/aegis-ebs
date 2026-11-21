@@ -108,6 +108,10 @@ class TlsLoopbackIntegrationTest {
             // SQLite WAL sidecars (-shm/-wal) can vanish mid-cleanup
           }
         });
+      } catch (java.io.UncheckedIOException ignored) {
+        // Files.walk itself races the SQLite WAL checkpoint: a -wal/-shm sidecar
+        // can disappear between listing and visiting, throwing NoSuchFileException
+        // wrapped as UncheckedIOException. Teardown must not fail the test for this.
       }
     }
   }
