@@ -1,0 +1,17 @@
+-- AEGIS v1 base schema (12 tables). Apply BEFORE 002_showcase_expansion.sql.
+PRAGMA foreign_keys=ON;
+CREATE TABLE IF NOT EXISTS buildings (id TEXT PRIMARY KEY, code TEXT NOT NULL UNIQUE, name TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS floors (id TEXT PRIMARY KEY, building_id TEXT NOT NULL REFERENCES buildings(id), floor_number INTEGER NOT NULL, label TEXT, UNIQUE(building_id,floor_number));
+CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, username TEXT NOT NULL UNIQUE, password_hash TEXT NOT NULL, role TEXT NOT NULL CHECK(role IN ('SYSTEM_ADMIN','SECURITY_OPERATOR','FLOOR_MANAGER','EMPLOYEE','DEVICE')), enabled INTEGER NOT NULL DEFAULT 1 CHECK(enabled IN (0,1)), created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS role_grants (id TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES users(id), building_id TEXT REFERENCES buildings(id), floor_id TEXT REFERENCES floors(id), scope TEXT NOT NULL, granted_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS devices (id TEXT PRIMARY KEY, floor_id TEXT NOT NULL REFERENCES floors(id), device_code TEXT NOT NULL UNIQUE, credential_hash TEXT NOT NULL, enabled INTEGER NOT NULL DEFAULT 1 CHECK(enabled IN (0,1)), enrolled_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS alerts (id TEXT PRIMARY KEY, building_id TEXT NOT NULL REFERENCES buildings(id), created_by TEXT NOT NULL REFERENCES users(id), category TEXT NOT NULL, priority TEXT NOT NULL CHECK(priority IN ('INFO','WARNING','EMERGENCY','CRITICAL')), state TEXT NOT NULL CHECK(state IN ('DRAFT','ACTIVE','CANCELLED','EXPIRED','SUPERSEDED')), current_revision INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL, expires_at TEXT);
+CREATE TABLE IF NOT EXISTS alert_targets (id TEXT PRIMARY KEY, alert_id TEXT NOT NULL REFERENCES alerts(id), revision INTEGER NOT NULL, device_id TEXT NOT NULL REFERENCES devices(id), UNIQUE(alert_id,revision,device_id));
+CREATE TABLE IF NOT EXISTS deliveries (id TEXT PRIMARY KEY, alert_id TEXT NOT NULL REFERENCES alerts(id), revision INTEGER NOT NULL, device_id TEXT NOT NULL REFERENCES devices(id), state TEXT NOT NULL CHECK(state IN ('PENDING','SENT','RECEIVED','ACKNOWLEDGED','RETRY_SCHEDULED','FAILED','EXPIRED','CANCELLED')), next_retry_at TEXT, attempt_count INTEGER NOT NULL DEFAULT 0 CHECK(attempt_count>=0), created_at TEXT NOT NULL, UNIQUE(alert_id,revision,device_id));
+CREATE INDEX IF NOT EXISTS ix_deliveries_state_retry ON deliveries(state,next_retry_at);
+CREATE INDEX IF NOT EXISTS ix_deliveries_device_state ON deliveries(device_id,state);
+CREATE TABLE IF NOT EXISTS delivery_attempts (id TEXT PRIMARY KEY, delivery_id TEXT NOT NULL REFERENCES deliveries(id), message_id TEXT NOT NULL, attempted_at TEXT NOT NULL, outcome TEXT);
+CREATE TABLE IF NOT EXISTS device_acks (id TEXT PRIMARY KEY, device_id TEXT NOT NULL REFERENCES devices(id), alert_id TEXT NOT NULL REFERENCES alerts(id), revision INTEGER NOT NULL, delivery_id TEXT NOT NULL REFERENCES deliveries(id), ack_kind TEXT NOT NULL CHECK(ack_kind IN ('RECEIVED','USER','CANCEL')), acked_at TEXT NOT NULL, user_id TEXT, UNIQUE(device_id,alert_id,revision,ack_kind));
+CREATE TABLE IF NOT EXISTS audit_events (id TEXT PRIMARY KEY, occurred_at TEXT NOT NULL, actor_id TEXT, action TEXT NOT NULL, scope TEXT, outcome TEXT NOT NULL, correlation_id TEXT, payload_json TEXT);
+CREATE INDEX IF NOT EXISTS ix_audit_time ON audit_events(occurred_at);
+CREATE TABLE IF NOT EXISTS alert_approvals (id TEXT PRIMARY KEY, alert_id TEXT NOT NULL REFERENCES alerts(id), approver_id TEXT NOT NULL REFERENCES users(id), decision TEXT NOT NULL, decided_at TEXT NOT NULL);
