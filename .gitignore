@@ -8,3 +8,10 @@ logs/
 .DS_Store
 .idea/
 *.iml
+# demo TLS material — regenerable via scripts/gen-server-cert.sh, do not commit keys
+certs/
+*.p12
+*.crt
+*.key
+cp.txt
+*.log
