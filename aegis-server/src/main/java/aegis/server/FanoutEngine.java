@@ -228,24 +228,41 @@ public final class FanoutEngine implements DeliveryEnqueuer {
   }
 
   private static boolean settled(DeliveryState state) {
+    // S-10: FAILED is terminal for the retry budget — recovered FAILED deliveries
+    // are untracked without spending new attempts (they remain visible via SYNC).
     return state == DeliveryState.RECEIVED || state == DeliveryState.ACKNOWLEDGED
-        || state == DeliveryState.EXPIRED || state == DeliveryState.CANCELLED;
+        || state == DeliveryState.FAILED || state == DeliveryState.EXPIRED
+        || state == DeliveryState.CANCELLED;
   }
 
   private void sendPush(Tracked t, Delivery d, ClientSession session) {
     String messageId = Json.uuid();
     Envelope push = buildPush(t, d, messageId, session);
-    BoundedWriterQueue.OfferResult result = session.send(t.alert().priority(), push);
-    if (result == BoundedWriterQueue.OfferResult.REJECTED_SLOW) {
-      offlineAttempt(t, d); // policy already closed the slow session
-      return;
-    }
     int attempt = d.attemptCount() + 1;
+    // S-02: commit the attempt + SENT BEFORE the frame can hit the socket (the
+    // writer thread may flush it the instant it is offered). The device can ACK
+    // immediately; the guarded transition guarantees a late dispatch commit can
+    // never regress a concurrent RECEIVED/ACKNOWLEDGED back to SENT.
     try {
       deliveries.recordAttempt(d.id(), messageId, "SENT");
-      deliveries.updateState(d.id(), DeliveryState.SENT, null, attempt);
+      deliveries.updateDispatchState(d.id(), DeliveryState.SENT, null, attempt);
     } catch (SQLException e) {
       LOG.warn("record attempt failed delivery={}: {}", d.id(), e.toString());
+    }
+    BoundedWriterQueue.OfferResult result = session.send(t.alert().priority(), push);
+    if (result == BoundedWriterQueue.OfferResult.REJECTED_SLOW) {
+      // policy already closed the slow session; the SENT attempt recorded above
+      // IS this cycle's attempt — schedule the retry without counting a second
+      // one (the frame never reached the wire).
+      long delay = windowMs(attempt);
+      try {
+        deliveries.updateDispatchState(d.id(), DeliveryState.RETRY_SCHEDULED,
+            clock.instant().plusMillis(delay), attempt);
+      } catch (SQLException e) {
+        LOG.warn("slow-client retry schedule failed delivery={}: {}", d.id(), e.toString());
+      }
+      scheduleCheck(t, attempt);
+      return;
     }
     status.pushWritten(d.deviceId());
     if (attempt > 1) {

@@ -21,10 +21,19 @@ import java.util.concurrent.Executor;
  * contract). Hand-rolled RFC6455 handshake — no external deps. Every path is
  * accepted (the dashboard connects to "/"); "resync" text frames trigger a
  * fresh STATUS_SNAPSHOT.
+ *
+ * <p><b>Trust model (S-05):</b> this is a trusted-LAN read plane for the
+ * dashboard — it carries building status only (no credentials, no command
+ * capability) and is documented as such in docs/SECURITY.md. Role/scope-gated
+ * reads go through TLS STATUS_SUBSCRIBE instead. To bound resource use the
+ * feed caps concurrent subscribers ({@value #MAX_SUBSCRIBERS}); excess
+ * connections are rejected with HTTP 503 before the upgrade.
  */
 public final class StatusFeedServer {
   private static final Logger LOG = LoggerFactory.getLogger(StatusFeedServer.class);
   private static final String WS_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+  /** Subscriber cap (S-05): bounds memory/threads of the unauthenticated read plane. */
+  static final int MAX_SUBSCRIBERS = 64;
 
   private final int port;
   private final StatusFeedService feed;
@@ -83,6 +92,15 @@ public final class StatusFeedServer {
       if (key == null || !upgrade.equalsIgnoreCase("websocket")) {
         OutputStream out = socket.getOutputStream();
         out.write(("HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n")
+            .getBytes(StandardCharsets.UTF_8));
+        out.flush();
+        socket.close();
+        return;
+      }
+      if (feed.subscriberCount() >= MAX_SUBSCRIBERS) {
+        // S-05: bound the unauthenticated read plane; reject before the upgrade.
+        OutputStream out = socket.getOutputStream();
+        out.write(("HTTP/1.1 503 Service Unavailable\r\nConnection: close\r\n\r\n")
             .getBytes(StandardCharsets.UTF_8));
         out.flush();
         socket.close();

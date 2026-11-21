@@ -58,6 +58,9 @@ public final class SessionRegistry {
 
   public int onlineDeviceCount() { return deviceSessions().size(); }
 
+  /** Total registered sessions incl. pre-auth ones (connection cap, S-07). */
+  public int size() { return byId.size(); }
+
   /** Sessions that missed {@code maxMissed} heartbeat intervals as of {@code now}. */
   public List<ClientSession> sweep(Instant now, long intervalMs, int maxMissed) {
     List<ClientSession> suspects = new ArrayList<>();

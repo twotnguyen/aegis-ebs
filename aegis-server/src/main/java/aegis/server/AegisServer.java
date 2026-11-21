@@ -98,7 +98,7 @@ public final class AegisServer implements AutoCloseable {
     AuthService auth = new AuthService(users, devices, hasher);
     RbacService rbac = new RbacService(grantRepo);
     MessageRouter router = new MessageRouter(config, auth, rbac, alertService, incidents, sync,
-        engine, sessions, store, alerts, deliveries, audit, status, clock);
+        engine, sessions, store, alerts, deliveries, users, audit, status, clock);
 
     this.gateway = new TlsGateway(config, sessions, router, ioExecutor, clock, audit, metrics, status);
     this.feedServer = new StatusFeedServer(config.wsPort(), status, ioExecutor);

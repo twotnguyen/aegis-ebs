@@ -278,8 +278,10 @@ class FanoutEngineTest {
     var device = new aegis.persistence.DeviceRepo(db).findByCode("DEV-A-F02-B-01").orElseThrow();
     var result = publish("req-rec-1", List.of(device.id()));
     Delivery d0 = result.deliveries().get(0);
+    // park in RETRY_SCHEDULED (not FAILED): recovery redelivers scheduler-owned
+    // deliveries that still have retry budget left (S-10)
     TestSupport.until("delivery scheduled while offline",
-        () -> stateActive(d0.id()), 3000);
+        () -> stateIs(d0.id(), DeliveryState.RETRY_SCHEDULED), 3000);
     engine.shutdown(); // simulate crash: in-memory queue lost
     FanoutEngine reborn = newEngine();
     int recovered = new RecoveryScanner(db).recover(reborn::recoverEnqueue);
@@ -290,6 +292,28 @@ class FanoutEngineTest {
     Envelope push = readFrame(dev.peer(), 3000);
     assertNotNull(push, "recovered delivery must reach the reconnecting device");
     assertEquals(d0.alertId(), push.payload().get("alertId").asText());
+    reborn.shutdown();
+  }
+
+  /** S-10: a FAILED delivery recovered after restart must not spend new attempts. */
+  @Test
+  void recoveredFailedDeliveryGetsNoNewAttempts() throws Exception {
+    var device = new aegis.persistence.DeviceRepo(db).findByCode("DEV-A-F02-C-01").orElseThrow();
+    var result = publish("req-rec-failed-1", List.of(device.id()));
+    Delivery d0 = result.deliveries().get(0);
+    TestSupport.until("offline delivery FAILED after the retry budget",
+        () -> stateIs(d0.id(), DeliveryState.FAILED), 6000);
+    assertEquals(4, deliveries.findById(d0.id()).orElseThrow().attemptCount());
+    engine.shutdown(); // crash
+    FanoutEngine reborn = newEngine();
+    new RecoveryScanner(db).recover(reborn::recoverEnqueue); // spec: FAILED is recovered too
+    reborn.start(io);
+    Dev dev = connectDevice("DEV-A-F02-C-01");
+    reborn.resumeDevice(dev.deviceId());
+    assertNull(readFrame(dev.peer(), 700),
+        "FAILED delivery must not generate new attempts after recovery");
+    assertEquals(4, deliveries.findById(d0.id()).orElseThrow().attemptCount(),
+        "recovery must not exceed the retry budget (maxAttempts)");
     reborn.shutdown();
   }
 }

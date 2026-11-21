@@ -47,6 +47,7 @@ public final class ClientSession {
   private volatile String zoneCode;
   private volatile Instant lastHeartbeatAt;
   private volatile boolean suspect = false;
+  private final Instant createdAt;
 
   public ClientSession(String sessionId, Socket socket, FrameCodec codec, int queueCapacity,
                        Clock clock, Executor writerExecutor,
@@ -61,7 +62,8 @@ public final class ClientSession {
     this.clock = clock;
     this.onClose = onClose;
     this.onSlowClient = onSlowClient;
-    this.lastHeartbeatAt = clock.instant();
+    this.createdAt = clock.instant();
+    this.lastHeartbeatAt = createdAt;
     writerExecutor.execute(this::writerLoop);
   }
 
@@ -134,6 +136,8 @@ public final class ClientSession {
   public int floorNumber() { return floorNumber; }
   public String zoneCode() { return zoneCode; }
   public Instant lastHeartbeatAt() { return lastHeartbeatAt; }
+  /** Connection establishment time — basis for the absolute pre-auth TTL (S-07). */
+  public Instant createdAt() { return createdAt; }
   public boolean isSuspect() { return suspect; }
   public boolean isClosed() { return closed.get(); }
   public InputStream input() { return in; }

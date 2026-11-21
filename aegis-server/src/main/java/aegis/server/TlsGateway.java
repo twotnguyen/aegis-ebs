@@ -88,8 +88,19 @@ public final class TlsGateway {
     while (running) {
       try {
         SSLSocket socket = (SSLSocket) serverSocket.accept();
+        // S-07: hard connection cap (pre-auth sessions included) — excess
+        // sockets are dropped immediately instead of lingering unauthenticated.
+        if (sessions.size() >= config.maxConnections()) {
+          LOG.warn("connection cap {} reached; rejecting {}", config.maxConnections(),
+              socket.getRemoteSocketAddress());
+          socket.close();
+          continue;
+        }
         socket.setUseClientMode(false);
         socket.setTcpNoDelay(true);
+        // S-07: pre-auth read timeout; cleared once the session authenticates
+        // (authenticated liveness is owned by the heartbeat sweep).
+        socket.setSoTimeout((int) Math.min(config.preAuthTimeoutMs(), Integer.MAX_VALUE));
         ClientSession session = new ClientSession(Json.uuid(), socket, codec,
             config.writerQueueCapacity(), clock, executor,
             this::onSessionClosed, this::onSlowClient);
@@ -105,8 +116,29 @@ public final class TlsGateway {
   private void readLoop(ClientSession session) {
     try {
       while (!session.isClosed()) {
-        Envelope env = codec.readFrame(session.input());
+        Envelope env;
+        try {
+          env = codec.readFrame(session.input());
+        } catch (java.net.SocketTimeoutException e) {
+          // S-07: an idle pre-auth connection hit the read timeout -> drop it.
+          if (!session.isAuthenticated()) {
+            preAuthExpired(session, "read timeout");
+            return;
+          }
+          continue; // authenticated sessions keep soTimeout=0; defensive only
+        }
         router.route(session, env);
+        if (session.isAuthenticated()) {
+          // authenticated: liveness belongs to the heartbeat sweep, not a read
+          // timeout (a mid-frame timeout could corrupt the stream).
+          if (session.socket().getSoTimeout() != 0) session.socket().setSoTimeout(0);
+        } else if (java.time.Duration.between(session.createdAt(), clock.instant()).toMillis()
+            >= config.preAuthTimeoutMs()) {
+          // S-07: absolute pre-auth TTL — keepalive frames (HEARTBEAT/HELLO)
+          // must NOT extend an unauthenticated connection's lifetime forever.
+          preAuthExpired(session, "ttl");
+          return;
+        }
       }
     } catch (FrameException e) {
       // wire violation: tell the peer, then drop (oversize frames never allocate)
@@ -122,6 +154,13 @@ public final class TlsGateway {
     } finally {
       session.close();
     }
+  }
+
+  private void preAuthExpired(ClientSession session, String reason) {
+    audit.append(null, "PRE_AUTH_EXPIRED", session.sessionId(), "DISCONNECTED", null,
+        Json.obj().put("reason", reason).put("ttlMs", config.preAuthTimeoutMs()));
+    LOG.info("pre-auth session expired session={} reason={}", session.sessionId(), reason);
+    session.close();
   }
 
   private void onSessionClosed(ClientSession session) {

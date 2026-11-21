@@ -5,10 +5,8 @@ import aegis.persistence.Alert;
 import aegis.persistence.AlertRepo;
 import aegis.persistence.AlertRevision;
 import aegis.persistence.AlertState;
-import aegis.persistence.AlertTarget;
 import aegis.persistence.Delivery;
 import aegis.persistence.DeliveryRepo;
-import aegis.persistence.DeliveryState;
 import aegis.persistence.TransactionalPublisher;
 import aegis.protocol.Envelope;
 import aegis.protocol.Priority;
@@ -23,7 +21,6 @@ import java.security.MessageDigest;
 import java.sql.SQLException;
 import java.time.Clock;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Objects;
@@ -163,7 +160,8 @@ public final class AlertService {
       return CommandOutcome.ok(result.alert().id(), 1, result.deliveries().size(), false);
     } catch (SQLException e) {
       LOG.warn("publish failed requestId={}", requestId, e);
-      return CommandOutcome.error("INTERNAL", "publish failed: " + e.getMessage());
+      // NFR-017 (S-04): details stay in the log, never on the wire
+      return CommandOutcome.error("INTERNAL", "publish failed");
     }
   }
 
@@ -184,26 +182,13 @@ public final class AlertService {
       }
       int newRevision = alert.currentRevision() + 1;
       AlertRevision old = alerts.findRevision(alertId, alert.currentRevision()).orElseThrow();
-      AlertRevision revision = alerts.addRevision(alertId, newRevision,
-          title == null ? old.title() : title,
-          instruction == null ? old.body() : instruction,
-          old.metadataJson(), userId);
-      alerts.setCurrentRevision(alertId, newRevision);
-      // fresh target snapshot + deliveries for the new revision
-      List<AlertTarget> snapshot = alerts.targets(alertId, alert.currentRevision());
-      List<Delivery> fresh = new ArrayList<>();
-      for (AlertTarget t : snapshot) {
-        alerts.addTarget(alertId, newRevision, t.deviceId());
-        fresh.add(deliveries.create(alertId, newRevision, t.deviceId()));
-      }
-      // supersede old-revision deliveries still owned by the scheduler
-      for (Delivery d : deliveries.findByAlert(alertId)) {
-        if (d.revision() < newRevision && d.state().isActive()) {
-          deliveries.updateState(d.id(), DeliveryState.CANCELLED, null, d.attemptCount());
-        }
-      }
-      store.insertOperation(alertId, newRevision, "UPDATE", userId, requestId,
-          sha256(alertId + "\n" + newRevision + "\n" + revision.title() + "\n" + revision.body()));
+      String newTitle = title == null ? old.title() : title;
+      String newBody = instruction == null ? old.body() : instruction;
+      // S-09: revision + current_revision + targets + deliveries + supersede +
+      // operation commit as ONE transaction; enqueue only AFTER commit.
+      List<Delivery> fresh = store.applyUpdate(alertId, newRevision, newTitle, newBody,
+          old.metadataJson(), userId, requestId,
+          sha256(alertId + "\n" + newRevision + "\n" + newTitle + "\n" + newBody));
       engine.recoverEnqueue(fresh); // continuation of an owned alert lifecycle
       audit.append(userId, "UPDATE", alert.buildingId(), "OK", correlationId,
           Json.obj().put("requestId", requestId).put("alertId", alertId).put("revision", newRevision));
@@ -211,7 +196,12 @@ public final class AlertService {
       return CommandOutcome.ok(alertId, newRevision, fresh.size(), false);
     } catch (SQLException e) {
       LOG.warn("update failed alertId={}", alertId, e);
-      return CommandOutcome.error("INTERNAL", "update failed: " + e.getMessage());
+      Optional<ServerStore.OperationRow> winner = operationWinner(requestId, e);
+      if (winner.isPresent()) {
+        return CommandOutcome.ok(winner.get().alertId(), winner.get().revision(), 0, true);
+      }
+      // NFR-017 (S-04): details stay in the log, never on the wire
+      return CommandOutcome.error("INTERNAL", "update failed");
     }
   }
 
@@ -233,34 +223,40 @@ public final class AlertService {
       if (alert.state() != AlertState.ACTIVE) {
         return CommandOutcome.error("CONFLICT", "alert not ACTIVE: " + alert.state());
       }
-      alerts.updateState(alertId, AlertState.CANCELLED);
-      List<String> deviceIds = new ArrayList<>();
-      for (Delivery d : deliveries.findByAlert(alertId)) {
-        deviceIds.add(d.deviceId());
-        if (d.state().isActive() || d.state() == DeliveryState.RECEIVED
-            || d.state() == DeliveryState.ACKNOWLEDGED) {
-          deliveries.updateState(d.id(), DeliveryState.CANCELLED, null, d.attemptCount());
-        }
-      }
-      ServerStore.OperationRow op = store.insertOperation(alertId, alert.currentRevision(), "CANCEL",
-          userId, requestId, sha256(alertId + "\nCANCEL\n" + reason));
+      // S-09: tombstones + operation commit as ONE transaction; fanout after commit.
+      ServerStore.CancelResult result = store.applyCancel(alertId, alert.currentRevision(), userId,
+          requestId, sha256(alertId + "\nCANCEL\n" + reason));
       engine.cancelAlert(alertId);
       ObjectNode payload = Json.obj();
       payload.put("alertId", alertId);
       payload.put("revision", alert.currentRevision());
-      payload.put("operationId", op.id());
+      payload.put("operationId", result.operation().id());
       payload.put("reason", reason == null ? "" : reason);
       payload.put("simulation", true);
       Envelope cancelPush = new Envelope(Protocol.VERSION, "CANCEL_PUSH", Json.uuid(), requestId,
           Json.ts(clock.instant()), payload);
-      engine.fanoutControl(alert.priority(), cancelPush, deviceIds);
+      engine.fanoutControl(alert.priority(), cancelPush, result.deviceIds());
       audit.append(userId, "CANCEL", alert.buildingId(), "OK", correlationId,
           Json.obj().put("requestId", requestId).put("alertId", alertId).put("reason", reason));
       status.alertsChanged();
-      return CommandOutcome.ok(alertId, alert.currentRevision(), deviceIds.size(), false);
+      return CommandOutcome.ok(alertId, alert.currentRevision(), result.deviceIds().size(), false);
     } catch (SQLException e) {
       LOG.warn("cancel failed alertId={}", alertId, e);
-      return CommandOutcome.error("INTERNAL", "cancel failed: " + e.getMessage());
+      Optional<ServerStore.OperationRow> winner = operationWinner(requestId, e);
+      if (winner.isPresent()) {
+        return CommandOutcome.ok(winner.get().alertId(), winner.get().revision(), 0, true);
+      }
+      return CommandOutcome.error("INTERNAL", "cancel failed");
+    }
+  }
+
+  /** Concurrent requestId replay: the UNIQUE race winner's operation, if any. */
+  private Optional<ServerStore.OperationRow> operationWinner(String requestId, SQLException cause) {
+    try {
+      return store.findOperationByRequestId(requestId);
+    } catch (SQLException lookupFailed) {
+      cause.addSuppressed(lookupFailed);
+      return Optional.empty();
     }
   }
 

@@ -5,6 +5,7 @@ import aegis.persistence.Alert;
 import aegis.persistence.AlertRepo;
 import aegis.persistence.AlertRevision;
 import aegis.persistence.AlertState;
+import aegis.persistence.AlertTarget;
 import aegis.persistence.Db;
 import aegis.persistence.Delivery;
 import aegis.persistence.DeliveryRepo;
@@ -225,13 +226,22 @@ public final class ServerStore {
 
   public void insertIncidentEvent(String incidentId, String eventKind, String actorId,
                                   String correlationId, String payloadJson) throws SQLException {
-    try (Connection c = db.open();
-         PreparedStatement ps = c.prepareStatement(
-             "INSERT INTO incident_events(id,incident_id,occurred_at,event_kind,actor_id,correlation_id,payload_json) "
-                 + "VALUES(?,?,?,?,?,?,?)")) {
+    try (Connection c = db.open()) {
+      insertIncidentEventOn(c, incidentId, eventKind, actorId, correlationId, payloadJson,
+          clock.instant());
+    }
+  }
+
+  /** Insert within an existing transaction/connection (atomic incident writes, S-09). */
+  private void insertIncidentEventOn(Connection c, String incidentId, String eventKind,
+                                     String actorId, String correlationId, String payloadJson,
+                                     Instant at) throws SQLException {
+    try (PreparedStatement ps = c.prepareStatement(
+        "INSERT INTO incident_events(id,incident_id,occurred_at,event_kind,actor_id,correlation_id,payload_json) "
+            + "VALUES(?,?,?,?,?,?,?)")) {
       ps.setString(1, UUID.randomUUID().toString());
       ps.setString(2, incidentId);
-      ps.setString(3, Json.ts(clock.instant()));
+      ps.setString(3, Json.ts(at));
       ps.setString(4, eventKind);
       ps.setString(5, actorId);
       ps.setString(6, correlationId);
@@ -267,11 +277,19 @@ public final class ServerStore {
 
   public OperationRow insertOperation(String alertId, int revision, String kind, String requestedBy,
                                       String requestId, String payloadHash) throws SQLException {
+    try (Connection c = db.open()) {
+      return insertOperationOn(c, alertId, revision, kind, requestedBy, requestId, payloadHash);
+    }
+  }
+
+  /** Insert within an existing transaction/connection (composite alert writes, S-09). */
+  public OperationRow insertOperationOn(Connection c, String alertId, int revision, String kind,
+                                        String requestedBy, String requestId, String payloadHash)
+      throws SQLException {
     String id = UUID.randomUUID().toString();
-    try (Connection c = db.open();
-         PreparedStatement ps = c.prepareStatement(
-             "INSERT INTO alert_operations(id,alert_id,revision,operation_kind,requested_by,requested_at,"
-                 + "request_id,payload_hash,state) VALUES(?,?,?,?,?,?,?,?,?)")) {
+    try (PreparedStatement ps = c.prepareStatement(
+        "INSERT INTO alert_operations(id,alert_id,revision,operation_kind,requested_by,requested_at,"
+            + "request_id,payload_hash,state) VALUES(?,?,?,?,?,?,?,?,?)")) {
       ps.setString(1, id);
       ps.setString(2, alertId);
       ps.setInt(3, revision);
@@ -284,6 +302,162 @@ public final class ServerStore {
       ps.executeUpdate();
     }
     return new OperationRow(id, alertId, revision, kind, "DONE");
+  }
+
+  // ---- atomic alert lifecycle writes (S-09) ----------------------------------
+
+  /** Result of an atomic cancel: the operation row + every targeted device. */
+  public record CancelResult(OperationRow operation, List<String> deviceIds) {}
+
+  /**
+   * ALERT_UPDATE core in ONE BEGIN IMMEDIATE transaction: new revision +
+   * current_revision bump + fresh target snapshot/deliveries + supersede of
+   * stale deliveries + idempotency operation. A crash/failure at any step
+   * rolls the whole update back (no "invisible" alert with a bumped revision
+   * but no deliveries). The caller enqueues the returned deliveries ONLY
+   * after commit.
+   */
+  public List<Delivery> applyUpdate(String alertId, int newRevision, String title, String body,
+                                    String metadataJson, String userId, String requestId,
+                                    String payloadHash) throws SQLException {
+    List<Delivery> fresh = new ArrayList<>();
+    try (Connection c = db.open(); Statement s = c.createStatement()) {
+      s.execute("BEGIN IMMEDIATE");
+      try {
+        AlertRevision revision = new AlertRevision(alertId, newRevision, title, body,
+            metadataJson, clock.instant(), userId);
+        AlertRepo.insertRevisionOn(c, revision);
+        try (PreparedStatement ps = c.prepareStatement(
+            "UPDATE alerts SET current_revision=? WHERE id=?")) {
+          ps.setInt(1, newRevision);
+          ps.setString(2, alertId);
+          ps.executeUpdate();
+        }
+        for (AlertTarget t : alerts.targets(alertId, newRevision - 1)) {
+          AlertRepo.insertTargetOn(c, new AlertTarget(UUID.randomUUID().toString(),
+              alertId, newRevision, t.deviceId()));
+          Delivery d = new Delivery(UUID.randomUUID().toString(), alertId, newRevision,
+              t.deviceId(), DeliveryState.PENDING, null, 0, clock.instant());
+          DeliveryRepo.insertOn(c, d);
+          fresh.add(d);
+        }
+        for (Delivery d : deliveries.findByAlert(alertId)) {
+          if (d.revision() < newRevision && d.state().isActive()) {
+            cancelDeliveryOn(c, d.id());
+          }
+        }
+        insertOperationOn(c, alertId, newRevision, "UPDATE", userId, requestId, payloadHash);
+        s.execute("COMMIT");
+      } catch (SQLException | RuntimeException e) {
+        try { s.execute("ROLLBACK"); } catch (SQLException rollback) { e.addSuppressed(rollback); }
+        throw e;
+      }
+    }
+    return fresh;
+  }
+
+  /**
+   * ALERT_CANCEL core in ONE transaction: alert tombstone + delivery
+   * tombstones + idempotency operation. CANCEL_PUSH fanout happens in the
+   * caller AFTER commit.
+   */
+  public CancelResult applyCancel(String alertId, int currentRevision, String userId,
+                                  String requestId, String payloadHash) throws SQLException {
+    List<String> deviceIds = new ArrayList<>();
+    OperationRow op;
+    try (Connection c = db.open(); Statement s = c.createStatement()) {
+      s.execute("BEGIN IMMEDIATE");
+      try {
+        try (PreparedStatement ps = c.prepareStatement(
+            "UPDATE alerts SET state='CANCELLED' WHERE id=?")) {
+          ps.setString(1, alertId);
+          ps.executeUpdate();
+        }
+        for (Delivery d : deliveries.findByAlert(alertId)) {
+          deviceIds.add(d.deviceId());
+          if (d.state().isActive() || d.state() == DeliveryState.RECEIVED
+              || d.state() == DeliveryState.ACKNOWLEDGED) {
+            cancelDeliveryOn(c, d.id());
+          }
+        }
+        op = insertOperationOn(c, alertId, currentRevision, "CANCEL", userId, requestId, payloadHash);
+        s.execute("COMMIT");
+      } catch (SQLException | RuntimeException e) {
+        try { s.execute("ROLLBACK"); } catch (SQLException rollback) { e.addSuppressed(rollback); }
+        throw e;
+      }
+    }
+    return new CancelResult(op, deviceIds);
+  }
+
+  private static void cancelDeliveryOn(Connection c, String deliveryId) throws SQLException {
+    try (PreparedStatement ps = c.prepareStatement(
+        "UPDATE deliveries SET state='CANCELLED', next_retry_at=NULL WHERE id=?")) {
+      ps.setString(1, deliveryId);
+      ps.executeUpdate();
+    }
+  }
+
+  // ---- atomic incident writes (S-09) ------------------------------------------
+
+  /** Incident + its opening event in ONE transaction (no orphan incidents). */
+  public IncidentRow createIncidentAtomic(String buildingId, String openedBy, String kind,
+                                          String summary, boolean simulation, String state,
+                                          String eventKind, String correlationId,
+                                          String eventPayloadJson) throws SQLException {
+    String id = UUID.randomUUID().toString();
+    Instant now = clock.instant();
+    try (Connection c = db.open(); Statement s = c.createStatement()) {
+      s.execute("BEGIN IMMEDIATE");
+      try {
+        try (PreparedStatement ps = c.prepareStatement(
+            "INSERT INTO incidents(id,building_id,opened_by,kind,summary,simulation,state,opened_at) "
+                + "VALUES(?,?,?,?,?,?,?,?)")) {
+          ps.setString(1, id);
+          ps.setString(2, buildingId);
+          ps.setString(3, openedBy);
+          ps.setString(4, kind);
+          ps.setString(5, summary);
+          ps.setInt(6, simulation ? 1 : 0);
+          ps.setString(7, state);
+          ps.setString(8, Json.ts(now));
+          ps.executeUpdate();
+        }
+        insertIncidentEventOn(c, id, eventKind, openedBy, correlationId, eventPayloadJson, now);
+        s.execute("COMMIT");
+      } catch (SQLException | RuntimeException e) {
+        try { s.execute("ROLLBACK"); } catch (SQLException rollback) { e.addSuppressed(rollback); }
+        throw e;
+      }
+    }
+    return new IncidentRow(id, buildingId, openedBy, kind, summary, simulation, state, now, null);
+  }
+
+  /** Incident state change + its timeline event in ONE transaction. */
+  public boolean transitionIncidentAtomic(String incidentId, String newState, Instant closedAt,
+                                          String eventKind, String actorId, String correlationId,
+                                          String eventPayloadJson) throws SQLException {
+    try (Connection c = db.open(); Statement s = c.createStatement()) {
+      s.execute("BEGIN IMMEDIATE");
+      try {
+        try (PreparedStatement ps = c.prepareStatement(
+            "UPDATE incidents SET state=?, closed_at=? WHERE id=?")) {
+          ps.setString(1, newState);
+          ps.setString(2, closedAt == null ? null : Json.ts(closedAt));
+          ps.setString(3, incidentId);
+          if (ps.executeUpdate() != 1) {
+            throw new SQLException("unknown incident: " + incidentId);
+          }
+        }
+        insertIncidentEventOn(c, incidentId, eventKind, actorId, correlationId, eventPayloadJson,
+            clock.instant());
+        s.execute("COMMIT");
+        return true;
+      } catch (SQLException | RuntimeException e) {
+        try { s.execute("ROLLBACK"); } catch (SQLException rollback) { e.addSuppressed(rollback); }
+        throw e;
+      }
+    }
   }
 
   // ---- alert views -------------------------------------------------------

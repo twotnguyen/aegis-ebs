@@ -79,8 +79,11 @@ final class TestTlsClient implements AutoCloseable {
   void setAutoHeartbeat(boolean value) { this.autoHeartbeat = value; }
 
   void send(String type, JsonNode payload, String correlationId) {
-    Envelope env = new Envelope(Protocol.VERSION, type, Json.uuid(), correlationId,
-        Json.ts(java.time.Instant.now()), payload);
+    sendEnvelope(new Envelope(Protocol.VERSION, type, Json.uuid(), correlationId,
+        Json.ts(java.time.Instant.now()), payload));
+  }
+
+  private void sendEnvelope(Envelope env) {
     try {
       writeLock.lock();
       try {
@@ -90,14 +93,20 @@ final class TestTlsClient implements AutoCloseable {
       }
     } catch (Exception e) {
       closed = true;
-      throw new RuntimeException("send failed: " + type, e);
+      throw new RuntimeException("send failed: " + env.type(), e);
     }
   }
 
-  /** Sends a command and waits for its protocol reply type. */
+  /**
+   * Sends a command and waits for the protocol reply CORRELATED to this request's
+   * messageId (the server echoes it as correlationId). Stale replies of the same
+   * type left over from earlier commands are never mistaken for this reply.
+   */
   Envelope request(String type, JsonNode payload, long timeoutMs) {
-    send(type, payload, null);
-    return await(replyType(type), timeoutMs);
+    String messageId = Json.uuid();
+    sendEnvelope(new Envelope(Protocol.VERSION, type, messageId, null,
+        Json.ts(java.time.Instant.now()), payload));
+    return awaitReply(replyType(type), messageId, timeoutMs);
   }
 
   private static String replyType(String type) {
@@ -106,8 +115,54 @@ final class TestTlsClient implements AutoCloseable {
       case "AUTH_OPERATOR", "AUTH_DEVICE" -> "AUTH_RESULT";
       case "SYNC_REQUEST" -> "SYNC_RESULT";
       case "HEARTBEAT" -> "HEARTBEAT_ACK";
+      case "STATUS_SUBSCRIBE" -> "STATUS_SNAPSHOT";
       default -> "COMMAND_RESULT";
     };
+  }
+
+  /** Like {@link #await} but only accepts frames correlated to {@code correlationId}. */
+  Envelope awaitReply(String type, String correlationId, long timeoutMs) {
+    if (auto) {
+      List<Envelope> unmatched = new ArrayList<>();
+      try {
+        long end = System.currentTimeMillis() + timeoutMs;
+        while (System.currentTimeMillis() < end) {
+          Envelope env = queue(type).poll(50, TimeUnit.MILLISECONDS);
+          if (env != null) {
+            if (correlationId.equals(env.correlationId())) {
+              queue(type).addAll(unmatched); // keep stale frames for later drains
+              return env;
+            }
+            unmatched.add(env);
+            continue;
+          }
+          if (closed) fail("connection closed while awaiting " + type + ": " + closeReason);
+        }
+        queue(type).addAll(unmatched);
+        fail("timed out awaiting " + type + " correlated to " + correlationId);
+        return null;
+      } catch (InterruptedException e) {
+        queue(type).addAll(unmatched);
+        Thread.currentThread().interrupt();
+        throw new RuntimeException(e);
+      }
+    }
+    // manual mode: read synchronously, stashing other types / uncorrelated frames
+    try {
+      socket.setSoTimeout((int) Math.min(timeoutMs, 5000));
+      long end = System.currentTimeMillis() + timeoutMs;
+      while (System.currentTimeMillis() < end) {
+        Envelope env = codec.readFrame(socket.getInputStream());
+        if (env.type().equals(type) && correlationId.equals(env.correlationId())) return env;
+        queue(env.type()).offer(env);
+      }
+      fail("timed out awaiting " + type + " correlated to " + correlationId);
+      return null;
+    } catch (IOException | aegis.protocol.FrameException e) {
+      closed = true;
+      fail("connection closed while awaiting " + type + ": " + e);
+      return null;
+    }
   }
 
   Envelope await(String type, long timeoutMs) {

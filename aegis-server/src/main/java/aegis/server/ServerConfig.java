@@ -28,7 +28,9 @@ public record ServerConfig(
     int devicesPerZone,
     int argon2Iterations,
     int argon2MemoryKib,
-    int argon2Parallelism) {
+    int argon2Parallelism,
+    long preAuthTimeoutMs,
+    int maxConnections) {
 
   public ServerConfig {
     Objects.requireNonNull(dbFile, "dbFile");
@@ -42,6 +44,8 @@ public record ServerConfig(
     if (writerQueueCapacity < 1) throw new IllegalArgumentException("writerQueueCapacity >= 1");
     if (statusBatchMs <= 0) throw new IllegalArgumentException("statusBatchMs > 0");
     if (devicesPerZone < 0) throw new IllegalArgumentException("devicesPerZone >= 0");
+    if (preAuthTimeoutMs <= 0) throw new IllegalArgumentException("preAuthTimeoutMs > 0");
+    if (maxConnections < 1) throw new IllegalArgumentException("maxConnections >= 1");
   }
 
   public static Builder builder(Path dbFile, Path keystore, String keystorePassword) {
@@ -66,6 +70,8 @@ public record ServerConfig(
     private int argon2Iterations = 2;
     private int argon2MemoryKib = 16_384;
     private int argon2Parallelism = 1;
+    private long preAuthTimeoutMs = 10_000;
+    private int maxConnections = 512;
 
     private Builder(Path dbFile, Path keystore, String keystorePassword) {
       this.dbFile = dbFile;
@@ -90,12 +96,16 @@ public record ServerConfig(
       this.argon2Iterations = iterations; this.argon2MemoryKib = memoryKib;
       this.argon2Parallelism = parallelism; return this;
     }
+    /** Absolute TTL for connections that never authenticate (S-07). */
+    public Builder preAuthTimeoutMs(long v) { this.preAuthTimeoutMs = v; return this; }
+    /** Hard cap on concurrent TLS sessions, pre-auth included (S-07). */
+    public Builder maxConnections(int v) { this.maxConnections = v; return this; }
 
     public ServerConfig build() {
       return new ServerConfig(tlsPort, wsPort, dbFile, keystore, keystorePassword, buildingId,
           heartbeatIntervalMs, heartbeatMaxMissed, retryBaseDelayMs, maxRetries,
           writerQueueCapacity, statusBatchMs, seedDemo, devicesPerZone,
-          argon2Iterations, argon2MemoryKib, argon2Parallelism);
+          argon2Iterations, argon2MemoryKib, argon2Parallelism, preAuthTimeoutMs, maxConnections);
     }
   }
 }

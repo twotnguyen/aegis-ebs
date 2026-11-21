@@ -4,6 +4,8 @@ import aegis.protocol.Envelope;
 import aegis.protocol.Priority;
 import aegis.protocol.Protocol;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.time.Clock;
@@ -15,9 +17,10 @@ import java.util.Set;
 /**
  * Incident lifecycle (incidents + incident_events + incident_alerts) with a
  * validated state machine. Transitions are audited and pushed to operator
- * sessions as INCIDENT_EVENT.
+ * sessions as INCIDENT_EVENT. Incident + timeline event writes are atomic (S-09).
  */
 public final class IncidentService {
+  private static final Logger LOG = LoggerFactory.getLogger(IncidentService.class);
 
   /** Allowed incident state transitions (docs schema CHECK + workflow). */
   private static final java.util.Map<String, Set<String>> TRANSITIONS = java.util.Map.of(
@@ -46,16 +49,18 @@ public final class IncidentService {
   public Outcome create(String userId, String buildingId, String kind, String summary,
                         boolean simulation, String correlationId) {
     try {
-      ServerStore.IncidentRow row = store.insertIncident(buildingId, userId, kind, summary,
-          simulation, "OPEN");
-      store.insertIncidentEvent(row.id(), "OPENED", userId, correlationId,
+      // S-09: incident row + opening event commit together (no orphan incidents)
+      ServerStore.IncidentRow row = store.createIncidentAtomic(buildingId, userId, kind, summary,
+          simulation, "OPEN", "OPENED", correlationId,
           Json.write(Json.obj().put("kind", kind).put("summary", summary)));
       audit.append(userId, "INCIDENT_CREATE", buildingId, "OK", correlationId,
           Json.obj().put("incidentId", row.id()).put("kind", kind));
       broadcastEvent(row.id(), "OPENED", buildingId, kind, summary, correlationId);
       return new Outcome(true, row.id(), "OPEN", null, null);
     } catch (SQLException e) {
-      return new Outcome(false, null, null, "INTERNAL", "incident create failed: " + e.getMessage());
+      LOG.warn("incident create failed building={}", buildingId, e);
+      // NFR-017 (S-04): details stay in the log, never on the wire
+      return new Outcome(false, null, null, "INTERNAL", "incident create failed");
     }
   }
 
@@ -70,8 +75,9 @@ public final class IncidentService {
             "illegal transition " + row.state() + " -> " + newState);
       }
       boolean terminal = newState.equals("CLOSED") || newState.equals("ABORTED");
-      store.updateIncidentState(incidentId, newState, terminal ? clock.instant() : null);
-      store.insertIncidentEvent(incidentId, "TRANSITION_" + newState, userId, correlationId,
+      // S-09: state change + timeline event commit together
+      store.transitionIncidentAtomic(incidentId, newState, terminal ? clock.instant() : null,
+          "TRANSITION_" + newState, userId, correlationId,
           Json.write(Json.obj().put("from", row.state()).put("to", newState)));
       audit.append(userId, "INCIDENT_TRANSITION", row.buildingId(), "OK", correlationId,
           Json.obj().put("incidentId", incidentId).put("from", row.state()).put("to", newState));
@@ -79,7 +85,8 @@ public final class IncidentService {
           row.summary(), correlationId);
       return new Outcome(true, incidentId, newState, null, null);
     } catch (SQLException e) {
-      return new Outcome(false, null, null, "INTERNAL", "transition failed: " + e.getMessage());
+      LOG.warn("incident transition failed incidentId={}", incidentId, e);
+      return new Outcome(false, null, null, "INTERNAL", "transition failed");
     }
   }
 

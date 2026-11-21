@@ -140,9 +140,15 @@ public final class DeliveryRepo {
    * ack of the same kind is an idempotent no-op (at-least-once transport), and
    * an ack whose target rank is not above the current state leaves the state
    * unchanged.
+   *
+   * @return {@code true} if a new device_acks row was inserted; {@code false}
+   *     if this exact ack kind was already recorded (idempotent duplicate).
+   *     Callers surface the flag as the wire {@code duplicate} field and the
+   *     DUPLICATE audit outcome — the INSERT uses ON CONFLICT DO NOTHING, so
+   *     duplicates do NOT throw (S-01 contract, docs/reviews/server-review.md).
    */
-  public DeviceAck recordAck(String deviceId, String alertId, int revision, String deliveryId,
-                             AckKind kind, String userId) throws SQLException {
+  public boolean recordAck(String deviceId, String alertId, int revision, String deliveryId,
+                           AckKind kind, String userId) throws SQLException {
     DeviceAck ack = new DeviceAck(Sql.uuid(), deviceId, alertId, revision, deliveryId,
         kind, clock.instant(), userId);
     DeliveryState target = switch (kind) {
@@ -151,6 +157,7 @@ public final class DeliveryRepo {
       case CANCEL -> DeliveryState.CANCELLED;
     };
     int targetRank = rank(target);
+    boolean inserted;
     try (Connection c = db.open()) {
       try (Statement s = c.createStatement()) {
         s.execute("BEGIN IMMEDIATE");
@@ -186,7 +193,7 @@ public final class DeliveryRepo {
             ps.setString(6, ack.ackKind().name());
             ps.setString(7, Sql.ts(ack.ackedAt()));
             ps.setString(8, ack.userId());
-            ps.executeUpdate();
+            inserted = ps.executeUpdate() == 1;
           }
           try (PreparedStatement ps = c.prepareStatement(
               "UPDATE deliveries SET state=? WHERE id=? AND device_id=? AND alert_id=? AND revision=? AND "
@@ -213,7 +220,30 @@ public final class DeliveryRepo {
         }
       }
     }
-    return ack;
+    return inserted;
+  }
+
+  /**
+   * Dispatcher-owned state transition, guarded to the pre-ack states
+   * (PENDING/SENT/RETRY_SCHEDULED): a late dispatch commit can never regress a
+   * concurrent ACK (RECEIVED or higher) back to SENT/RETRY_SCHEDULED (S-02).
+   * attempt_count/next_retry_at are written only when the guard passes.
+   *
+   * @return {@code true} if the row was updated; {@code false} if the delivery
+   *     is unknown or already acked/terminal (benign no-op).
+   */
+  public boolean updateDispatchState(String id, DeliveryState state, Instant nextRetryAt,
+                                     int attemptCount) throws SQLException {
+    try (Connection c = db.open();
+         PreparedStatement ps = c.prepareStatement(
+             "UPDATE deliveries SET state=?, next_retry_at=?, attempt_count=? WHERE id=? "
+                 + "AND state IN ('PENDING','SENT','RETRY_SCHEDULED')")) {
+      ps.setString(1, state.name());
+      ps.setString(2, Sql.ts(nextRetryAt));
+      ps.setInt(3, attemptCount);
+      ps.setString(4, id);
+      return ps.executeUpdate() == 1;
+    }
   }
 
   private static int rank(DeliveryState state) {

@@ -8,11 +8,14 @@ import aegis.persistence.Delivery;
 import aegis.persistence.DeliveryRepo;
 import aegis.persistence.Device;
 import aegis.persistence.User;
+import aegis.persistence.UserRepo;
 import aegis.protocol.Envelope;
 import aegis.protocol.MessageType;
 import aegis.protocol.Priority;
 import aegis.protocol.Protocol;
+import aegis.protocol.Role;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +45,7 @@ public final class MessageRouter {
   private final ServerStore store;
   private final AlertRepo alertRepo;
   private final DeliveryRepo deliveries;
+  private final UserRepo users;
   private final AuditService audit;
   private final StatusFeedService status;
   private final Clock clock;
@@ -49,8 +53,8 @@ public final class MessageRouter {
   public MessageRouter(ServerConfig config, AuthService auth, RbacService rbac,
                        AlertService alertService, IncidentService incidents, SyncService sync,
                        FanoutEngine engine, SessionRegistry sessions, ServerStore store,
-                       AlertRepo alertRepo, DeliveryRepo deliveries, AuditService audit,
-                       StatusFeedService status, Clock clock) {
+                       AlertRepo alertRepo, DeliveryRepo deliveries, UserRepo users,
+                       AuditService audit, StatusFeedService status, Clock clock) {
     this.config = Objects.requireNonNull(config);
     this.auth = Objects.requireNonNull(auth);
     this.rbac = Objects.requireNonNull(rbac);
@@ -62,6 +66,7 @@ public final class MessageRouter {
     this.store = Objects.requireNonNull(store);
     this.alertRepo = Objects.requireNonNull(alertRepo);
     this.deliveries = Objects.requireNonNull(deliveries);
+    this.users = Objects.requireNonNull(users);
     this.audit = Objects.requireNonNull(audit);
     this.status = Objects.requireNonNull(status);
     this.clock = Objects.requireNonNull(clock);
@@ -108,12 +113,17 @@ public final class MessageRouter {
       }
     } catch (Json.BadPayload e) {
       replyError(session, env, "BAD_PAYLOAD", e.getMessage());
+    } catch (SecurityException e) {
+      // device/operator split denial: command-level FORBIDDEN, not INTERNAL (S-18)
+      replyError(session, env, "FORBIDDEN", String.valueOf(e.getMessage()));
     } catch (SQLException e) {
       LOG.warn("command {} failed", type, e);
-      replyError(session, env, "INTERNAL", "storage error: " + e.getMessage());
+      // NFR-017 (S-04): storage/SQL details stay in the server log; the wire
+      // gets a generic message correlated via requestMessageId.
+      replyError(session, env, "INTERNAL", "internal server error");
     } catch (RuntimeException e) {
       LOG.warn("command {} failed", type, e);
-      replyError(session, env, "INTERNAL", String.valueOf(e.getMessage()));
+      replyError(session, env, "INTERNAL", "internal server error");
     }
   }
 
@@ -219,17 +229,23 @@ public final class MessageRouter {
       replyError(session, env, "NOT_FOUND", "unknown delivery for alert/revision/device");
       return;
     }
-    String userId = kind == AckKind.USER ? Json.optText(p, "userId", null) : null;
-    boolean duplicate = false;
-    try {
-      deliveries.recordAck(deviceId, alertId, revision, deliveryId, kind, userId);
-    } catch (SQLException e) {
-      if (e.getMessage() != null && e.getMessage().contains("UNIQUE")) {
-        duplicate = true; // device_acks UNIQUE(device,alert,revision,kind): idempotent replay
-      } else {
-        throw e;
+    String userId = null;
+    if (kind == AckKind.USER) {
+      userId = Json.optText(p, "userId", null);
+      if (userId != null) {
+        // S-06: accountability — attribute the human gesture only to a real,
+        // enabled user; an arbitrary userId from the payload is rejected.
+        Optional<User> user = users.findById(userId);
+        if (user.isEmpty() || !user.get().enabled()) {
+          replyError(session, env, "FORBIDDEN", "unknown or disabled user");
+          return;
+        }
       }
     }
+    // S-01: recordAck returns the inserted flag (ON CONFLICT DO NOTHING means a
+    // duplicate no longer throws UNIQUE) — duplicate = ack kind already recorded.
+    boolean inserted = deliveries.recordAck(deviceId, alertId, revision, deliveryId, kind, userId);
+    boolean duplicate = !inserted;
     engine.onAck(alertId, deliveryId, deviceId, kind, clock.instant());
     audit.append(deviceId, "ACK_" + kind.name(), alertId, duplicate ? "DUPLICATE" : "OK",
         env.correlationId() == null ? env.messageId() : env.correlationId(),
@@ -408,9 +424,46 @@ public final class MessageRouter {
     return true;
   }
 
-  private void statusSubscribe(ClientSession session, Envelope env) {
+  private void statusSubscribe(ClientSession session, Envelope env) throws SQLException {
     requireOperator(session);
-    reply(session, "STATUS_SNAPSHOT", env.messageId(), status.snapshot());
+    // S-05 (SECURITY.md §4.2): the read plane is role/scope-gated — EMPLOYEE has
+    // no access; SECOPS reads a granted building; FLOOR_MANAGER only granted floors.
+    Role role = session.role();
+    String buildingId = config.buildingId();
+    if (role == Role.EMPLOYEE || role == Role.DEVICE
+        || (role != Role.SYSTEM_ADMIN && !session.grants().coversBuilding(buildingId))) {
+      forbidden(session, env, buildingId, "STATUS_SUBSCRIBE");
+      return;
+    }
+    ObjectNode snapshot = status.snapshot();
+    if (role == Role.FLOOR_MANAGER) {
+      scopeSnapshotToGrants(snapshot, session, buildingId);
+    }
+    reply(session, "STATUS_SNAPSHOT", env.messageId(), snapshot);
+  }
+
+  /** Filters floors + activeAlerts down to the operator's granted floors (S-05). */
+  private void scopeSnapshotToGrants(ObjectNode snapshot, ClientSession session, String buildingId)
+      throws SQLException {
+    java.util.Set<Integer> allowedFloors = new java.util.HashSet<>();
+    ArrayNode keptFloors = Json.MAPPER.createArrayNode();
+    for (JsonNode f : snapshot.get("floors")) {
+      int floorNumber = f.get("floorNumber").asInt();
+      String floorId = store.floorId(buildingId, floorNumber).orElse(null);
+      if (floorId != null
+          && rbac.canPublish(session.role(), session.grants(), buildingId, floorId)) {
+        keptFloors.add(f);
+        allowedFloors.add(floorNumber);
+      }
+    }
+    snapshot.set("floors", keptFloors);
+    ArrayNode keptAlerts = Json.MAPPER.createArrayNode();
+    for (JsonNode a : snapshot.get("activeAlerts")) {
+      int floorNumber = a.path("floorNumber").asInt(0);
+      // floorNumber 0 = building-wide alert: visible to every granted floor
+      if (floorNumber == 0 || allowedFloors.contains(floorNumber)) keptAlerts.add(a);
+    }
+    snapshot.set("activeAlerts", keptAlerts);
   }
 
   // ---- replies ---------------------------------------------------------------------

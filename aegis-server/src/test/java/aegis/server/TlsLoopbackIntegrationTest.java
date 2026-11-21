@@ -40,6 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class TlsLoopbackIntegrationTest {
 
   private static Path tmp;
+  private static Path keystore;
   private static AegisServer server;
   private static ServerConfig config;
   private static Db db;
@@ -53,6 +54,7 @@ class TlsLoopbackIntegrationTest {
   private static final String D2_CODE = "DEV-A-F01-A-02";
   private static String d1Id;
   private static String d2Id;
+  private static String adminId;
 
   private static TestTlsClient operator;
   private static TestTlsClient d1;
@@ -64,7 +66,7 @@ class TlsLoopbackIntegrationTest {
   @BeforeAll
   static void startServer() throws Exception {
     tmp = Files.createTempDirectory("aegis-it");
-    Path keystore = TestSupport.generateKeystore(tmp);
+    keystore = TestSupport.generateKeystore(tmp);
     config = ServerConfig.builder(tmp.resolve("aegis.db"), keystore, "changeit")
         .tlsPort(0).wsPort(0)
         .devicesPerZone(2)
@@ -78,6 +80,7 @@ class TlsLoopbackIntegrationTest {
     openRepos();
     d1Id = devices.findByCode(D1_CODE).orElseThrow().id();
     d2Id = devices.findByCode(D2_CODE).orElseThrow().id();
+    adminId = users.findByUsername("admin").orElseThrow().id();
     operator = authOperator("admin", "admin-demo-secret");
   }
 
@@ -98,7 +101,13 @@ class TlsLoopbackIntegrationTest {
     if (server != null) server.close();
     if (tmp != null) {
       try (Stream<Path> paths = Files.walk(tmp)) {
-        paths.sorted(Comparator.reverseOrder()).forEach(p -> p.toFile().delete());
+        paths.sorted(Comparator.reverseOrder()).forEach(p -> {
+          try {
+            Files.deleteIfExists(p);
+          } catch (java.io.IOException ignored) {
+            // SQLite WAL sidecars (-shm/-wal) can vanish mid-cleanup
+          }
+        });
       }
     }
   }
@@ -106,7 +115,12 @@ class TlsLoopbackIntegrationTest {
   // ---- helpers -------------------------------------------------------------
 
   private static TestTlsClient authOperator(String username, String password) throws Exception {
-    TestTlsClient client = new TestTlsClient(server.tlsPort(), true, true);
+    return authOperatorOn(server, username, password);
+  }
+
+  private static TestTlsClient authOperatorOn(AegisServer target, String username, String password)
+      throws Exception {
+    TestTlsClient client = new TestTlsClient(target.tlsPort(), true, true);
     Envelope hello = client.request("HELLO", Json.obj().put("clientType", "OPERATOR"), 5000);
     assertEquals("SERVER_HELLO", hello.type());
     assertEquals(2, hello.payload().get("version").asInt());
@@ -200,11 +214,11 @@ class TlsLoopbackIntegrationTest {
     assertEquals("RECEIVED", ackR.payload().get("state").asText());
     Envelope ackU = d1.request("ACK_USER", Json.obj()
         .put("alertId", alert1Id).put("deliveryId", delivery1)
-        .put("revision", 1).put("deviceId", d1Id).put("userId", "user-1"), 8000);
+        .put("revision", 1).put("deviceId", d1Id).put("userId", adminId), 8000);
     assertEquals("ACKNOWLEDGED", ackU.payload().get("state").asText());
     assertEquals(DeliveryState.ACKNOWLEDGED, deliveryOf(alert1Id, d1Id).state());
 
-    // duplicate ACK is idempotent (UNIQUE device_acks guard)
+    // duplicate ACK is idempotent (recordAck inserted-flag contract, S-01)
     Envelope dupAck = d1.request("ACK_RECEIVED", Json.obj()
         .put("alertId", alert1Id).put("deliveryId", delivery1)
         .put("revision", 1).put("deviceId", d1Id), 8000);
@@ -445,41 +459,76 @@ class TlsLoopbackIntegrationTest {
   @Test
   @Order(9)
   void slowClientIsDisconnectedWhenQueueOverflows() throws Exception {
-    TestTlsClient slow = new TestTlsClient(server.tlsPort(), false, false); // manual: never drains
-    Envelope auth = slow.request("AUTH_DEVICE", Json.obj()
-        .put("deviceCode", "DEV-A-F03-C-01").put("credential", "device-demo-secret"), 10000);
-    assertTrue(auth.payload().get("ok").asBoolean());
-    String slowDeviceId = auth.payload().get("deviceId").asText();
-    // stop reading entirely; flood the zone with INFO alerts (8KB bodies so the
-    // socket buffers absorb only a few frames and the 256 queue fills quickly)
-    String padding = "x".repeat(8000);
-    java.util.concurrent.atomic.AtomicInteger replies = new java.util.concurrent.atomic.AtomicInteger();
-    for (int i = 0; i < 320; i++) {
-      ObjectNode payload = Json.obj();
-      payload.put("requestId", "req-it-slow-" + i);
-      payload.put("floorNumber", 3);
-      payload.put("zoneCode", "C");
-      payload.put("category", "DRILL");
-      payload.put("priority", "INFO");
-      payload.put("title", "slow flood " + i);
-      payload.put("instruction", padding);
-      payload.put("simulation", true);
-      operator.send("ALERT_PUBLISH", payload, null);
-      replies.addAndGet(operator.drain("COMMAND_RESULT").size());
-      if (i % 50 == 49) {
-        Thread.sleep(5); // let the reader answer heartbeats + the server drain
+    // S-03: run the flood against a DEDICATED server whose heartbeat tolerance
+    // (60s x 3) is far above the flood duration, so the slow-client policy
+    // (queue overflow -> REJECTED_SLOW -> disconnect + audit) is what fires —
+    // not heartbeat suspicion racing the overflow. The dedicated server also
+    // keeps the 320 flood replies away from the shared operator, so a failure
+    // here can never poison test 10 with stale COMMAND_RESULTs.
+    ServerConfig slowConfig = ServerConfig.builder(tmp.resolve("slow.db"), keystore, "changeit")
+        .tlsPort(0).wsPort(0)
+        .devicesPerZone(2)
+        .heartbeat(60_000, 3)
+        .retry(200, 3)
+        .statusBatchMs(100)
+        .argon2(1, 4096, 1)
+        .build();
+    AegisServer slowServer = new AegisServer(slowConfig);
+    slowServer.start();
+    TestTlsClient slowOperator = null;
+    TestTlsClient slow = null;
+    try {
+      AuditRepo slowAudit = new AuditRepo(new Db(slowConfig.dbFile()));
+      slowOperator = authOperatorOn(slowServer, "admin", "admin-demo-secret");
+      final TestTlsClient floodOperator = slowOperator; // effectively-final for lambdas
+      slow = new TestTlsClient(slowServer.tlsPort(), false, false); // manual: never drains
+      Envelope auth = slow.request("AUTH_DEVICE", Json.obj()
+          .put("deviceCode", "DEV-A-F03-C-01").put("credential", "device-demo-secret"), 10000);
+      assertTrue(auth.payload().get("ok").asBoolean());
+      String slowDeviceId = auth.payload().get("deviceId").asText();
+      // stop reading entirely; flood the zone with INFO alerts (8KB bodies so the
+      // socket buffers absorb only a few frames and the 256 queue fills quickly)
+      String padding = "x".repeat(8000);
+      java.util.concurrent.atomic.AtomicInteger replies = new java.util.concurrent.atomic.AtomicInteger();
+      for (int i = 0; i < 320; i++) {
+        ObjectNode payload = Json.obj();
+        payload.put("requestId", "req-it-slow-" + i);
+        payload.put("floorNumber", 3);
+        payload.put("zoneCode", "C");
+        payload.put("category", "DRILL");
+        payload.put("priority", "INFO");
+        payload.put("title", "slow flood " + i);
+        payload.put("instruction", padding);
+        payload.put("simulation", true);
+        slowOperator.send("ALERT_PUBLISH", payload, null);
+        replies.addAndGet(slowOperator.drain("COMMAND_RESULT").size());
+        if (i % 50 == 49) {
+          Thread.sleep(5); // let the reader answer heartbeats + the server drain
+        }
       }
+      TestSupport.until("slow client disconnected by policy",
+          () -> slowServer.sessions().deviceSession(slowDeviceId) == null, 20000);
+      assertTrue(slowAudit.recent(2000).stream()
+          .anyMatch(e -> e.action().equals("SLOW_CLIENT_DISCONNECT")));
+      assertTrue(slowServer.metrics().slowClientDisconnects() >= 1);
+      // drain EVERY flood reply (best-effort cleanup lives in finally)
+      TestSupport.until("all 320 flood COMMAND_RESULTs received", () -> {
+        replies.addAndGet(floodOperator.drain("COMMAND_RESULT").size());
+        return replies.get() >= 320;
+      }, 30000);
+    } finally {
+      if (slow != null) slow.close();
+      if (slowOperator != null) {
+        // drain whatever is left so the dedicated server shuts down cleanly
+        long end = System.currentTimeMillis() + 5000;
+        while (slowOperator.drain("COMMAND_RESULT").size() > 0
+            && System.currentTimeMillis() < end) {
+          TestSupport.sleep(50);
+        }
+        slowOperator.close();
+      }
+      slowServer.close();
     }
-    TestSupport.until("slow client disconnected by policy",
-        () -> server.sessions().deviceSession(slowDeviceId) == null, 20000);
-    assertTrue(auditHas("SLOW_CLIENT_DISCONNECT"));
-    assertTrue(server.metrics().slowClientDisconnects() >= 1);
-    // drain EVERY flood reply so the next test cannot read a stale COMMAND_RESULT
-    TestSupport.until("all 320 flood COMMAND_RESULTs received", () -> {
-      replies.addAndGet(operator.drain("COMMAND_RESULT").size());
-      return replies.get() >= 320;
-    }, 30000);
-    slow.close();
   }
 
   // ---- 10. crash recovery across a full server restart -----------------------------------
@@ -494,9 +543,10 @@ class TlsLoopbackIntegrationTest {
     alert3Id = result.payload().get("alertId").asText();
     TestSupport.until("alert3 delivery parked while device offline", () -> {
       try {
-        // any scheduler-owned state qualifies (RecoveryScanner rebuilds all of
-        // PENDING/SENT/RETRY_SCHEDULED/FAILED after a crash)
-        return deliveryOf(alert3Id, d1Id).state().isActive();
+        // scheduler-owned states WITH retry budget left qualify; FAILED is
+        // terminal for redelivery (S-10: recovery must not exceed maxAttempts)
+        DeliveryState st = deliveryOf(alert3Id, d1Id).state();
+        return st.isActive() && st != DeliveryState.FAILED;
       } catch (Exception e) {
         return false;
       }

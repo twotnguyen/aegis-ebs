@@ -6,12 +6,21 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.UUID;
 
 /** Shared Jackson mapper + small payload/envelope helpers (EBSP/2.0). */
 public final class Json {
   public static final ObjectMapper MAPPER = new ObjectMapper();
-  private static final DateTimeFormatter TS = DateTimeFormatter.ISO_INSTANT;
+  /**
+   * Fixed-width UTC ISO-8601 with exactly 9 fractional digits — same convention
+   * as aegis-persistence Sql.TS (S-08): lexicographic TEXT comparisons
+   * (expires_at &lt;= now, ORDER BY occurred_at) match chronology even at mixed
+   * precision. Variable-width ISO_INSTANT sorts 'Z' after '.', which corrupts
+   * expiry checks and timeline ordering. Instant.parse reads both forms.
+   */
+  private static final DateTimeFormatter TS =
+      new DateTimeFormatterBuilder().appendInstant(9).toFormatter();
 
   private Json() {}
 
