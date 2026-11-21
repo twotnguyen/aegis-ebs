@@ -1,0 +1,15 @@
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.sqlite.SQLiteJDBCLoader in an unnamed module (file:/Users/twot/.m2/repository/org/xerial/sqlite-jdbc/3.46.1.0/sqlite-jdbc-3.46.1.0.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+20:58:05.042 [main] INFO aegis.server.StatusFeedServer -- status feed listening on ws://localhost:29444/ (status/1)
+20:58:05.191 [main] INFO aegis.server.TlsGateway -- EBSP/2.0 TLS gateway listening on port 29443
+20:58:05.192 [main] INFO aegis.server.AegisServer -- aegis-server up: TLS 29443 WS 29444 building AEGIS-BLD-A db /Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/docs/evidence/benchmark/276dedf5-fa83-4022-b7be-f3a47fccf591/bench.db
+AEGIS EBS server ready
+  EBSP/2.0 TLS : localhost:29443
+  status feed  : ws://localhost:29444/ (status/1)
+  database     : /Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/docs/evidence/benchmark/276dedf5-fa83-4022-b7be-f3a47fccf591/bench.db
+  demo operators: admin/admin-demo-secret (SYSTEM_ADMIN),
+    secops/secops-demo-secret (building), floor7/floor7-demo-secret (floor 7)
+  demo devices: DEV-A-F01-A-01.. (credential device-demo-secret)

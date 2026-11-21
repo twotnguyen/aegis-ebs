@@ -1,0 +1,175 @@
+{
+ "meta": {
+  "runId": "276dedf5-fa83-4022-b7be-f3a47fccf591",
+  "commit": "c1dbab5b7433ff00a68f2b40fb2a6c426490c235",
+  "worktreeDirty": true,
+  "startedAt": "2026-11-21T13:58:01.883Z",
+  "machine": {
+   "os": "15.7.3",
+   "cpu": "Apple M3 Pro",
+   "cores": "12",
+   "memBytes": "19327352832",
+   "arch": "arm64",
+   "java": "java version \"24.0.1\" 2025-04-15",
+   "python": "3.14.2",
+   "hostname": "Macbook-Tinh"
+  }
+ },
+ "config": {
+  "fleet": 100,
+  "scenario": "clean",
+  "seed": 42,
+  "durationSeconds": 30,
+  "staggerMs": 5,
+  "tlsPort": 29443,
+  "wsPort": 29444,
+  "retryPolicy": "maxRetries=3 base=3000ms (3s/6s/12s)"
+ },
+ "publish": {
+  "at": "2026-11-21T13:58:12.029Z",
+  "payload": {
+   "alertId": "2828e13f-a054-4da5-89e7-bdf70856ddb5",
+   "revision": 1,
+   "deliveryCount": 100,
+   "duplicate": false,
+   "ok": true
+  },
+  "fleetAuthWaitSeconds": 3.36,
+  "authenticatedAtPublish": 100
+ },
+ "simExitCode": 0,
+ "simSummary": {
+  "agentsStarted": 100,
+  "agentsFinished": 100,
+  "connectSuccess": 100,
+  "connectFailures": 0,
+  "reconnects": 0,
+  "alertsReceived": 100,
+  "duplicatePushes": 0,
+  "cancelsReceived": 0,
+  "acksSent": 100,
+  "acksDropped": 0,
+  "acksDelayed": 0,
+  "duplicateAcks": 0,
+  "disconnects": 0,
+  "syncRequests": 0,
+  "heartbeats": 300,
+  "connectionErrors": 0,
+  "authRejections": 0,
+  "config": {
+   "fleet": 100,
+   "seed": 42,
+   "scenario": "clean",
+   "target": "localhost:29443",
+   "durationSeconds": 30,
+   "faults": "FaultProfile[dropRate=0.0, delayBaseMs=0, delayJitterMs=0, duplicateRate=0.0, duplicateCount=1, disconnectRate=0.0]"
+  }
+ },
+ "settledStates": {
+  "RECEIVED": 100
+ },
+ "dbStats": {
+  "deliveriesTotal": 100,
+  "deliveriesByState": {
+   "RECEIVED": 100
+  },
+  "attemptCountSum": 100,
+  "retriesFromAttempts": 0,
+  "acksByKind": {
+   "RECEIVED": 100
+  },
+  "ackReceivedRate": 1.0,
+  "latencyMsFromDb": {
+   "samples": 100,
+   "p50": 773.142,
+   "p95": 1307.147,
+   "p99": 1333.894,
+   "max": 1335.663
+  },
+  "alerts": [
+   {
+    "id": "2828e13f-a054-4da5-89e7-bdf70856ddb5",
+    "category": "FIRE_DRILL",
+    "priority": "CRITICAL",
+    "state": "ACTIVE",
+    "current_revision": 1,
+    "created_at": "2026-11-21T13:58:12.032218000Z"
+   }
+  ],
+  "metricsSamples": [
+   {
+    "recorded_at": "2026-11-21T13:58:38.547653000Z",
+    "metric_name": "delivery_latency_p50",
+    "metric_value": 773.0,
+    "unit": "ms"
+   },
+   {
+    "recorded_at": "2026-11-21T13:58:38.551875000Z",
+    "metric_name": "delivery_latency_p95",
+    "metric_value": 1311.0,
+    "unit": "ms"
+   },
+   {
+    "recorded_at": "2026-11-21T13:58:38.553195000Z",
+    "metric_name": "delivery_latency_p99",
+    "metric_value": 1338.0,
+    "unit": "ms"
+   },
+   {
+    "recorded_at": "2026-11-21T13:58:38.554220000Z",
+    "metric_name": "transport_retries",
+    "metric_value": 0.0,
+    "unit": "count"
+   }
+  ],
+  "auditCounts": [
+   {
+    "action": "ACK_RECEIVED",
+    "outcome": "OK",
+    "n": 100
+   },
+   {
+    "action": "ALERT_FULLY_ACKED",
+    "outcome": "OK",
+    "n": 1
+   },
+   {
+    "action": "AUTH_DEVICE_SUCCESS",
+    "outcome": "OK",
+    "n": 100
+   },
+   {
+    "action": "AUTH_OPERATOR_SUCCESS",
+    "outcome": "OK",
+    "n": 1
+   },
+   {
+    "action": "PUBLISH",
+    "outcome": "OK",
+    "n": 1
+   }
+  ]
+ },
+ "attemptHistogram": {
+  "1": 100
+ },
+ "headline": {
+  "latencyMs": {
+   "samples": 100,
+   "p50": 773.142,
+   "p95": 1307.147,
+   "p99": 1333.894,
+   "max": 1335.663
+  },
+  "ackReceivedRate": 1.0,
+  "ackReceivedRatePct": 100.0,
+  "retriesFromAttempts": 0,
+  "reconnects": 0,
+  "deliveriesTotal": 100
+ },
+ "artifacts": {
+  "db": "/Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/docs/evidence/benchmark/276dedf5-fa83-4022-b7be-f3a47fccf591/bench.db",
+  "serverLog": "/Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/docs/evidence/benchmark/276dedf5-fa83-4022-b7be-f3a47fccf591/server.log",
+  "simLog": "/Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/docs/evidence/benchmark/276dedf5-fa83-4022-b7be-f3a47fccf591/sim.log"
+ }
+}
