@@ -1,0 +1,208 @@
+{
+ "meta": {
+  "runId": "d04af662-ebb4-4800-ab4a-6ec338a41ffb",
+  "commit": "69fbee8919101fbcad09c5528e7747f766d482da",
+  "worktreeDirty": true,
+  "startedAt": "2026-11-21T14:18:46.290Z",
+  "machine": {
+   "os": "15.7.3",
+   "cpu": "Apple M3 Pro",
+   "cores": "12",
+   "memBytes": "19327352832",
+   "arch": "arm64",
+   "java": "java version \"24.0.1\" 2025-04-15",
+   "python": "3.14.2",
+   "hostname": "Macbook-Tinh"
+  }
+ },
+ "config": {
+  "fleet": 50,
+  "scenario": "delayed",
+  "seed": 42,
+  "durationSeconds": 15,
+  "staggerMs": 5,
+  "tlsPort": 29443,
+  "wsPort": 29444,
+  "retryPolicy": "maxRetries=3 base=3000ms (3s/6s/12s)"
+ },
+ "publish": {
+  "at": "2026-11-21T14:18:52.299Z",
+  "payload": {
+   "alertId": "e34fefe7-c87c-4214-aad8-cd8df90b0f56",
+   "revision": 1,
+   "deliveryCount": 50,
+   "duplicate": false,
+   "ok": true
+  },
+  "fleetAuthWaitSeconds": 1.81,
+  "authenticatedAtPublish": 50
+ },
+ "simExitCode": 0,
+ "simSummary": {
+  "agentsStarted": 50,
+  "agentsFinished": 50,
+  "connectSuccess": 50,
+  "connectFailures": 0,
+  "reconnects": 0,
+  "alertsReceived": 50,
+  "duplicatePushes": 0,
+  "cancelsReceived": 0,
+  "acksSent": 50,
+  "acksDropped": 0,
+  "acksDelayed": 50,
+  "duplicateAcks": 0,
+  "disconnects": 0,
+  "syncRequests": 0,
+  "heartbeats": 50,
+  "connectionErrors": 0,
+  "authRejections": 0,
+  "config": {
+   "fleet": 50,
+   "seed": 42,
+   "scenario": "delayed",
+   "target": "localhost:29443",
+   "durationSeconds": 15,
+   "faults": "FaultProfile[dropRate=0.0, delayBaseMs=500, delayJitterMs=1500, duplicateRate=0.0, duplicateCount=1, disconnectRate=0.0]"
+  }
+ },
+ "settledStates": {
+  "RECEIVED": 50
+ },
+ "dbStats": {
+  "deliveriesTotal": 50,
+  "deliveriesByState": {
+   "RECEIVED": 50
+  },
+  "attemptCountSum": 50,
+  "retriesFromAttempts": 0,
+  "acksByKind": {
+   "RECEIVED": 50
+  },
+  "ackReceivedRate": 1.0,
+  "latencyMsFromDb": {
+   "samples": 50,
+   "p50": 1585.367,
+   "p95": 2703.497,
+   "p99": 2706.927,
+   "max": 2706.927
+  },
+  "alerts": [
+   {
+    "id": "e34fefe7-c87c-4214-aad8-cd8df90b0f56",
+    "category": "FIRE_DRILL",
+    "priority": "CRITICAL",
+    "state": "ACTIVE",
+    "current_revision": 1,
+    "created_at": "2026-11-21T14:18:52.302184000Z"
+   }
+  ],
+  "metricsSamples": [],
+  "auditCounts": [
+   {
+    "action": "ACK_RECEIVED",
+    "outcome": "OK",
+    "n": 50
+   },
+   {
+    "action": "ALERT_FULLY_ACKED",
+    "outcome": "OK",
+    "n": 2
+   },
+   {
+    "action": "AUTH_DEVICE_SUCCESS",
+    "outcome": "OK",
+    "n": 50
+   },
+   {
+    "action": "AUTH_OPERATOR_SUCCESS",
+    "outcome": "OK",
+    "n": 1
+   },
+   {
+    "action": "PUBLISH",
+    "outcome": "OK",
+    "n": 1
+   }
+  ]
+ },
+ "attemptHistogram": {
+  "1": 50
+ },
+ "auditCounts": [
+  {
+   "action": "ACK_RECEIVED",
+   "outcome": "OK",
+   "n": 50
+  },
+  {
+   "action": "ALERT_FULLY_ACKED",
+   "outcome": "OK",
+   "n": 2
+  },
+  {
+   "action": "AUTH_DEVICE_SUCCESS",
+   "outcome": "OK",
+   "n": 50
+  },
+  {
+   "action": "AUTH_OPERATOR_SUCCESS",
+   "outcome": "OK",
+   "n": 1
+  },
+  {
+   "action": "PUBLISH",
+   "outcome": "OK",
+   "n": 1
+  }
+ ],
+ "auditSample": [
+  {
+   "id": "b43fc792-9131-4f86-bd2d-5819de1ea1bc",
+   "occurred_at": "2026-11-21T14:18:55.021341000Z",
+   "actor_id": null,
+   "action": "ALERT_FULLY_ACKED",
+   "scope": "e34fefe7-c87c-4214-aad8-cd8df90b0f56",
+   "outcome": "OK",
+   "correlation_id": null,
+   "payload_json": null
+  },
+  {
+   "id": "f1d237ff-4f33-4d92-8367-ce14229fd713",
+   "occurred_at": "2026-11-21T14:18:55.030790000Z",
+   "actor_id": null,
+   "action": "ALERT_FULLY_ACKED",
+   "scope": "e34fefe7-c87c-4214-aad8-cd8df90b0f56",
+   "outcome": "OK",
+   "correlation_id": null,
+   "payload_json": null
+  }
+ ],
+ "auditTotalRows": 104,
+ "headline": {
+  "latencyMs": {
+   "samples": 50,
+   "p50": 1585.367,
+   "p95": 2703.497,
+   "p99": 2706.927,
+   "max": 2706.927
+  },
+  "ackReceivedRate": 1.0,
+  "ackReceivedRatePct": 100.0,
+  "retriesFromAttempts": 0,
+  "reconnects": 0,
+  "faultDisconnects": 0,
+  "duplicatePushes": 0,
+  "duplicateAcks": 0,
+  "acksDropped": 0,
+  "acksDelayed": 50,
+  "deliveriesByState": {
+   "RECEIVED": 50
+  }
+ },
+ "artifacts": {
+  "db": "/Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/docs/evidence/chaos/runs/delayed-d04af662/chaos.db",
+  "serverLog": "/Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/docs/evidence/chaos/runs/delayed-d04af662/server.log",
+  "simLog": "/Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/docs/evidence/chaos/runs/delayed-d04af662/sim.log",
+  "auditFull": "/Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/docs/evidence/chaos/runs/delayed-d04af662/audit.json"
+ }
+}

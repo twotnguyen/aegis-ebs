@@ -1,0 +1,428 @@
+{
+ "meta": {
+  "runId": "04c97420-8113-4eeb-9d99-704637881107",
+  "commit": "69fbee8919101fbcad09c5528e7747f766d482da",
+  "worktreeDirty": true,
+  "startedAt": "2026-11-21T14:19:09.110Z",
+  "machine": {
+   "os": "15.7.3",
+   "cpu": "Apple M3 Pro",
+   "cores": "12",
+   "memBytes": "19327352832",
+   "arch": "arm64",
+   "java": "java version \"24.0.1\" 2025-04-15",
+   "python": "3.14.2",
+   "hostname": "Macbook-Tinh"
+  }
+ },
+ "config": {
+  "fleet": 50,
+  "scenario": "duplicate",
+  "seed": 42,
+  "durationSeconds": 15,
+  "staggerMs": 5,
+  "tlsPort": 29443,
+  "wsPort": 29444,
+  "retryPolicy": "maxRetries=3 base=3000ms (3s/6s/12s)"
+ },
+ "publish": {
+  "at": "2026-11-21T14:19:14.226Z",
+  "payload": {
+   "alertId": "aa938a04-cb44-42ce-8165-38d881fa0991",
+   "revision": 1,
+   "deliveryCount": 50,
+   "duplicate": false,
+   "ok": true
+  },
+  "fleetAuthWaitSeconds": 1.08,
+  "authenticatedAtPublish": 50
+ },
+ "simExitCode": 0,
+ "simSummary": {
+  "agentsStarted": 50,
+  "agentsFinished": 50,
+  "connectSuccess": 50,
+  "connectFailures": 0,
+  "reconnects": 0,
+  "alertsReceived": 50,
+  "duplicatePushes": 0,
+  "cancelsReceived": 0,
+  "acksSent": 72,
+  "acksDropped": 0,
+  "acksDelayed": 0,
+  "duplicateAcks": 22,
+  "disconnects": 0,
+  "syncRequests": 0,
+  "heartbeats": 50,
+  "connectionErrors": 0,
+  "authRejections": 0,
+  "config": {
+   "fleet": 50,
+   "seed": 42,
+   "scenario": "duplicate",
+   "target": "localhost:29443",
+   "durationSeconds": 15,
+   "faults": "FaultProfile[dropRate=0.0, delayBaseMs=0, delayJitterMs=0, duplicateRate=0.5, duplicateCount=2, disconnectRate=0.0]"
+  }
+ },
+ "settledStates": {
+  "RECEIVED": 50
+ },
+ "dbStats": {
+  "deliveriesTotal": 50,
+  "deliveriesByState": {
+   "RECEIVED": 50
+  },
+  "attemptCountSum": 50,
+  "retriesFromAttempts": 0,
+  "acksByKind": {
+   "RECEIVED": 50
+  },
+  "ackReceivedRate": 1.0,
+  "latencyMsFromDb": {
+   "samples": 50,
+   "p50": 189.476,
+   "p95": 301.107,
+   "p99": 305.59,
+   "max": 305.59
+  },
+  "alerts": [
+   {
+    "id": "aa938a04-cb44-42ce-8165-38d881fa0991",
+    "category": "FIRE_DRILL",
+    "priority": "CRITICAL",
+    "state": "ACTIVE",
+    "current_revision": 1,
+    "created_at": "2026-11-21T14:19:14.227887000Z"
+   }
+  ],
+  "metricsSamples": [],
+  "auditCounts": [
+   {
+    "action": "ACK_RECEIVED",
+    "outcome": "DUPLICATE",
+    "n": 22
+   },
+   {
+    "action": "ACK_RECEIVED",
+    "outcome": "OK",
+    "n": 50
+   },
+   {
+    "action": "ALERT_FULLY_ACKED",
+    "outcome": "OK",
+    "n": 1
+   },
+   {
+    "action": "AUTH_DEVICE_SUCCESS",
+    "outcome": "OK",
+    "n": 50
+   },
+   {
+    "action": "AUTH_OPERATOR_SUCCESS",
+    "outcome": "OK",
+    "n": 1
+   },
+   {
+    "action": "PUBLISH",
+    "outcome": "OK",
+    "n": 1
+   }
+  ]
+ },
+ "attemptHistogram": {
+  "1": 50
+ },
+ "auditCounts": [
+  {
+   "action": "ACK_RECEIVED",
+   "outcome": "DUPLICATE",
+   "n": 22
+  },
+  {
+   "action": "ACK_RECEIVED",
+   "outcome": "OK",
+   "n": 50
+  },
+  {
+   "action": "ALERT_FULLY_ACKED",
+   "outcome": "OK",
+   "n": 1
+  },
+  {
+   "action": "AUTH_DEVICE_SUCCESS",
+   "outcome": "OK",
+   "n": 50
+  },
+  {
+   "action": "AUTH_OPERATOR_SUCCESS",
+   "outcome": "OK",
+   "n": 1
+  },
+  {
+   "action": "PUBLISH",
+   "outcome": "OK",
+   "n": 1
+  }
+ ],
+ "auditSample": [
+  {
+   "id": "4868e681-9515-4c6e-b966-ac20a23f6de0",
+   "occurred_at": "2026-11-21T14:19:14.279169000Z",
+   "actor_id": "SIM-DEV-0006",
+   "action": "ACK_RECEIVED",
+   "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+   "outcome": "DUPLICATE",
+   "correlation_id": "6f7424d9-7199-4e8e-87e3-d67df3389301",
+   "payload_json": "{\"deliveryId\":\"67635228-3117-41c0-9f65-4538a5ec5486\",\"revision\":1}"
+  },
+  {
+   "id": "fce85608-e213-4e38-9cda-528b0df20df7",
+   "occurred_at": "2026-11-21T14:19:14.297617000Z",
+   "actor_id": "SIM-DEV-0010",
+   "action": "ACK_RECEIVED",
+   "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+   "outcome": "DUPLICATE",
+   "correlation_id": "fbf97b92-3fce-4eab-96b2-8408a72d3eba",
+   "payload_json": "{\"deliveryId\":\"232426ac-1f85-47ca-9996-e97c12abe83b\",\"revision\":1}"
+  },
+  {
+   "id": "7ff75a61-a305-4fb6-ab7f-9690224cae25",
+   "occurred_at": "2026-11-21T14:19:14.302747000Z",
+   "actor_id": "SIM-DEV-0011",
+   "action": "ACK_RECEIVED",
+   "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+   "outcome": "DUPLICATE",
+   "correlation_id": "469305df-5f42-448b-aaa2-8aafce4f8157",
+   "payload_json": "{\"deliveryId\":\"35826f75-8f3e-45ac-ba27-e94f96b090c4\",\"revision\":1}"
+  },
+  {
+   "id": "ae8ca358-50d0-4b5e-8847-95e1c92cf255",
+   "occurred_at": "2026-11-21T14:19:14.314798000Z",
+   "actor_id": "SIM-DEV-0014",
+   "action": "ACK_RECEIVED",
+   "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+   "outcome": "DUPLICATE",
+   "correlation_id": "41a8782e-87c1-43e4-b541-5a03aab7261b",
+   "payload_json": "{\"deliveryId\":\"a059cf91-5f97-49f1-839c-9b6a39f8df31\",\"revision\":1}"
+  },
+  {
+   "id": "c0cc09b1-9caa-4aae-a51d-c9ceeef4f855",
+   "occurred_at": "2026-11-21T14:19:14.326705000Z",
+   "actor_id": "SIM-DEV-0001",
+   "action": "ACK_RECEIVED",
+   "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+   "outcome": "DUPLICATE",
+   "correlation_id": "77b6635a-3b99-4459-9698-23cf7f938e14",
+   "payload_json": "{\"deliveryId\":\"2c067ddf-ee3a-4311-a345-2542c6617f34\",\"revision\":1}"
+  },
+  {
+   "id": "82f18eee-24a4-4b8f-9aa6-05ef9b5de438",
+   "occurred_at": "2026-11-21T14:19:14.330051000Z",
+   "actor_id": "SIM-DEV-0019",
+   "action": "ACK_RECEIVED",
+   "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+   "outcome": "DUPLICATE",
+   "correlation_id": "83155ff0-37e8-4341-ab0f-e62d1dfd3dfe",
+   "payload_json": "{\"deliveryId\":\"d2ad6b18-67e0-4c11-8608-582a1b9379e0\",\"revision\":1}"
+  },
+  {
+   "id": "9a592933-a407-443b-a9e3-103fe814323c",
+   "occurred_at": "2026-11-21T14:19:14.355361000Z",
+   "actor_id": "SIM-DEV-0021",
+   "action": "ACK_RECEIVED",
+   "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+   "outcome": "DUPLICATE",
+   "correlation_id": "4c7e11c4-ea54-4c02-97f2-a0ac5e98f9b9",
+   "payload_json": "{\"deliveryId\":\"911734ac-aaf4-46c3-8ce7-5b86b67715dd\",\"revision\":1}"
+  },
+  {
+   "id": "82cc3c3c-ed1a-499f-9640-1b88cfdea2f7",
+   "occurred_at": "2026-11-21T14:19:14.390825000Z",
+   "actor_id": "SIM-DEV-0022",
+   "action": "ACK_RECEIVED",
+   "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+   "outcome": "DUPLICATE",
+   "correlation_id": "2ce395ff-4a50-4ca9-ac27-aafe3bf0f8ff",
+   "payload_json": "{\"deliveryId\":\"5e5a2fdd-dff4-4af7-8db5-bd1156fd01b0\",\"revision\":1}"
+  },
+  {
+   "id": "34345074-e6f4-4157-b44c-4b093a49a111",
+   "occurred_at": "2026-11-21T14:19:14.417930000Z",
+   "actor_id": "SIM-DEV-0024",
+   "action": "ACK_RECEIVED",
+   "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+   "outcome": "DUPLICATE",
+   "correlation_id": "7a4e5aa0-72ec-4400-b476-26b650a4e0fe",
+   "payload_json": "{\"deliveryId\":\"db19ae32-9316-494b-a5a2-4b3d56608cd7\",\"revision\":1}"
+  },
+  {
+   "id": "89885c75-399d-4a9b-b516-7e42b42ce558",
+   "occurred_at": "2026-11-21T14:19:14.473490000Z",
+   "actor_id": "SIM-DEV-0026",
+   "action": "ACK_RECEIVED",
+   "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+   "outcome": "DUPLICATE",
+   "correlation_id": "6163a701-4399-4482-8628-1630fa50608c",
+   "payload_json": "{\"deliveryId\":\"c8df178c-869a-4a12-9fe7-2e3432843f9a\",\"revision\":1}"
+  },
+  {
+   "id": "4a931b77-0f0b-4068-b7aa-8bf1f5e59608",
+   "occurred_at": "2026-11-21T14:19:14.479103000Z",
+   "actor_id": "SIM-DEV-0027",
+   "action": "ACK_RECEIVED",
+   "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+   "outcome": "DUPLICATE",
+   "correlation_id": "3a4cd098-a410-477d-be0c-c5ba8ad020e5",
+   "payload_json": "{\"deliveryId\":\"faad3b7f-ea57-4c5a-b545-6af30c23fe50\",\"revision\":1}"
+  },
+  {
+   "id": "15cdaa01-d277-46de-802f-3efa53a8c382",
+   "occurred_at": "2026-11-21T14:19:14.480818000Z",
+   "actor_id": "SIM-DEV-0028",
+   "action": "ACK_RECEIVED",
+   "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+   "outcome": "DUPLICATE",
+   "correlation_id": "1cc3514a-7693-421f-bbd6-bec6e2746c22",
+   "payload_json": "{\"deliveryId\":\"d7cdb2f0-6bf2-4632-8764-854873e72bbc\",\"revision\":1}"
+  },
+  {
+   "id": "31027651-b3c9-4d7f-892b-6821e0918410",
+   "occurred_at": "2026-11-21T14:19:14.483827000Z",
+   "actor_id": "SIM-DEV-0030",
+   "action": "ACK_RECEIVED",
+   "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+   "outcome": "DUPLICATE",
+   "correlation_id": "f88e85d3-035b-4935-97e0-6b6f2e077f7b",
+   "payload_json": "{\"deliveryId\":\"400b9ce6-f452-48f1-af2e-87be75536cf3\",\"revision\":1}"
+  },
+  {
+   "id": "aeee7ef9-851f-426e-a71f-5821b39dfd45",
+   "occurred_at": "2026-11-21T14:19:14.491958000Z",
+   "actor_id": "SIM-DEV-0032",
+   "action": "ACK_RECEIVED",
+   "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+   "outcome": "DUPLICATE",
+   "correlation_id": "579d09d3-7dc6-4255-b40b-fe7027e8c81c",
+   "payload_json": "{\"deliveryId\":\"2a790832-a04b-4d4e-8ebc-a9fdc6a1750c\",\"revision\":1}"
+  },
+  {
+   "id": "4619ffb5-5962-444d-b807-2ce687c14b31",
+   "occurred_at": "2026-11-21T14:19:14.496583000Z",
+   "actor_id": "SIM-DEV-0033",
+   "action": "ACK_RECEIVED",
+   "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+   "outcome": "DUPLICATE",
+   "correlation_id": "c37dc798-3a5b-453a-840f-f9df23d2a8fe",
+   "payload_json": "{\"deliveryId\":\"43ff3067-e76a-4961-a96d-90e39d636c06\",\"revision\":1}"
+  },
+  {
+   "id": "b7131bea-c8a8-4d49-826a-aa72dea3272f",
+   "occurred_at": "2026-11-21T14:19:14.498953000Z",
+   "actor_id": "SIM-DEV-0034",
+   "action": "ACK_RECEIVED",
+   "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+   "outcome": "DUPLICATE",
+   "correlation_id": "a11a4665-5ba0-46bc-b210-6450c39dd86a",
+   "payload_json": "{\"deliveryId\":\"9fd356f1-0111-4ce2-a701-6b9bf64f0b3b\",\"revision\":1}"
+  },
+  {
+   "id": "1aa22a52-76fc-4dcf-9a18-6e06476c7bfb",
+   "occurred_at": "2026-11-21T14:19:14.506088000Z",
+   "actor_id": "SIM-DEV-0037",
+   "action": "ACK_RECEIVED",
+   "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+   "outcome": "DUPLICATE",
+   "correlation_id": "1bc1ec9f-3865-40a2-853e-9d211720c9af",
+   "payload_json": "{\"deliveryId\":\"a191c9f2-5c7a-44db-9cda-e5314142a0de\",\"revision\":1}"
+  },
+  {
+   "id": "5c897263-16c7-488c-8ff0-2ec2176564a6",
+   "occurred_at": "2026-11-21T14:19:14.506842000Z",
+   "actor_id": "SIM-DEV-0038",
+   "action": "ACK_RECEIVED",
+   "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+   "outcome": "DUPLICATE",
+   "correlation_id": "f0a74d49-006e-4202-8573-06e23463fe3c",
+   "payload_json": "{\"deliveryId\":\"521a71a7-3c16-47c0-8268-ec7afb65cc26\",\"revision\":1}"
+  },
+  {
+   "id": "b035aaa5-8f1f-480c-af73-e33c13017bf5",
+   "occurred_at": "2026-11-21T14:19:14.512260000Z",
+   "actor_id": "SIM-DEV-0039",
+   "action": "ACK_RECEIVED",
+   "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+   "outcome": "DUPLICATE",
+   "correlation_id": "3721527a-717c-4e49-a717-57cbcdf832bf",
+   "payload_json": "{\"deliveryId\":\"2a76d578-e3ed-400c-92e9-39b9849dcb65\",\"revision\":1}"
+  },
+  {
+   "id": "44c43c43-687b-485d-ab4f-4e4e9954b18e",
+   "occurred_at": "2026-11-21T14:19:14.519561000Z",
+   "actor_id": "SIM-DEV-0042",
+   "action": "ACK_RECEIVED",
+   "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+   "outcome": "DUPLICATE",
+   "correlation_id": "1d08f3b2-893c-4441-8d31-ebd5d5f7a5a9",
+   "payload_json": "{\"deliveryId\":\"e21da22a-2883-4d3b-8d78-02fecff48c29\",\"revision\":1}"
+  },
+  {
+   "id": "3cb1dbbe-6d01-4c2d-9dcf-fd1eab13a7bf",
+   "occurred_at": "2026-11-21T14:19:14.535328000Z",
+   "actor_id": "SIM-DEV-0050",
+   "action": "ACK_RECEIVED",
+   "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+   "outcome": "DUPLICATE",
+   "correlation_id": "bd2f9910-9f0b-4697-8e92-4e2b53c57fa6",
+   "payload_json": "{\"deliveryId\":\"218d0463-3f47-4ff5-af92-e770f717c5e4\",\"revision\":1}"
+  },
+  {
+   "id": "6ead1e21-44df-4bb5-9d75-06bb500b4355",
+   "occurred_at": "2026-11-21T14:19:14.536891000Z",
+   "actor_id": "SIM-DEV-0047",
+   "action": "ACK_RECEIVED",
+   "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+   "outcome": "DUPLICATE",
+   "correlation_id": "44da010e-677e-44a2-9bd0-ebee7a981de0",
+   "payload_json": "{\"deliveryId\":\"7e4d14a6-ce63-4098-a0d2-c1945735adff\",\"revision\":1}"
+  },
+  {
+   "id": "5c94daa6-f3a2-46fe-897b-8ab29e427324",
+   "occurred_at": "2026-11-21T14:19:14.590170000Z",
+   "actor_id": null,
+   "action": "ALERT_FULLY_ACKED",
+   "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+   "outcome": "OK",
+   "correlation_id": null,
+   "payload_json": null
+  }
+ ],
+ "auditTotalRows": 125,
+ "headline": {
+  "latencyMs": {
+   "samples": 50,
+   "p50": 189.476,
+   "p95": 301.107,
+   "p99": 305.59,
+   "max": 305.59
+  },
+  "ackReceivedRate": 1.0,
+  "ackReceivedRatePct": 100.0,
+  "retriesFromAttempts": 0,
+  "reconnects": 0,
+  "faultDisconnects": 0,
+  "duplicatePushes": 0,
+  "duplicateAcks": 22,
+  "acksDropped": 0,
+  "acksDelayed": 0,
+  "deliveriesByState": {
+   "RECEIVED": 50
+  }
+ },
+ "artifacts": {
+  "db": "/Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/docs/evidence/chaos/runs/duplicate-04c97420/chaos.db",
+  "serverLog": "/Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/docs/evidence/chaos/runs/duplicate-04c97420/server.log",
+  "simLog": "/Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/docs/evidence/chaos/runs/duplicate-04c97420/sim.log",
+  "auditFull": "/Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/docs/evidence/chaos/runs/duplicate-04c97420/audit.json"
+ }
+}

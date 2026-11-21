@@ -1,0 +1,1252 @@
+[
+ {
+  "id": "30d2992e-5e26-468f-aa1e-8f47df7255a4",
+  "occurred_at": "2026-11-21T14:19:13.690680000Z",
+  "actor_id": "SIM-DEV-0004",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F04-A",
+  "outcome": "OK",
+  "correlation_id": "sim-ea9fe03b-faa8-423a-befc-8513a353e74b",
+  "payload_json": null
+ },
+ {
+  "id": "5ec6027c-6543-4b74-baa4-36eba7b747cb",
+  "occurred_at": "2026-11-21T14:19:13.697553000Z",
+  "actor_id": "SIM-DEV-0010",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F10-A",
+  "outcome": "OK",
+  "correlation_id": "sim-d94e885e-6eb5-4e2f-9dde-e6f2912219f6",
+  "payload_json": null
+ },
+ {
+  "id": "9a19cfc3-63b0-408b-abef-92a831f20636",
+  "occurred_at": "2026-11-21T14:19:13.713622000Z",
+  "actor_id": "SIM-DEV-0005",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F05-A",
+  "outcome": "OK",
+  "correlation_id": "sim-8b2f0609-0385-4e7a-a955-3310caaaba92",
+  "payload_json": null
+ },
+ {
+  "id": "f774b318-c4a7-4aff-8ea4-329b60677345",
+  "occurred_at": "2026-11-21T14:19:13.716149000Z",
+  "actor_id": "SIM-DEV-0003",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F03-A",
+  "outcome": "OK",
+  "correlation_id": "sim-397b21b8-8093-43e6-a633-803470d01482",
+  "payload_json": null
+ },
+ {
+  "id": "7151c3a2-bd70-4b2a-823d-b22add08596c",
+  "occurred_at": "2026-11-21T14:19:13.717075000Z",
+  "actor_id": "SIM-DEV-0006",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F06-A",
+  "outcome": "OK",
+  "correlation_id": "sim-0512e92e-414b-49e7-8006-112ea63fc2dd",
+  "payload_json": null
+ },
+ {
+  "id": "bdd7f57a-bffc-43f3-9821-dcc0945aa0b5",
+  "occurred_at": "2026-11-21T14:19:13.728787000Z",
+  "actor_id": "SIM-DEV-0009",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F09-A",
+  "outcome": "OK",
+  "correlation_id": "sim-4d36e80e-e20d-47f5-9d25-586faa224d90",
+  "payload_json": null
+ },
+ {
+  "id": "8bd9fd76-1425-4eb9-8a19-641093fe719a",
+  "occurred_at": "2026-11-21T14:19:13.732266000Z",
+  "actor_id": "SIM-DEV-0013",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F03-B",
+  "outcome": "OK",
+  "correlation_id": "sim-5a0e8051-a0eb-44ce-876a-8b1f02f86c33",
+  "payload_json": null
+ },
+ {
+  "id": "3d4eb9dd-a4d1-4e48-b9b8-7ba95a2cb58e",
+  "occurred_at": "2026-11-21T14:19:13.733246000Z",
+  "actor_id": "SIM-DEV-0001",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F01-A",
+  "outcome": "OK",
+  "correlation_id": "sim-8de40be3-769d-4a45-921d-30060159c8f4",
+  "payload_json": null
+ },
+ {
+  "id": "d4132e7e-0960-4d9d-b1b9-959fe8cbdbb4",
+  "occurred_at": "2026-11-21T14:19:13.734491000Z",
+  "actor_id": "SIM-DEV-0012",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F02-B",
+  "outcome": "OK",
+  "correlation_id": "sim-37e3b2a7-d31f-45a2-a98d-a426f0beca44",
+  "payload_json": null
+ },
+ {
+  "id": "91c4925b-6e61-49ba-9398-f5e78f457fe8",
+  "occurred_at": "2026-11-21T14:19:13.735787000Z",
+  "actor_id": "SIM-DEV-0014",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F04-B",
+  "outcome": "OK",
+  "correlation_id": "sim-0bf65348-89d3-4021-b7e2-6fb06e4da5ed",
+  "payload_json": null
+ },
+ {
+  "id": "b2fdaf64-99a2-401f-9184-5d55f6011d90",
+  "occurred_at": "2026-11-21T14:19:13.736850000Z",
+  "actor_id": "SIM-DEV-0007",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F07-A",
+  "outcome": "OK",
+  "correlation_id": "sim-1dbed949-ac3e-413d-a884-c87d70bcc42d",
+  "payload_json": null
+ },
+ {
+  "id": "eeb3d478-a887-4183-b7c3-e8f6eb4b43aa",
+  "occurred_at": "2026-11-21T14:19:13.743756000Z",
+  "actor_id": "SIM-DEV-0008",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F08-A",
+  "outcome": "OK",
+  "correlation_id": "sim-32767cb2-a566-407a-96e1-ef11e4c42d9c",
+  "payload_json": null
+ },
+ {
+  "id": "6098d751-6a67-48a8-9f84-3c277344b6f6",
+  "occurred_at": "2026-11-21T14:19:13.746784000Z",
+  "actor_id": "SIM-DEV-0015",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F05-B",
+  "outcome": "OK",
+  "correlation_id": "sim-aec24e6a-d331-49fa-8814-cc5b160c5d01",
+  "payload_json": null
+ },
+ {
+  "id": "014cefd2-a3b4-42d7-bc64-ee60d7c1797c",
+  "occurred_at": "2026-11-21T14:19:13.748681000Z",
+  "actor_id": "SIM-DEV-0002",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F02-A",
+  "outcome": "OK",
+  "correlation_id": "sim-4b0510c9-e67a-4bae-9bd0-1a901aa97535",
+  "payload_json": null
+ },
+ {
+  "id": "bd055597-d62a-4398-8af4-270df30253fd",
+  "occurred_at": "2026-11-21T14:19:13.749389000Z",
+  "actor_id": "SIM-DEV-0011",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F01-B",
+  "outcome": "OK",
+  "correlation_id": "sim-227f46a8-5378-4e8b-86be-850ecdcf629f",
+  "payload_json": null
+ },
+ {
+  "id": "6aebb85c-0e2a-424a-8421-71563026926f",
+  "occurred_at": "2026-11-21T14:19:13.755460000Z",
+  "actor_id": "SIM-DEV-0019",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F09-B",
+  "outcome": "OK",
+  "correlation_id": "sim-3946ed19-c8e0-4def-adbf-185f7ca5a03d",
+  "payload_json": null
+ },
+ {
+  "id": "57eeebb2-49d7-4040-a2ed-e00630a676c5",
+  "occurred_at": "2026-11-21T14:19:13.756836000Z",
+  "actor_id": "SIM-DEV-0016",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F06-B",
+  "outcome": "OK",
+  "correlation_id": "sim-0a001bb6-ef8c-43df-99b0-4c7b93205518",
+  "payload_json": null
+ },
+ {
+  "id": "ee4ebb45-fcbd-4213-8333-9ce6000025c0",
+  "occurred_at": "2026-11-21T14:19:13.758999000Z",
+  "actor_id": "SIM-DEV-0018",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F08-B",
+  "outcome": "OK",
+  "correlation_id": "sim-24b63f04-e5b5-4ef4-aaf7-c1653a72aac5",
+  "payload_json": null
+ },
+ {
+  "id": "5c141895-23a7-4b53-880b-00c8a7add577",
+  "occurred_at": "2026-11-21T14:19:13.775500000Z",
+  "actor_id": "SIM-DEV-0021",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F01-C",
+  "outcome": "OK",
+  "correlation_id": "sim-604e07d2-ea33-4e08-bc87-bcc6de62f888",
+  "payload_json": null
+ },
+ {
+  "id": "fbb59da0-55e8-4aaa-94de-59eb5d6fae05",
+  "occurred_at": "2026-11-21T14:19:13.777208000Z",
+  "actor_id": "SIM-DEV-0023",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F03-C",
+  "outcome": "OK",
+  "correlation_id": "sim-a568d09c-4107-4eb9-83cb-fc9eba08b51f",
+  "payload_json": null
+ },
+ {
+  "id": "43305464-79e6-42ce-aa0c-101f89a1aee8",
+  "occurred_at": "2026-11-21T14:19:13.779099000Z",
+  "actor_id": "SIM-DEV-0017",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F07-B",
+  "outcome": "OK",
+  "correlation_id": "sim-b70bca16-6784-437d-8b7b-b7ed89e7d52c",
+  "payload_json": null
+ },
+ {
+  "id": "19219c3a-a356-4e83-a6a5-4b5bea2cb8fc",
+  "occurred_at": "2026-11-21T14:19:13.780525000Z",
+  "actor_id": "SIM-DEV-0020",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F10-B",
+  "outcome": "OK",
+  "correlation_id": "sim-ea464797-eff7-4085-b2b9-e73fb12d0af8",
+  "payload_json": null
+ },
+ {
+  "id": "11863b05-4af0-48de-bd9a-81e332d2b470",
+  "occurred_at": "2026-11-21T14:19:13.782953000Z",
+  "actor_id": "SIM-DEV-0022",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F02-C",
+  "outcome": "OK",
+  "correlation_id": "sim-8b54d9c4-b8d1-4ca6-9575-99b70f802ac7",
+  "payload_json": null
+ },
+ {
+  "id": "bfe055dd-3d48-4c61-9bc3-862f05b82ce3",
+  "occurred_at": "2026-11-21T14:19:13.798852000Z",
+  "actor_id": "SIM-DEV-0024",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F04-C",
+  "outcome": "OK",
+  "correlation_id": "sim-0b7a5af7-5fcd-49c7-a116-08727cc415e8",
+  "payload_json": null
+ },
+ {
+  "id": "1cc31701-280e-47fc-9502-1703f1b9a0a2",
+  "occurred_at": "2026-11-21T14:19:13.810701000Z",
+  "actor_id": "SIM-DEV-0025",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F05-C",
+  "outcome": "OK",
+  "correlation_id": "sim-b36e8c3c-6750-4b43-a6d5-aaf4895b2b26",
+  "payload_json": null
+ },
+ {
+  "id": "a94edc48-3148-4dfd-aaf0-e190268016b9",
+  "occurred_at": "2026-11-21T14:19:13.815097000Z",
+  "actor_id": "SIM-DEV-0026",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F06-C",
+  "outcome": "OK",
+  "correlation_id": "sim-36af6fbd-cb75-48be-938b-8dbf5d6e6139",
+  "payload_json": null
+ },
+ {
+  "id": "4b9c76ee-70f6-4b9f-9733-84e2adc84cc6",
+  "occurred_at": "2026-11-21T14:19:13.836778000Z",
+  "actor_id": "SIM-DEV-0027",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F07-C",
+  "outcome": "OK",
+  "correlation_id": "sim-b4ede986-9d20-433f-a569-e741018a4823",
+  "payload_json": null
+ },
+ {
+  "id": "62d21415-4b28-47b8-b459-5cacd7d4f67c",
+  "occurred_at": "2026-11-21T14:19:13.841716000Z",
+  "actor_id": "SIM-DEV-0028",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F08-C",
+  "outcome": "OK",
+  "correlation_id": "sim-c65d90a3-9c77-4351-b6c2-aba10200b785",
+  "payload_json": null
+ },
+ {
+  "id": "f4d97dcf-2f99-4577-a12e-55a9856d8f53",
+  "occurred_at": "2026-11-21T14:19:13.864057000Z",
+  "actor_id": "SIM-DEV-0029",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F09-C",
+  "outcome": "OK",
+  "correlation_id": "sim-72999b83-1664-435b-89ac-6f583e4d5c5b",
+  "payload_json": null
+ },
+ {
+  "id": "9bd14dc8-a473-4505-a9ca-4366b8108ea4",
+  "occurred_at": "2026-11-21T14:19:13.886350000Z",
+  "actor_id": "SIM-DEV-0030",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F10-C",
+  "outcome": "OK",
+  "correlation_id": "sim-74ae01d9-c1e0-4290-aa5f-704e73d7dd27",
+  "payload_json": null
+ },
+ {
+  "id": "444f0805-ee0d-45b3-8ce3-f0bcde011d79",
+  "occurred_at": "2026-11-21T14:19:13.909934000Z",
+  "actor_id": "SIM-DEV-0031",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F01-D",
+  "outcome": "OK",
+  "correlation_id": "sim-8b8bbb1f-b9df-4acc-bb87-90db36c6e191",
+  "payload_json": null
+ },
+ {
+  "id": "c37b6de7-2819-4a33-ba31-a85559963b6a",
+  "occurred_at": "2026-11-21T14:19:13.925552000Z",
+  "actor_id": "SIM-DEV-0032",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F02-D",
+  "outcome": "OK",
+  "correlation_id": "sim-07724305-554a-49c0-931f-39a3c43901dd",
+  "payload_json": null
+ },
+ {
+  "id": "87247415-ab5f-49cb-a305-d6a024c7e408",
+  "occurred_at": "2026-11-21T14:19:13.936001000Z",
+  "actor_id": "SIM-DEV-0033",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F03-D",
+  "outcome": "OK",
+  "correlation_id": "sim-b076d890-6bda-40b2-a59f-68f86b2e091e",
+  "payload_json": null
+ },
+ {
+  "id": "9785c372-9c18-485d-910e-9151bd3c3430",
+  "occurred_at": "2026-11-21T14:19:13.943033000Z",
+  "actor_id": "SIM-DEV-0034",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F04-D",
+  "outcome": "OK",
+  "correlation_id": "sim-f62a7178-b26a-46d7-a848-1d55fb97d398",
+  "payload_json": null
+ },
+ {
+  "id": "573a7650-b484-4b77-9a89-4604db6c7614",
+  "occurred_at": "2026-11-21T14:19:13.951504000Z",
+  "actor_id": "SIM-DEV-0035",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F05-D",
+  "outcome": "OK",
+  "correlation_id": "sim-68b3dba8-e83b-45f8-abd8-b272266e8ff1",
+  "payload_json": null
+ },
+ {
+  "id": "268090d5-8607-4dd9-a5fe-aa7a78997c23",
+  "occurred_at": "2026-11-21T14:19:13.959429000Z",
+  "actor_id": "SIM-DEV-0036",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F06-D",
+  "outcome": "OK",
+  "correlation_id": "sim-9255b20f-e6f4-4919-ac16-87403da9c81e",
+  "payload_json": null
+ },
+ {
+  "id": "d0390ac4-19c1-4a43-989f-6b661d4cc3b7",
+  "occurred_at": "2026-11-21T14:19:13.967533000Z",
+  "actor_id": "SIM-DEV-0037",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F07-D",
+  "outcome": "OK",
+  "correlation_id": "sim-17167f21-c837-4302-a61a-6b4f82b558b9",
+  "payload_json": null
+ },
+ {
+  "id": "fd560398-fcff-4363-b23c-3576382be305",
+  "occurred_at": "2026-11-21T14:19:13.984823000Z",
+  "actor_id": "SIM-DEV-0038",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F08-D",
+  "outcome": "OK",
+  "correlation_id": "sim-9635c7fb-d975-488b-afe5-e694f7d60b35",
+  "payload_json": null
+ },
+ {
+  "id": "8026f8f9-77ae-4d52-b1de-76215f2f20e4",
+  "occurred_at": "2026-11-21T14:19:13.994032000Z",
+  "actor_id": "SIM-DEV-0039",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F09-D",
+  "outcome": "OK",
+  "correlation_id": "sim-ff641bd4-1aa7-4f42-81a2-9fe3941551c4",
+  "payload_json": null
+ },
+ {
+  "id": "061642a7-9653-4731-bf01-9453343a0ff7",
+  "occurred_at": "2026-11-21T14:19:13.998205000Z",
+  "actor_id": "SIM-DEV-0040",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F10-D",
+  "outcome": "OK",
+  "correlation_id": "sim-bdd78a9d-d5b8-4aa1-b207-130c15795ccc",
+  "payload_json": null
+ },
+ {
+  "id": "f4f36827-49af-4aa4-bc87-740a59cd37f1",
+  "occurred_at": "2026-11-21T14:19:14.012733000Z",
+  "actor_id": "SIM-DEV-0041",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F01-A",
+  "outcome": "OK",
+  "correlation_id": "sim-62c14574-a795-41c3-8ab1-6635aa88a885",
+  "payload_json": null
+ },
+ {
+  "id": "ce30c2ae-624e-4b44-ae24-a4195e78fd6e",
+  "occurred_at": "2026-11-21T14:19:14.035014000Z",
+  "actor_id": "SIM-DEV-0042",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F02-A",
+  "outcome": "OK",
+  "correlation_id": "sim-711a70f8-4551-482e-bf46-765f3c7389f6",
+  "payload_json": null
+ },
+ {
+  "id": "869fb62a-2b72-4185-b385-35d343bf5d3e",
+  "occurred_at": "2026-11-21T14:19:14.060902000Z",
+  "actor_id": "SIM-DEV-0043",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F03-A",
+  "outcome": "OK",
+  "correlation_id": "sim-accafca4-373f-41f1-ae9e-309baf1bff6d",
+  "payload_json": null
+ },
+ {
+  "id": "6a17642f-91d6-4b0a-b496-6f049607c535",
+  "occurred_at": "2026-11-21T14:19:14.067003000Z",
+  "actor_id": "SIM-DEV-0044",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F04-A",
+  "outcome": "OK",
+  "correlation_id": "sim-b7c59992-15ce-4b36-8d6b-fa27b054e00d",
+  "payload_json": null
+ },
+ {
+  "id": "2e83bf53-ff54-4822-9d5f-361614dcea17",
+  "occurred_at": "2026-11-21T14:19:14.086618000Z",
+  "actor_id": "SIM-DEV-0045",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F05-A",
+  "outcome": "OK",
+  "correlation_id": "sim-8615877b-c605-4443-87b4-9a7c9e6e44d3",
+  "payload_json": null
+ },
+ {
+  "id": "4082ff8d-e621-4036-9475-52c108ab7271",
+  "occurred_at": "2026-11-21T14:19:14.093875000Z",
+  "actor_id": "SIM-DEV-0046",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F06-A",
+  "outcome": "OK",
+  "correlation_id": "sim-cad63c0a-0c20-4a40-9e6c-450107db7b63",
+  "payload_json": null
+ },
+ {
+  "id": "5f3dfd54-13e5-4ea8-9233-4c04bf990918",
+  "occurred_at": "2026-11-21T14:19:14.116937000Z",
+  "actor_id": "SIM-DEV-0047",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F07-A",
+  "outcome": "OK",
+  "correlation_id": "sim-2f23c15b-608b-4d62-9090-4e906eb55853",
+  "payload_json": null
+ },
+ {
+  "id": "ea3d08d4-fa1b-467d-8b59-c1dc2a16e8ee",
+  "occurred_at": "2026-11-21T14:19:14.130756000Z",
+  "actor_id": "SIM-DEV-0048",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F08-A",
+  "outcome": "OK",
+  "correlation_id": "sim-c25b02d4-a2d4-4834-a17d-ba9e4cbe5259",
+  "payload_json": null
+ },
+ {
+  "id": "867fca76-bd54-45b1-8ffe-46e051f1b4c6",
+  "occurred_at": "2026-11-21T14:19:14.135471000Z",
+  "actor_id": "SIM-DEV-0049",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F09-A",
+  "outcome": "OK",
+  "correlation_id": "sim-1d6b5409-9054-4608-a8ee-0d32e606e14b",
+  "payload_json": null
+ },
+ {
+  "id": "2157868e-f1d7-46e2-b5ef-93812fa5f494",
+  "occurred_at": "2026-11-21T14:19:14.150936000Z",
+  "actor_id": "SIM-DEV-0050",
+  "action": "AUTH_DEVICE_SUCCESS",
+  "scope": "F10-A",
+  "outcome": "OK",
+  "correlation_id": "sim-9cd9cba8-8b40-47fb-931d-a6f717de3b81",
+  "payload_json": null
+ },
+ {
+  "id": "e0a3030f-53a5-472f-8038-43f6cbb715e4",
+  "occurred_at": "2026-11-21T14:19:14.224677000Z",
+  "actor_id": "0b5d8d89-63f1-4829-9bc1-3e515e50fed0",
+  "action": "AUTH_OPERATOR_SUCCESS",
+  "scope": "SYSTEM_ADMIN",
+  "outcome": "OK",
+  "correlation_id": "b36a4171-b960-48a0-84fb-dbe4d34b34d3",
+  "payload_json": null
+ },
+ {
+  "id": "52349cb8-6881-44d5-bb1d-dc174d233ed7",
+  "occurred_at": "2026-11-21T14:19:14.262552000Z",
+  "actor_id": "SIM-DEV-0001",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "77b6635a-3b99-4459-9698-23cf7f938e14",
+  "payload_json": "{\"deliveryId\":\"2c067ddf-ee3a-4311-a345-2542c6617f34\",\"revision\":1}"
+ },
+ {
+  "id": "2a5e06fb-a870-46bc-a97b-399995c1f60b",
+  "occurred_at": "2026-11-21T14:19:14.265036000Z",
+  "actor_id": "SIM-DEV-0002",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "68760440-dd7d-4fcd-af4a-3763e49a5bb7",
+  "payload_json": "{\"deliveryId\":\"4b2c53d6-741e-4c9b-be42-b30567485154\",\"revision\":1}"
+ },
+ {
+  "id": "beb119cf-65e4-4d4c-8f9b-f53b662bf66c",
+  "occurred_at": "2026-11-21T14:19:14.269642000Z",
+  "actor_id": "SIM-DEV-0003",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "1f3faf55-a792-4d15-b47b-1518730e2ddb",
+  "payload_json": "{\"deliveryId\":\"acae35f8-9d61-471a-bb31-2c999466b3a1\",\"revision\":1}"
+ },
+ {
+  "id": "f24762b5-53f0-4c37-9fef-cb353a8eb15b",
+  "occurred_at": "2026-11-21T14:19:14.271387000Z",
+  "actor_id": "SIM-DEV-0004",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "9be68447-835d-48f5-b4c6-0187bc999ee3",
+  "payload_json": "{\"deliveryId\":\"1a0b45d1-8ee5-4f5b-99ab-2512230d53e0\",\"revision\":1}"
+ },
+ {
+  "id": "0fdba462-8d8d-4133-b6e8-d7230a96b6da",
+  "occurred_at": "2026-11-21T14:19:14.274393000Z",
+  "actor_id": "SIM-DEV-0005",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "e509d1e1-e32d-40a9-b7fb-5c24e0624b44",
+  "payload_json": "{\"deliveryId\":\"8164b987-919e-471f-9e9f-c3d3d516408d\",\"revision\":1}"
+ },
+ {
+  "id": "436bce7c-f0fb-4ba1-b399-11b2c9af3ca1",
+  "occurred_at": "2026-11-21T14:19:14.277476000Z",
+  "actor_id": "SIM-DEV-0006",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "6f7424d9-7199-4e8e-87e3-d67df3389301",
+  "payload_json": "{\"deliveryId\":\"67635228-3117-41c0-9f65-4538a5ec5486\",\"revision\":1}"
+ },
+ {
+  "id": "4868e681-9515-4c6e-b966-ac20a23f6de0",
+  "occurred_at": "2026-11-21T14:19:14.279169000Z",
+  "actor_id": "SIM-DEV-0006",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "DUPLICATE",
+  "correlation_id": "6f7424d9-7199-4e8e-87e3-d67df3389301",
+  "payload_json": "{\"deliveryId\":\"67635228-3117-41c0-9f65-4538a5ec5486\",\"revision\":1}"
+ },
+ {
+  "id": "20fc8d77-c7e9-48b6-a669-c8a8bb866ccd",
+  "occurred_at": "2026-11-21T14:19:14.286025000Z",
+  "actor_id": "SIM-DEV-0007",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "7dc72b7b-99e7-42db-9fc6-73310d7e9602",
+  "payload_json": "{\"deliveryId\":\"812efc82-c440-46fe-a0d5-dc509832d784\",\"revision\":1}"
+ },
+ {
+  "id": "24240075-2ab6-403d-89ef-518a483cc8de",
+  "occurred_at": "2026-11-21T14:19:14.289863000Z",
+  "actor_id": "SIM-DEV-0008",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "beabb9ea-30d2-4774-9ba6-70d543790ffc",
+  "payload_json": "{\"deliveryId\":\"6e8d7e32-d99e-440b-b1c1-883108503cdf\",\"revision\":1}"
+ },
+ {
+  "id": "43b983d4-2237-49e5-915c-a6edb15a546b",
+  "occurred_at": "2026-11-21T14:19:14.290103000Z",
+  "actor_id": "SIM-DEV-0009",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "31005999-cbce-4c18-a88f-c69e6efca226",
+  "payload_json": "{\"deliveryId\":\"419c368d-743e-4f32-b582-8e8b654c1643\",\"revision\":1}"
+ },
+ {
+  "id": "c218914d-00df-4b33-bf25-1b7e1f2f59f9",
+  "occurred_at": "2026-11-21T14:19:14.293537000Z",
+  "actor_id": "SIM-DEV-0010",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "fbf97b92-3fce-4eab-96b2-8408a72d3eba",
+  "payload_json": "{\"deliveryId\":\"232426ac-1f85-47ca-9996-e97c12abe83b\",\"revision\":1}"
+ },
+ {
+  "id": "fce85608-e213-4e38-9cda-528b0df20df7",
+  "occurred_at": "2026-11-21T14:19:14.297617000Z",
+  "actor_id": "SIM-DEV-0010",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "DUPLICATE",
+  "correlation_id": "fbf97b92-3fce-4eab-96b2-8408a72d3eba",
+  "payload_json": "{\"deliveryId\":\"232426ac-1f85-47ca-9996-e97c12abe83b\",\"revision\":1}"
+ },
+ {
+  "id": "b178d0e8-0ce9-44b3-bd59-bba95eec80fa",
+  "occurred_at": "2026-11-21T14:19:14.297695000Z",
+  "actor_id": "SIM-DEV-0011",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "469305df-5f42-448b-aaa2-8aafce4f8157",
+  "payload_json": "{\"deliveryId\":\"35826f75-8f3e-45ac-ba27-e94f96b090c4\",\"revision\":1}"
+ },
+ {
+  "id": "020e6c7d-c8d0-4a17-b462-d25fabe5e08c",
+  "occurred_at": "2026-11-21T14:19:14.299594000Z",
+  "actor_id": "SIM-DEV-0012",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "69b549ab-f37a-4c0a-808a-f8aaef24110b",
+  "payload_json": "{\"deliveryId\":\"f8b58173-96cd-41c3-9050-e9aa9970fd7c\",\"revision\":1}"
+ },
+ {
+  "id": "7ff75a61-a305-4fb6-ab7f-9690224cae25",
+  "occurred_at": "2026-11-21T14:19:14.302747000Z",
+  "actor_id": "SIM-DEV-0011",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "DUPLICATE",
+  "correlation_id": "469305df-5f42-448b-aaa2-8aafce4f8157",
+  "payload_json": "{\"deliveryId\":\"35826f75-8f3e-45ac-ba27-e94f96b090c4\",\"revision\":1}"
+ },
+ {
+  "id": "fc873a1c-2b07-49dd-86e6-9d1f8cf2ffbc",
+  "occurred_at": "2026-11-21T14:19:14.303468000Z",
+  "actor_id": "SIM-DEV-0013",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "5b94d7be-f914-4338-9c63-6a8abb54e5ac",
+  "payload_json": "{\"deliveryId\":\"1b1215a4-989c-4f80-a5ad-aa763e50c4c5\",\"revision\":1}"
+ },
+ {
+  "id": "865bd0bf-c941-4fe8-9e62-a65bf997b675",
+  "occurred_at": "2026-11-21T14:19:14.310753000Z",
+  "actor_id": "SIM-DEV-0014",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "41a8782e-87c1-43e4-b541-5a03aab7261b",
+  "payload_json": "{\"deliveryId\":\"a059cf91-5f97-49f1-839c-9b6a39f8df31\",\"revision\":1}"
+ },
+ {
+  "id": "e21902c8-b536-44f8-91c8-d2133bbaffcf",
+  "occurred_at": "2026-11-21T14:19:14.313799000Z",
+  "actor_id": "SIM-DEV-0015",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "892bae4c-ef75-458d-abbc-12a43ff807e1",
+  "payload_json": "{\"deliveryId\":\"a7ae011d-0234-4fbd-b8b4-05d0856ef061\",\"revision\":1}"
+ },
+ {
+  "id": "ae8ca358-50d0-4b5e-8847-95e1c92cf255",
+  "occurred_at": "2026-11-21T14:19:14.314798000Z",
+  "actor_id": "SIM-DEV-0014",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "DUPLICATE",
+  "correlation_id": "41a8782e-87c1-43e4-b541-5a03aab7261b",
+  "payload_json": "{\"deliveryId\":\"a059cf91-5f97-49f1-839c-9b6a39f8df31\",\"revision\":1}"
+ },
+ {
+  "id": "b9bfbcc6-0b88-44b9-8d8c-87fd07017fbd",
+  "occurred_at": "2026-11-21T14:19:14.318634000Z",
+  "actor_id": "SIM-DEV-0016",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "4d266e02-8fbd-4186-8c49-808979a6c33d",
+  "payload_json": "{\"deliveryId\":\"488cdb28-c610-4782-a38e-d5482c9adc83\",\"revision\":1}"
+ },
+ {
+  "id": "4512938e-bceb-4676-8ffd-d96d36699601",
+  "occurred_at": "2026-11-21T14:19:14.322126000Z",
+  "actor_id": "SIM-DEV-0017",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "8b968c4a-38a8-4fe7-8a4e-595a7398e068",
+  "payload_json": "{\"deliveryId\":\"a0f5afbf-f344-4491-8959-f18fd2ab4296\",\"revision\":1}"
+ },
+ {
+  "id": "c0cc09b1-9caa-4aae-a51d-c9ceeef4f855",
+  "occurred_at": "2026-11-21T14:19:14.326705000Z",
+  "actor_id": "SIM-DEV-0001",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "DUPLICATE",
+  "correlation_id": "77b6635a-3b99-4459-9698-23cf7f938e14",
+  "payload_json": "{\"deliveryId\":\"2c067ddf-ee3a-4311-a345-2542c6617f34\",\"revision\":1}"
+ },
+ {
+  "id": "1f044b2d-d87f-4721-a0e7-4749c15a88f9",
+  "occurred_at": "2026-11-21T14:19:14.327933000Z",
+  "actor_id": "SIM-DEV-0019",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "83155ff0-37e8-4341-ab0f-e62d1dfd3dfe",
+  "payload_json": "{\"deliveryId\":\"d2ad6b18-67e0-4c11-8608-582a1b9379e0\",\"revision\":1}"
+ },
+ {
+  "id": "82f18eee-24a4-4b8f-9aa6-05ef9b5de438",
+  "occurred_at": "2026-11-21T14:19:14.330051000Z",
+  "actor_id": "SIM-DEV-0019",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "DUPLICATE",
+  "correlation_id": "83155ff0-37e8-4341-ab0f-e62d1dfd3dfe",
+  "payload_json": "{\"deliveryId\":\"d2ad6b18-67e0-4c11-8608-582a1b9379e0\",\"revision\":1}"
+ },
+ {
+  "id": "c083449a-f86a-4f75-b542-0a253199dae0",
+  "occurred_at": "2026-11-21T14:19:14.330309000Z",
+  "actor_id": "SIM-DEV-0018",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "7c88943c-2324-47c1-bbca-e50197065fe1",
+  "payload_json": "{\"deliveryId\":\"3a206cbf-4431-443d-a789-10b553a93aab\",\"revision\":1}"
+ },
+ {
+  "id": "b1e57fdf-3f85-4611-a403-32613574bb58",
+  "occurred_at": "2026-11-21T14:19:14.342621000Z",
+  "actor_id": "SIM-DEV-0020",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "c54bed48-419c-479b-b618-9c15ab728b93",
+  "payload_json": "{\"deliveryId\":\"1dcb288f-14ab-463e-af9d-31e762080f5b\",\"revision\":1}"
+ },
+ {
+  "id": "91eada15-48ab-4825-a781-10e88539677c",
+  "occurred_at": "2026-11-21T14:19:14.352371000Z",
+  "actor_id": "SIM-DEV-0021",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "4c7e11c4-ea54-4c02-97f2-a0ac5e98f9b9",
+  "payload_json": "{\"deliveryId\":\"911734ac-aaf4-46c3-8ce7-5b86b67715dd\",\"revision\":1}"
+ },
+ {
+  "id": "9a592933-a407-443b-a9e3-103fe814323c",
+  "occurred_at": "2026-11-21T14:19:14.355361000Z",
+  "actor_id": "SIM-DEV-0021",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "DUPLICATE",
+  "correlation_id": "4c7e11c4-ea54-4c02-97f2-a0ac5e98f9b9",
+  "payload_json": "{\"deliveryId\":\"911734ac-aaf4-46c3-8ce7-5b86b67715dd\",\"revision\":1}"
+ },
+ {
+  "id": "4938fc0a-00a2-416a-b57b-cae6a98c561d",
+  "occurred_at": "2026-11-21T14:19:14.372745000Z",
+  "actor_id": "SIM-DEV-0022",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "2ce395ff-4a50-4ca9-ac27-aafe3bf0f8ff",
+  "payload_json": "{\"deliveryId\":\"5e5a2fdd-dff4-4af7-8db5-bd1156fd01b0\",\"revision\":1}"
+ },
+ {
+  "id": "82cc3c3c-ed1a-499f-9640-1b88cfdea2f7",
+  "occurred_at": "2026-11-21T14:19:14.390825000Z",
+  "actor_id": "SIM-DEV-0022",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "DUPLICATE",
+  "correlation_id": "2ce395ff-4a50-4ca9-ac27-aafe3bf0f8ff",
+  "payload_json": "{\"deliveryId\":\"5e5a2fdd-dff4-4af7-8db5-bd1156fd01b0\",\"revision\":1}"
+ },
+ {
+  "id": "a90a7e3d-a16d-48f7-b373-f45c0b5c93dc",
+  "occurred_at": "2026-11-21T14:19:14.391462000Z",
+  "actor_id": "SIM-DEV-0023",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "bc308666-adf9-45b6-a09a-8c494aa3b98e",
+  "payload_json": "{\"deliveryId\":\"6b1a3d86-b17a-487b-87e8-d3f2bd54e183\",\"revision\":1}"
+ },
+ {
+  "id": "a64bbe90-4990-4dfb-83f4-5e61be7cf525",
+  "occurred_at": "2026-11-21T14:19:14.406081000Z",
+  "actor_id": "SIM-DEV-0024",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "7a4e5aa0-72ec-4400-b476-26b650a4e0fe",
+  "payload_json": "{\"deliveryId\":\"db19ae32-9316-494b-a5a2-4b3d56608cd7\",\"revision\":1}"
+ },
+ {
+  "id": "34345074-e6f4-4157-b44c-4b093a49a111",
+  "occurred_at": "2026-11-21T14:19:14.417930000Z",
+  "actor_id": "SIM-DEV-0024",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "DUPLICATE",
+  "correlation_id": "7a4e5aa0-72ec-4400-b476-26b650a4e0fe",
+  "payload_json": "{\"deliveryId\":\"db19ae32-9316-494b-a5a2-4b3d56608cd7\",\"revision\":1}"
+ },
+ {
+  "id": "c40549fd-2f6d-4ee6-b1d6-0d7681a81363",
+  "occurred_at": "2026-11-21T14:19:14.419542000Z",
+  "actor_id": "SIM-DEV-0025",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "448788cb-7c16-435d-87f5-1b8fe527a846",
+  "payload_json": "{\"deliveryId\":\"3fb051e3-0964-4dc1-8123-e4f85441418f\",\"revision\":1}"
+ },
+ {
+  "id": "45a5eb39-303d-4bfe-a79f-534e1ed0d520",
+  "occurred_at": "2026-11-21T14:19:14.432950000Z",
+  "actor_id": "0b5d8d89-63f1-4829-9bc1-3e515e50fed0",
+  "action": "PUBLISH",
+  "scope": "AEGIS-BLD-A",
+  "outcome": "OK",
+  "correlation_id": "30f17859-200f-4270-bd4d-4ed3ab5c634b",
+  "payload_json": "{\"requestId\":\"7d6d3e66-4a8f-4864-b253-96831ef479b2\",\"alertId\":\"aa938a04-cb44-42ce-8165-38d881fa0991\",\"priority\":\"CRITICAL\",\"targets\":50}"
+ },
+ {
+  "id": "423655f4-35cd-4825-94a5-dfa7b95a8296",
+  "occurred_at": "2026-11-21T14:19:14.451382000Z",
+  "actor_id": "SIM-DEV-0026",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "6163a701-4399-4482-8628-1630fa50608c",
+  "payload_json": "{\"deliveryId\":\"c8df178c-869a-4a12-9fe7-2e3432843f9a\",\"revision\":1}"
+ },
+ {
+  "id": "7d7fd7d8-0ca0-4200-9744-2b35736e76ad",
+  "occurred_at": "2026-11-21T14:19:14.462687000Z",
+  "actor_id": "SIM-DEV-0027",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "3a4cd098-a410-477d-be0c-c5ba8ad020e5",
+  "payload_json": "{\"deliveryId\":\"faad3b7f-ea57-4c5a-b545-6af30c23fe50\",\"revision\":1}"
+ },
+ {
+  "id": "c0349c32-459d-4f02-9769-08e31f4608ef",
+  "occurred_at": "2026-11-21T14:19:14.469982000Z",
+  "actor_id": "SIM-DEV-0028",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "1cc3514a-7693-421f-bbd6-bec6e2746c22",
+  "payload_json": "{\"deliveryId\":\"d7cdb2f0-6bf2-4632-8764-854873e72bbc\",\"revision\":1}"
+ },
+ {
+  "id": "89885c75-399d-4a9b-b516-7e42b42ce558",
+  "occurred_at": "2026-11-21T14:19:14.473490000Z",
+  "actor_id": "SIM-DEV-0026",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "DUPLICATE",
+  "correlation_id": "6163a701-4399-4482-8628-1630fa50608c",
+  "payload_json": "{\"deliveryId\":\"c8df178c-869a-4a12-9fe7-2e3432843f9a\",\"revision\":1}"
+ },
+ {
+  "id": "4a931b77-0f0b-4068-b7aa-8bf1f5e59608",
+  "occurred_at": "2026-11-21T14:19:14.479103000Z",
+  "actor_id": "SIM-DEV-0027",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "DUPLICATE",
+  "correlation_id": "3a4cd098-a410-477d-be0c-c5ba8ad020e5",
+  "payload_json": "{\"deliveryId\":\"faad3b7f-ea57-4c5a-b545-6af30c23fe50\",\"revision\":1}"
+ },
+ {
+  "id": "15cdaa01-d277-46de-802f-3efa53a8c382",
+  "occurred_at": "2026-11-21T14:19:14.480818000Z",
+  "actor_id": "SIM-DEV-0028",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "DUPLICATE",
+  "correlation_id": "1cc3514a-7693-421f-bbd6-bec6e2746c22",
+  "payload_json": "{\"deliveryId\":\"d7cdb2f0-6bf2-4632-8764-854873e72bbc\",\"revision\":1}"
+ },
+ {
+  "id": "f09b8f37-ed87-48e3-b146-d1332d9241a6",
+  "occurred_at": "2026-11-21T14:19:14.482679000Z",
+  "actor_id": "SIM-DEV-0030",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "f88e85d3-035b-4935-97e0-6b6f2e077f7b",
+  "payload_json": "{\"deliveryId\":\"400b9ce6-f452-48f1-af2e-87be75536cf3\",\"revision\":1}"
+ },
+ {
+  "id": "31027651-b3c9-4d7f-892b-6821e0918410",
+  "occurred_at": "2026-11-21T14:19:14.483827000Z",
+  "actor_id": "SIM-DEV-0030",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "DUPLICATE",
+  "correlation_id": "f88e85d3-035b-4935-97e0-6b6f2e077f7b",
+  "payload_json": "{\"deliveryId\":\"400b9ce6-f452-48f1-af2e-87be75536cf3\",\"revision\":1}"
+ },
+ {
+  "id": "7c7e9f36-b6d6-4ed3-a8d1-9a7b1cadfd15",
+  "occurred_at": "2026-11-21T14:19:14.487958000Z",
+  "actor_id": "SIM-DEV-0031",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "108e5a75-688a-4b78-adbd-ff4ba95c3e16",
+  "payload_json": "{\"deliveryId\":\"26667624-2aec-4700-916a-c1679ddb7aa8\",\"revision\":1}"
+ },
+ {
+  "id": "c14946a3-2578-4f87-8060-284a59f88c65",
+  "occurred_at": "2026-11-21T14:19:14.490825000Z",
+  "actor_id": "SIM-DEV-0032",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "579d09d3-7dc6-4255-b40b-fe7027e8c81c",
+  "payload_json": "{\"deliveryId\":\"2a790832-a04b-4d4e-8ebc-a9fdc6a1750c\",\"revision\":1}"
+ },
+ {
+  "id": "aeee7ef9-851f-426e-a71f-5821b39dfd45",
+  "occurred_at": "2026-11-21T14:19:14.491958000Z",
+  "actor_id": "SIM-DEV-0032",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "DUPLICATE",
+  "correlation_id": "579d09d3-7dc6-4255-b40b-fe7027e8c81c",
+  "payload_json": "{\"deliveryId\":\"2a790832-a04b-4d4e-8ebc-a9fdc6a1750c\",\"revision\":1}"
+ },
+ {
+  "id": "0c1c4324-e852-40fe-8feb-945f22e36d29",
+  "occurred_at": "2026-11-21T14:19:14.493594000Z",
+  "actor_id": "SIM-DEV-0033",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "c37dc798-3a5b-453a-840f-f9df23d2a8fe",
+  "payload_json": "{\"deliveryId\":\"43ff3067-e76a-4961-a96d-90e39d636c06\",\"revision\":1}"
+ },
+ {
+  "id": "2f0bda78-a170-40d3-b03b-17b9b021879d",
+  "occurred_at": "2026-11-21T14:19:14.496357000Z",
+  "actor_id": "SIM-DEV-0034",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "a11a4665-5ba0-46bc-b210-6450c39dd86a",
+  "payload_json": "{\"deliveryId\":\"9fd356f1-0111-4ce2-a701-6b9bf64f0b3b\",\"revision\":1}"
+ },
+ {
+  "id": "4619ffb5-5962-444d-b807-2ce687c14b31",
+  "occurred_at": "2026-11-21T14:19:14.496583000Z",
+  "actor_id": "SIM-DEV-0033",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "DUPLICATE",
+  "correlation_id": "c37dc798-3a5b-453a-840f-f9df23d2a8fe",
+  "payload_json": "{\"deliveryId\":\"43ff3067-e76a-4961-a96d-90e39d636c06\",\"revision\":1}"
+ },
+ {
+  "id": "bf6f8964-3cb0-4bca-9f47-71c69df173ac",
+  "occurred_at": "2026-11-21T14:19:14.498325000Z",
+  "actor_id": "SIM-DEV-0035",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "85da1dad-1956-48fe-a358-fbd0c0c327a5",
+  "payload_json": "{\"deliveryId\":\"ce0a80c4-f3fc-4530-9477-5d68c62b9e8f\",\"revision\":1}"
+ },
+ {
+  "id": "b7131bea-c8a8-4d49-826a-aa72dea3272f",
+  "occurred_at": "2026-11-21T14:19:14.498953000Z",
+  "actor_id": "SIM-DEV-0034",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "DUPLICATE",
+  "correlation_id": "a11a4665-5ba0-46bc-b210-6450c39dd86a",
+  "payload_json": "{\"deliveryId\":\"9fd356f1-0111-4ce2-a701-6b9bf64f0b3b\",\"revision\":1}"
+ },
+ {
+  "id": "431c31e0-e341-4d19-8df8-c204bee3063d",
+  "occurred_at": "2026-11-21T14:19:14.501605000Z",
+  "actor_id": "SIM-DEV-0036",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "59f60d40-6967-4ca6-ac8b-4de8c8ddbc0b",
+  "payload_json": "{\"deliveryId\":\"d8e50737-1049-4df0-ad1a-3865eaf81f78\",\"revision\":1}"
+ },
+ {
+  "id": "9ad4977b-7572-4a6a-846a-e3805b3038c5",
+  "occurred_at": "2026-11-21T14:19:14.503273000Z",
+  "actor_id": "SIM-DEV-0037",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "1bc1ec9f-3865-40a2-853e-9d211720c9af",
+  "payload_json": "{\"deliveryId\":\"a191c9f2-5c7a-44db-9cda-e5314142a0de\",\"revision\":1}"
+ },
+ {
+  "id": "ed44ea3a-d107-4bb7-997f-1b202b450e87",
+  "occurred_at": "2026-11-21T14:19:14.505011000Z",
+  "actor_id": "SIM-DEV-0038",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "f0a74d49-006e-4202-8573-06e23463fe3c",
+  "payload_json": "{\"deliveryId\":\"521a71a7-3c16-47c0-8268-ec7afb65cc26\",\"revision\":1}"
+ },
+ {
+  "id": "1aa22a52-76fc-4dcf-9a18-6e06476c7bfb",
+  "occurred_at": "2026-11-21T14:19:14.506088000Z",
+  "actor_id": "SIM-DEV-0037",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "DUPLICATE",
+  "correlation_id": "1bc1ec9f-3865-40a2-853e-9d211720c9af",
+  "payload_json": "{\"deliveryId\":\"a191c9f2-5c7a-44db-9cda-e5314142a0de\",\"revision\":1}"
+ },
+ {
+  "id": "5c897263-16c7-488c-8ff0-2ec2176564a6",
+  "occurred_at": "2026-11-21T14:19:14.506842000Z",
+  "actor_id": "SIM-DEV-0038",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "DUPLICATE",
+  "correlation_id": "f0a74d49-006e-4202-8573-06e23463fe3c",
+  "payload_json": "{\"deliveryId\":\"521a71a7-3c16-47c0-8268-ec7afb65cc26\",\"revision\":1}"
+ },
+ {
+  "id": "40b6a496-e168-4dae-aef5-b73de96f5bf2",
+  "occurred_at": "2026-11-21T14:19:14.509144000Z",
+  "actor_id": "SIM-DEV-0039",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "3721527a-717c-4e49-a717-57cbcdf832bf",
+  "payload_json": "{\"deliveryId\":\"2a76d578-e3ed-400c-92e9-39b9849dcb65\",\"revision\":1}"
+ },
+ {
+  "id": "aea926f3-9fa0-4be6-8b86-67ccfd91bf30",
+  "occurred_at": "2026-11-21T14:19:14.510975000Z",
+  "actor_id": "SIM-DEV-0040",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "73f498a5-5b8f-4234-bb22-bbd2a9e084cb",
+  "payload_json": "{\"deliveryId\":\"59aadf05-6f38-4a6e-b107-347fbd667306\",\"revision\":1}"
+ },
+ {
+  "id": "b035aaa5-8f1f-480c-af73-e33c13017bf5",
+  "occurred_at": "2026-11-21T14:19:14.512260000Z",
+  "actor_id": "SIM-DEV-0039",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "DUPLICATE",
+  "correlation_id": "3721527a-717c-4e49-a717-57cbcdf832bf",
+  "payload_json": "{\"deliveryId\":\"2a76d578-e3ed-400c-92e9-39b9849dcb65\",\"revision\":1}"
+ },
+ {
+  "id": "7c6844d6-2dfa-4c49-9f01-a1427d7b0e22",
+  "occurred_at": "2026-11-21T14:19:14.514051000Z",
+  "actor_id": "SIM-DEV-0041",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "cf8e1aec-342c-4182-96fa-65c17826d991",
+  "payload_json": "{\"deliveryId\":\"5e7d4adb-fe77-4b12-b45f-35e6476e5f3e\",\"revision\":1}"
+ },
+ {
+  "id": "8967c952-323f-4d1a-9cba-0532383d60ef",
+  "occurred_at": "2026-11-21T14:19:14.516423000Z",
+  "actor_id": "SIM-DEV-0042",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "1d08f3b2-893c-4441-8d31-ebd5d5f7a5a9",
+  "payload_json": "{\"deliveryId\":\"e21da22a-2883-4d3b-8d78-02fecff48c29\",\"revision\":1}"
+ },
+ {
+  "id": "880a9247-c807-4a6b-8246-df3042295272",
+  "occurred_at": "2026-11-21T14:19:14.517826000Z",
+  "actor_id": "SIM-DEV-0043",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "5bb60c05-d100-4cdc-b276-f710054e59f4",
+  "payload_json": "{\"deliveryId\":\"d930ab90-d898-4ee8-a743-f94540f257b0\",\"revision\":1}"
+ },
+ {
+  "id": "44c43c43-687b-485d-ab4f-4e4e9954b18e",
+  "occurred_at": "2026-11-21T14:19:14.519561000Z",
+  "actor_id": "SIM-DEV-0042",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "DUPLICATE",
+  "correlation_id": "1d08f3b2-893c-4441-8d31-ebd5d5f7a5a9",
+  "payload_json": "{\"deliveryId\":\"e21da22a-2883-4d3b-8d78-02fecff48c29\",\"revision\":1}"
+ },
+ {
+  "id": "e6dfccfb-0394-416e-817f-21ce541d2397",
+  "occurred_at": "2026-11-21T14:19:14.521226000Z",
+  "actor_id": "SIM-DEV-0044",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "8689ae45-326d-44da-b2ab-038a4f26672b",
+  "payload_json": "{\"deliveryId\":\"3259c6d8-96c2-4498-bb7e-63a44ee139be\",\"revision\":1}"
+ },
+ {
+  "id": "319fc705-d799-450f-ad67-b2922835a02c",
+  "occurred_at": "2026-11-21T14:19:14.523726000Z",
+  "actor_id": "SIM-DEV-0045",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "74d599f4-9e22-4de6-b781-d749599cae4c",
+  "payload_json": "{\"deliveryId\":\"a41decaa-9e2c-4193-9f7a-88b27371d960\",\"revision\":1}"
+ },
+ {
+  "id": "cc086bd6-0e58-49f4-b675-4250774ba894",
+  "occurred_at": "2026-11-21T14:19:14.526028000Z",
+  "actor_id": "SIM-DEV-0046",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "29247234-0fa2-4f18-b47a-045aad108d8a",
+  "payload_json": "{\"deliveryId\":\"aa15ef4c-0a83-4216-90e9-135bcaba6c7f\",\"revision\":1}"
+ },
+ {
+  "id": "8ef4f5cb-7bca-4791-bf92-2fe161541eb0",
+  "occurred_at": "2026-11-21T14:19:14.527696000Z",
+  "actor_id": "SIM-DEV-0047",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "44da010e-677e-44a2-9bd0-ebee7a981de0",
+  "payload_json": "{\"deliveryId\":\"7e4d14a6-ce63-4098-a0d2-c1945735adff\",\"revision\":1}"
+ },
+ {
+  "id": "02f71370-0aaa-4586-b542-bdceb63c37db",
+  "occurred_at": "2026-11-21T14:19:14.530927000Z",
+  "actor_id": "SIM-DEV-0048",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "f6a5865e-1007-4153-95c3-b0f3429078b4",
+  "payload_json": "{\"deliveryId\":\"8c6dd2be-4039-41cb-ad6d-ae8d82def7a5\",\"revision\":1}"
+ },
+ {
+  "id": "38db65b0-ba5f-4bc6-82db-2e33ff4ef4d0",
+  "occurred_at": "2026-11-21T14:19:14.532405000Z",
+  "actor_id": "SIM-DEV-0049",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "5cc06c70-280c-4311-910f-94bc64f33359",
+  "payload_json": "{\"deliveryId\":\"cd526ab3-b055-45e1-b720-6c1d958d2039\",\"revision\":1}"
+ },
+ {
+  "id": "5abab7a4-b9cf-4629-81c4-25c24ed69d11",
+  "occurred_at": "2026-11-21T14:19:14.534131000Z",
+  "actor_id": "SIM-DEV-0050",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "bd2f9910-9f0b-4697-8e92-4e2b53c57fa6",
+  "payload_json": "{\"deliveryId\":\"218d0463-3f47-4ff5-af92-e770f717c5e4\",\"revision\":1}"
+ },
+ {
+  "id": "3cb1dbbe-6d01-4c2d-9dcf-fd1eab13a7bf",
+  "occurred_at": "2026-11-21T14:19:14.535328000Z",
+  "actor_id": "SIM-DEV-0050",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "DUPLICATE",
+  "correlation_id": "bd2f9910-9f0b-4697-8e92-4e2b53c57fa6",
+  "payload_json": "{\"deliveryId\":\"218d0463-3f47-4ff5-af92-e770f717c5e4\",\"revision\":1}"
+ },
+ {
+  "id": "6ead1e21-44df-4bb5-9d75-06bb500b4355",
+  "occurred_at": "2026-11-21T14:19:14.536891000Z",
+  "actor_id": "SIM-DEV-0047",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "DUPLICATE",
+  "correlation_id": "44da010e-677e-44a2-9bd0-ebee7a981de0",
+  "payload_json": "{\"deliveryId\":\"7e4d14a6-ce63-4098-a0d2-c1945735adff\",\"revision\":1}"
+ },
+ {
+  "id": "5c94daa6-f3a2-46fe-897b-8ab29e427324",
+  "occurred_at": "2026-11-21T14:19:14.590170000Z",
+  "actor_id": null,
+  "action": "ALERT_FULLY_ACKED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": null,
+  "payload_json": null
+ },
+ {
+  "id": "3e963721-37c0-4014-a196-c856113f58d4",
+  "occurred_at": "2026-11-21T14:19:14.591148000Z",
+  "actor_id": "SIM-DEV-0029",
+  "action": "ACK_RECEIVED",
+  "scope": "aa938a04-cb44-42ce-8165-38d881fa0991",
+  "outcome": "OK",
+  "correlation_id": "8c399a62-5574-4e02-8485-285cf3a046af",
+  "payload_json": "{\"deliveryId\":\"89a2f4a8-28f9-4506-ba0b-6961aa509e9d\",\"revision\":1}"
+ }
+]
