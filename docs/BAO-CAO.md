@@ -1416,7 +1416,11 @@ Bằng chứng kèm theo: `bench.db` (SQLite thật, 100 delivery RECEIVED), `se
 
 Các chức năng dashboard đã được kiểm chứng bằng 14 test logic (mục 3.5.1) và hợp đồng `status/1`: dựng tòa nhà 10 tầng × 4 zone bằng Three.js [7], tô màu zone theo severity chuẩn tắc từ bộ đếm delivery thật, funnel targeted/written/received/user-ack không đếm trùng sau retry, replay timeline incident chỉ đọc, chaos mock ba lệnh, xuất báo cáo/CSV, badge MOCK FEED/LIVE phân biệt rõ nguồn dữ liệu. Ảnh chụp nghiệm thu từ lần chạy thật với server + client + simulator:
 
-**Hình 3.8.** [TODO: ảnh chụp dashboard 3D từ lần chạy thật — ghi runId/commit SHA/máy đo, trạng thái LIVE, funnel và severity từng zone; lưu vào docs/evidence/. KHÔNG dùng ảnh mock thay ảnh thật]
+**Hình 3.8.** Dashboard digital twin 3D ở trạng thái **LIVE** (ảnh chụp thật từ lần chạy server + simulator fleet, không phải mock).
+
+![AEGIS-EBS digital twin LIVE](evidence/dashboard/twin-live-overview.png)
+
+Điều kiện chụp: commit `9dfede1`, máy Apple M3 Pro (12 nhân, 18 GB, macOS 15.7.3, Java 24.0.1), 2026-11-21T21:32 (+07); server thật `target/live-demo.db` building AEGIS-BLD-A (TLS 9443/WS 9444), fleet simulator 40 thiết bị scenario `mixed` seed 7 (**Connected 40**), feed `live-ws://localhost:9444`. Bốn cảnh báo active driving severity zone: **F05 CRITICAL FIRE_DRILL (đỏ)**, **F04 WARNING HAZMAT (vàng)**, **F07 EMERGENCY SECURITY (đỏ)**, **F02 INFO ANNOUNCEMENT (xanh)**; Zone Status 28 online / 1 critical / 11 offline (tổng 40), metrics p95/p99 ≈ 42,8 s (do fault mixed + retry), Retries 6. Tòa nhà 3D dựng từ 12 module thật (kết cấu bê tông/thép, curtain-wall kính, nội thất 40 zone, mái HVAC, cảnh quan đô thị, ánh sáng ngày/đêm), HUD floor selector + OVERVIEW/CUTAWAY/EXPLODE/NIGHT + legend + active alerts. Metadata đầy đủ: `docs/evidence/dashboard/twin-live-overview.json`. Nhãn SIMULATION/TRAINING hiển thị xuyên suốt.
 
 #### 3.5.8 Tổng hợp bằng chứng thực nghiệm
 
@@ -1431,7 +1435,7 @@ Các chức năng dashboard đã được kiểm chứng bằng 14 test logic (m
 | Chaos C01…C16 có seed | FaultInjector/preset + test liên quan; **C01–C03 đo thật** (`docs/evidence/chaos/*.json`, fleet 50, runId e1943406/d04af662/04c97420) | C01–C03 đã có; C04–C16 end-to-end [TODO] |
 | Tải 100 client, p50/p95/p99, tỷ lệ ACK | **Đo thật** `docs/evidence/benchmark/276dedf5…/summary.json` (fleet 100 clean, p50=773/p95=1307/p99=1334 ms, ACK 100%) | Đã có (clean-100); mixed/200–500 + CPU/RSS/WAL [TODO] |
 | Fresh install < 30 phút (T-30) | Ngân sách ước tính BUILD.md + CI timeout 30 | Số đo thật [TODO] |
-| Ảnh dashboard 3D nghiệm thu | Chưa có (3D Lead đang ráp + chụp) | [TODO] |
+| Ảnh dashboard 3D nghiệm thu | **Đã có ảnh LIVE** `docs/evidence/dashboard/twin-live-overview.png` (+json metadata): server thật + fleet 40 connected, 4 alert active, severity zone thật, commit `9dfede1` | Đã có (LIVE); thêm góc cutaway/explode [TODO] |
 | Thư mục bằng chứng chuẩn hóa | **`docs/evidence/` đã tồn tại**: benchmark/<runId>/{summary.json,bench.db,server.log,sim.log} + chaos/{*.json,runs/<scenario>-<runId>/{db,logs,audit.json}}; mỗi lần chạy ghi runId/commit SHA/máy đo/timestamp | Đã có (benchmark + chaos C01–C03); mở rộng [TODO] |
 
 ### 3.6 Ưu điểm và hạn chế

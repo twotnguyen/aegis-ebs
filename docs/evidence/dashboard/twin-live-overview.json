@@ -1,0 +1,55 @@
+{
+  "runId": "live-demo-1795271561",
+  "commit": "9dfede11e42f24170d62838495c48535119256e6",
+  "capturedAt": "2026-11-21T14:32:41Z",
+  "mode": "LIVE",
+  "feed": "ws://localhost:9444 (status/1)",
+  "machine": {
+    "os": "macOS 15.7.3",
+    "cpu": "Apple M3 Pro",
+    "cores": 12,
+    "ramGB": 18,
+    "java": "24.0.1"
+  },
+  "server": {
+    "db": "target/live-demo.db",
+    "building": "AEGIS-BLD-A",
+    "tlsPort": 9443,
+    "wsPort": 9444
+  },
+  "fleet": {
+    "agents": 40,
+    "scenario": "mixed",
+    "seed": 7,
+    "connected": 40
+  },
+  "activeAlerts": [
+    {
+      "floor": 5,
+      "priority": "CRITICAL",
+      "category": "FIRE_DRILL"
+    },
+    {
+      "floor": 4,
+      "priority": "WARNING",
+      "category": "HAZMAT"
+    },
+    {
+      "floor": 7,
+      "priority": "EMERGENCY",
+      "category": "SECURITY"
+    },
+    {
+      "floor": 2,
+      "priority": "INFO",
+      "category": "ANNOUNCEMENT"
+    }
+  ],
+  "zoneStatus": {
+    "online": 28,
+    "critical": 1,
+    "offline": 11,
+    "total": 40
+  },
+  "note": "Real Three.js render of integrated 12-module realistic building, LIVE data from real server+simulator fleet. SIMULATION/TRAINING ONLY."
+}
