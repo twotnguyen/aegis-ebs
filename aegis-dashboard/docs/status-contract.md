@@ -134,3 +134,101 @@ Same envelope; **only changed parts** are included.
 - The client keeps probing the real endpoint while mocking; on a successful live
   connection the mock feed stops and live data takes over (badge `LIVE`).
 - Endpoint override for testing: `npm run dev` then open `http://localhost:5173/?ws=ws://host:port`.
+
+## `INCIDENT_EVENT` — incident timeline feed
+
+`INCIDENT_EVENT` is an EBSP/2.0 `MessageType` (see `aegis-protocol`); the WS bridge
+may push incident timeline events on the **same socket** using the standard
+envelope plus fields mirroring the `incident_events` table
+(`incident_id, occurred_at, event_kind, actor_id, correlation_id, payload_json`).
+The dashboard reference client lives in `src/events.js` (`EVENT_CONTRACT`);
+the timeline/replay UI is the **Incidents** tab.
+
+```json
+{
+  "version": 1,
+  "type": "INCIDENT_EVENT",
+  "buildingId": "AEGIS-BLD-A",
+  "ts": "2026-11-21T10:00:00Z",
+  "incidentId": "INC-AL-F07-C",
+  "eventKind": "DELIVERY_FAILED",
+  "actorId": "system",
+  "correlationId": "req-123",
+  "payload": {
+    "zoneCode": "F07-C",
+    "floorNumber": 7,
+    "count": 2,
+    "counters": { "online": 9, "received": 40, "acknowledged": 18, "failed": 11 }
+  }
+}
+```
+
+### Fields
+
+- `incidentId` — `incidents.id`. Mock convention: `INC-<alertId>` (one incident
+  per alert), `INC-DEMO-xxx` (scripted demo), `INC-CHAOS` (chaos commands).
+- `eventKind` — one of: `INCIDENT_OPENED`, `INCIDENT_TRANSITION`,
+  `ALERT_PUBLISHED`, `ALERT_UPDATED`, `ALERT_CANCELLED`, `DELIVERY_SENT`,
+  `ACK_RECEIVED`, `ACK_USER`, `RETRY_SCHEDULED`, `DELIVERY_FAILED`,
+  `DEVICE_OFFLINE`, `DEVICE_ONLINE`, `CHAOS_COMMAND`.
+- `actorId` — user id, `device:<code>`, `operator`, or `system`; nullable.
+- `correlationId` — requestId / command id linking related events; nullable.
+- `payload` — kind-specific JSON. **Replay convention:** events carrying
+  `{zoneCode, counters:{online,received,acknowledged,failed}}` let the dashboard
+  repaint the 3D twin deterministically. `INCIDENT_TRANSITION` carries
+  `state ∈ {DRAFT, OPEN, INVESTIGATING, CONTAINED, RESOLVED, CLOSED, ABORTED}`
+  (the `incidents.state` CHECK constraint). Counters must stay monotonic where
+  EBSP requires it (`acknowledged`, `failed`, `received` never decrease).
+- `seq` is **client-assigned** arrival order (not on the wire).
+
+### Client behavior (mock-first)
+
+- Live `INCIDENT_EVENT` frames are appended to the timeline as-is (`src/ws.js`
+  routes them to `onEvent`).
+- In MOCK mode the timeline is seeded with a deterministic scripted incident
+  (`makeMockIncident`, FIRE_DRILL floor 5 per `docs/DEMO-RUNBOOK.md`), and every
+  `STATUS_DELTA` additionally derives events from counter/alert changes
+  (`eventsFromDelta`): failed↑ ⇒ `RETRY_SCHEDULED` (3×) + `DELIVERY_FAILED`,
+  acknowledged↑ ⇒ `ACK_RECEIVED`, received↑ ⇒ `DELIVERY_SENT`, online↓/↑ ⇒
+  `DEVICE_OFFLINE`/`DEVICE_ONLINE`, alert added ⇒ `ALERT_PUBLISHED`, alert
+  removed ⇒ `INCIDENT_TRANSITION(RESOLVED)` + `ALERT_CANCELLED` (tombstone).
+- **Replay** (`src/replay.js`) re-applies event payload counters onto a base
+  snapshot: play/pause, step, scrub, 1×/2×/4× speed; the twin is repainted from
+  the replay state (badge `REPLAY`) and the touched zone is highlighted.
+  Stopping replay restores the live state.
+
+## Chaos commands (mock-only)
+
+`status/1` defines **no chaos opcode**. The Chaos tab executes commands against
+the local mock simulation and logs them as `INCIDENT_EVENT` frames with
+`eventKind: "CHAOS_COMMAND"`, `incidentId: "INC-CHAOS"`, `actorId: "operator"`,
+`correlationId: <command id>`; the mock "server" acknowledges each command
+(`status: sent → acknowledged`, result `OK (mock)`). Scenarios mirror
+`docs/TEST-PLAN.md`:
+
+| Command      | Scenario | Effect on mock deltas                                        |
+| ------------ | -------- | ------------------------------------------------------------ |
+| `DROP_ACK`   | C01      | `acknowledged` frozen; ≥3 unacked for 2+ ticks ⇒ `failed`+1, `retryCount`+3 |
+| `DELAY_ACK`  | C02      | p50 +0.4·ms, p95 +ms, p99 +1.6·ms (ms slider 100–2000)        |
+| `DISCONNECT` | C04      | `online` reduced by pct% (5–50) on touched zones; severity recomputed |
+
+Enabling a scenario pins the feed to MOCK (`feed.forceMock()`); “Return to live
+feed” (`releaseMock()`) resumes probing `ws://localhost:9444`. A future server
+ MAY accept the same command shapes over the socket; until then they never
+leave the browser.
+
+## Reports & delivery funnel (derived, no new wire fields)
+
+- **Reports** tab: every snapshot/delta is sampled into a rolling window
+  (≤900 samples); table of current/min/avg/max for `connected`, `p50/p95/p99`,
+  `retryCount` + sparklines; CSV/JSON export of the raw samples and stats.
+- **Funnel** tab: per-alert `targeted/received/acknowledged/failed` derived from
+  zone counters since the alert opened (`src/funnel.js`): `targeted` =
+  `devicesTotal` of the alert zone (alert_targets snapshot size in EBSP terms);
+  the other stages are counter increments clamped to a valid funnel
+  (`received ≤ targeted`, `acknowledged + failed ≤ received`). Closed alerts
+  are kept as history. The detail line also shows the cumulative zone totals
+  (`zoneTotals`) so the funnel increments reconcile with the alert headline.
+  CSV/JSON export included. When the server exposes exact
+  per-alert delivery counts, only `src/funnel.js` needs to change.
+

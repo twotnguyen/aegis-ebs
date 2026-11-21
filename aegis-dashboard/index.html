@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Aegis EBS — Digital Twin Dashboard</title>
   </head>
-  <body>
+  <body data-tab="twin">
     <div id="app">
       <canvas id="scene"></canvas>
 
@@ -14,7 +14,17 @@
           <h1>AEGIS&nbsp;EBS</h1>
           <span class="sub">Digital Twin · Building A · 10 floors · 4 zones/floor</span>
         </div>
-        <div id="conn-badge" class="badge badge-connecting">CONNECTING…</div>
+        <nav id="tabs" aria-label="Dashboard views">
+          <button class="tab active" data-tab="twin" title="3D digital twin (key 1)">Twin</button>
+          <button class="tab" data-tab="incidents" title="Incident timeline & replay (key 2)">Incidents</button>
+          <button class="tab" data-tab="chaos" title="Chaos control panel (key 3)">Chaos</button>
+          <button class="tab" data-tab="reports" title="Latency reports & export (key 4)">Reports</button>
+          <button class="tab" data-tab="funnel" title="Per-alert delivery funnel (key 5)">Funnel</button>
+        </nav>
+        <div class="top-badges">
+          <span id="replay-badge" class="badge badge-replay" hidden>REPLAY</span>
+          <div id="conn-badge" class="badge badge-connecting">CONNECTING…</div>
+        </div>
       </header>
 
       <aside id="hud-side">
@@ -28,12 +38,10 @@
             <div><dt>Retries</dt><dd id="m-retry">–</dd></div>
           </dl>
         </section>
-
         <section class="panel">
           <h2>Active alerts <span id="alert-count" class="pill">0</span></h2>
           <ul id="alerts" class="alerts"></ul>
         </section>
-
         <section class="panel">
           <h2>Legend</h2>
           <ul class="legend">
@@ -45,14 +53,136 @@
         </section>
       </aside>
 
-      <div id="tooltip" hidden></div>
+      <div id="panel-host" hidden>
+        <!-- Incident timeline / replay -->
+        <section id="view-incidents" class="view" hidden>
+          <div class="panel">
+            <h2>Incident timeline <span id="ev-count" class="pill">0</span> <span id="ev-source" class="pill">–</span></h2>
+            <div class="row">
+              <button id="ev-demo">Load demo incident</button>
+              <button id="ev-clear">Clear</button>
+              <button id="ev-export-json">Export JSON</button>
+              <button id="ev-export-csv">Export CSV</button>
+            </div>
+            <div class="row replay-controls">
+              <button id="rp-reset" title="Back to start">⏮</button>
+              <button id="rp-back" title="Step back">⏪</button>
+              <button id="rp-play" title="Play / pause">▶</button>
+              <button id="rp-fwd" title="Step forward">⏩</button>
+              <select id="rp-speed" title="Replay speed">
+                <option value="1">1×</option>
+                <option value="2">2×</option>
+                <option value="4">4×</option>
+              </select>
+              <input type="range" id="rp-scrub" min="0" max="0" value="0" step="1" aria-label="Replay position" />
+              <span id="rp-pos" class="pill">0 / 0</span>
+            </div>
+            <div id="rp-detail" class="rp-detail"><span class="hint">Press ▶ to replay the timeline on the 3D twin, or click an event row.</span></div>
+            <ol id="ev-list" class="ev-list"></ol>
+            <div id="ev-note" class="hint"></div>
+          </div>
+        </section>
 
+        <!-- Chaos control -->
+        <section id="view-chaos" class="view" hidden>
+          <div class="panel">
+            <h2>Chaos control <span class="pill">mock commands</span></h2>
+            <p id="ch-note" class="hint"></p>
+            <div class="chaos-card" id="ch-drop">
+              <div class="chaos-info">
+                <strong>C01 · Drop ACK</strong>
+                <div class="hint">Suppress ACKs → unacked grows → deliveries FAIL after 3 retries.</div>
+              </div>
+              <span class="chaos-state" id="ch-drop-state">IDLE</span>
+              <button id="ch-drop-btn">Enable</button>
+            </div>
+            <div class="chaos-card" id="ch-delay">
+              <div class="chaos-info">
+                <strong>C02 · Delay ACK</strong>
+                <div class="hint">Inflate end-to-end latency percentiles (p50/p95/p99).</div>
+                <label class="slider-label">extra delay
+                  <input type="range" id="ch-delay-ms" min="100" max="2000" step="50" value="500" />
+                  <span id="ch-delay-ms-val">500 ms</span>
+                </label>
+              </div>
+              <span class="chaos-state" id="ch-delay-state">IDLE</span>
+              <button id="ch-delay-btn">Enable</button>
+            </div>
+            <div class="chaos-card" id="ch-disc">
+              <div class="chaos-info">
+                <strong>C04 · Disconnect</strong>
+                <div class="hint">Drop a share of connected devices on every mock tick.</div>
+                <label class="slider-label">share
+                  <input type="range" id="ch-disc-pct" min="5" max="50" step="5" value="20" />
+                  <span id="ch-disc-pct-val">20%</span>
+                </label>
+              </div>
+              <span class="chaos-state" id="ch-disc-state">IDLE</span>
+              <button id="ch-disc-btn">Enable</button>
+            </div>
+            <div class="row">
+              <button id="ch-alloff">All off</button>
+              <button id="ch-live">Return to live feed</button>
+              <span id="ch-feed" class="pill">feed: –</span>
+            </div>
+          </div>
+          <div class="panel">
+            <h2>Command log</h2>
+            <table class="tbl" id="ch-log">
+              <thead><tr><th>ts</th><th>id</th><th>command</th><th>params</th><th>status</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Reports -->
+        <section id="view-reports" class="view" hidden>
+          <div class="panel">
+            <h2>Delivery latency report <span id="rp-samples" class="pill">0 samples</span></h2>
+            <div id="rp-window" class="hint">window: –</div>
+            <table class="tbl" id="rp-stats">
+              <thead><tr><th>metric</th><th>current</th><th>min</th><th>avg</th><th>max</th></tr></thead>
+              <tbody></tbody>
+            </table>
+            <div id="rp-sparks"></div>
+            <div class="row">
+              <button id="rp-csv">Export metrics CSV</button>
+              <button id="rp-json">Export metrics JSON</button>
+              <button id="rp-clear">Reset window</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Delivery funnel -->
+        <section id="view-funnel" class="view" hidden>
+          <div class="panel">
+            <h2>Delivery funnel <span id="fn-count" class="pill">0 alerts</span></h2>
+            <p class="hint">Per alert, derived from zone counters since the alert opened: targeted = provisioned devices in zone; received/acknowledged/failed = increments (clamped to targeted). See src/funnel.js.</p>
+            <select id="fn-select" aria-label="Select alert"></select>
+            <div id="fn-bars"></div>
+            <div id="fn-detail" class="hint"></div>
+            <div class="row">
+              <button id="fn-csv">Export CSV</button>
+              <button id="fn-json">Export JSON</button>
+            </div>
+          </div>
+          <div class="panel">
+            <h2>All alerts</h2>
+            <table class="tbl" id="fn-table">
+              <thead><tr><th>alert</th><th>zone</th><th>state</th><th>targeted</th><th>received</th><th>acked</th><th>failed</th><th>ack %</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <div id="tooltip" hidden></div>
       <footer id="hud-foot">
         <span id="feed-mode">feed: –</span>
         <span class="dot">·</span>
         <span id="last-update">last update: –</span>
         <span class="dot">·</span>
-        <span>drag to orbit · scroll to zoom · hover a zone for details</span>
+        <span>drag to orbit · scroll to zoom · hover a zone for details · keys 1–5 switch views</span>
       </footer>
     </div>
     <noscript>This dashboard requires JavaScript (WebGL).</noscript>
