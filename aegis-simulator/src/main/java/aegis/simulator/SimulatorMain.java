@@ -12,11 +12,14 @@ import java.util.concurrent.TimeUnit;
  * (one per simulated device, recommended 100-200), each with a deterministic RNG
  * derived from the master --seed, runs for --duration seconds, prints a summary.
  *
- * <p>Run (no pom changes needed):
+ * <p>Run (no pom changes needed). Use {@code exec:exec} — it forks a separate JVM, so the
+ * {@code System.exit} exit codes (0/1/2) are safe. Do NOT use {@code exec:java}: it runs
+ * {@code main} inside the Maven JVM and {@code System.exit} would kill Maven mid-build.
  * <pre>
- * mvn -pl aegis-simulator org.codehaus.mojo:exec-maven-plugin:3.2.0:java \
- *   -Dexec.mainClass=aegis.simulator.SimulatorMain \
- *   -Dexec.args="--agents 150 --scenario mixed --seed 42 --host localhost --port 9443 \
+ * mvn -pl aegis-simulator org.codehaus.mojo:exec-maven-plugin:3.2.0:exec \
+ *   -Dexec.executable=java \
+ *   -Dexec.args="-classpath %classpath aegis.simulator.SimulatorMain \
+ *                --agents 150 --scenario mixed --seed 42 --host localhost --port 9443 \
  *                --truststore truststore.p12 --truststore-password changeit --duration 30"
  * </pre>
  * Exit codes: 0 = fleet ran and every agent finished; 1 = runtime failure; 2 = bad CLI.

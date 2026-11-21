@@ -39,7 +39,12 @@ import java.util.random.RandomGenerator;
  *       re-ACKed (idempotent) but never redisplayed; cancel tombstones suppress stale pushes;</li>
  *   <li>reconnect with {@link RetryPolicy} exponential backoff + jitter, then SYNC_REQUEST
  *       with knownRevisions and re-send of durably-pending ACKs;</li>
- *   <li>heartbeat watchdog: silence of 3 x heartbeatTimeout => suspect, reconnect.</li>
+ *   <li>heartbeat watchdog: silence of 3 x the negotiated heartbeat interval (advertised
+ *       by the server in SERVER_HELLO/AUTH_RESULT, fallback cfg heartbeatTimeout) => suspect,
+ *       reconnect;</li>
+ *   <li>malformed-frame resilience: a RuntimeException while dispatching one frame (bad
+ *       payload, local inbox failure) is reported via listenerError and the frame dropped —
+ *       the controller keeps the connection and processes the next frame.</li>
  * </ul>
  * The JavaFX layer ({@link ClientApp}) is a thin listener over this engine; all logic
  * here is unit-testable over loopback with injected transport/sleeper/clock.
@@ -197,6 +202,10 @@ public final class AlertClientEngine implements AutoCloseable {
         socket = s;
         out = s.getOutputStream();
         handshake(s);
+        // L1: anchor the read timeout to the interval negotiated in SERVER_HELLO/AUTH_RESULT
+        // (fallback cfg.heartbeatTimeoutMs when the server advertises nothing) — a healthy
+        // server whose interval exceeds 3 x the local timeout must not cause false suspects.
+        s.setSoTimeout((int) Math.min(heartbeatIntervalMs, Integer.MAX_VALUE));
         attempts = 0;
         missedHeartbeats.set(0);
         lastFrameAt.set(clock.millis());
@@ -235,6 +244,8 @@ public final class AlertClientEngine implements AutoCloseable {
   }
 
   private void handshake(Socket s) throws IOException, FrameException {
+    // Negotiate per connection: fall back to the local cfg until the server advertises.
+    heartbeatIntervalMs = cfg.heartbeatTimeoutMs();
     InputStream in = s.getInputStream();
     ObjectNode hello = mapper.createObjectNode();
     hello.put("clientType", "DEVICE");
@@ -277,7 +288,8 @@ public final class AlertClientEngine implements AutoCloseable {
       } catch (SocketTimeoutException ste) {
         long silentMs = clock.millis() - lastFrameAt.get();
         missedHeartbeats.incrementAndGet();
-        if (silentMs >= 3 * cfg.heartbeatTimeoutMs()) {
+        // L1: judge silence against the negotiated interval, not the local cfg timeout.
+        if (silentMs >= 3 * heartbeatIntervalMs) {
           throw new IOException("heartbeat suspect: " + silentMs + "ms without frames ("
               + missedHeartbeats.get() + " missed)");
         }
@@ -285,7 +297,14 @@ public final class AlertClientEngine implements AutoCloseable {
       }
       lastFrameAt.set(clock.millis());
       missedHeartbeats.set(0);
-      dispatch(e);
+      try {
+        dispatch(e);
+      } catch (RuntimeException ex) {
+        // M1: a malformed frame (IllegalArgumentException from AlertRecord) or a local
+        // inbox failure (IllegalStateException from SQLite) must not kill the controller.
+        // Drop this frame, report it, keep the connection and process the next frame.
+        listenerError("malformed frame " + e.type(), ex);
+      }
     }
   }
 

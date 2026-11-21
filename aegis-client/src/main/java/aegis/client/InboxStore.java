@@ -37,6 +37,12 @@ public final class InboxStore implements AutoCloseable {
   /** An ACK that is durably owed but not yet confirmed sent. userId null => ACK_RECEIVED. */
   public record PendingAck(String alertId, long revision, String deliveryId, String messageId, String userId) {}
 
+  /**
+   * An active alert plus its durable user-ack state — the redisplay source after
+   * restart/reconnect, so the UI keeps showing ACK_USER gestures already recorded.
+   */
+  public record ActiveAlert(AlertRecord alert, boolean userAcked, String userId, String ackUserAt) {}
+
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
   private final Path dbPath;
@@ -235,6 +241,30 @@ public final class InboxStore implements AutoCloseable {
       }
     } catch (SQLException | IOException ex) {
       throw new IllegalStateException("activeAlerts query failed", ex);
+    }
+    return out;
+  }
+
+  /**
+   * Active alerts with their durable user-ack state (L2): redisplay after restart must
+   * preserve ACK_USER gestures instead of resetting the column to false. Same ordering
+   * and visibility rules as {@link #activeAlerts()}.
+   */
+  public synchronized List<ActiveAlert> activeAlertsWithAck() {
+    List<ActiveAlert> out = new ArrayList<>();
+    try (Connection c = open(); PreparedStatement ps = c.prepareStatement(
+        "SELECT payload_json, message_id, received_at, ack_user_at, user_id FROM inbox "
+            + "WHERE cancelled=0 ORDER BY received_at DESC, alert_id")) {
+      try (ResultSet rs = ps.executeQuery()) {
+        while (rs.next()) {
+          AlertRecord a = AlertRecord.fromPayload(MAPPER.readTree(rs.getString(1)),
+              rs.getString(2), null, null, rs.getString(3));
+          String ackUserAt = rs.getString(4);
+          out.add(new ActiveAlert(a, ackUserAt != null, rs.getString(5), ackUserAt));
+        }
+      }
+    } catch (SQLException | IOException ex) {
+      throw new IllegalStateException("activeAlertsWithAck query failed", ex);
     }
     return out;
   }

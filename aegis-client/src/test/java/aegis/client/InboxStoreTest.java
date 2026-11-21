@@ -161,6 +161,38 @@ class InboxStoreTest {
     assertEquals(1, inbox.count());
   }
 
+  @Test void userAckStateIsExposedForRedisplayAfterRestart() {
+    inbox.store(alert("ALT-ACKED", 1));
+    inbox.store(alert("ALT-OPEN", 1));
+    assertTrue(inbox.markUserAck("ALT-ACKED", 1, "USER-1", Instant.now().toString()));
+    inbox.markUserAckSent("ALT-ACKED", 1, Instant.now().toString());
+    inbox.applyCancel("ALT-CANCELLED", 2, "DEV-TEST-01", "ended", Instant.now().toString());
+    inbox.close();
+
+    // L2: redisplay after restart must preserve the durable user ack, not reset it.
+    InboxStore reopened = new InboxStore(tmp.resolve("inbox.db"), "DEV-TEST-01");
+    List<InboxStore.ActiveAlert> active = reopened.activeAlertsWithAck();
+    assertEquals(2, active.size(), "cancelled alert stays hidden");
+    InboxStore.ActiveAlert acked = active.stream()
+        .filter(a -> a.alert().alertId().equals("ALT-ACKED")).findFirst().orElseThrow();
+    assertTrue(acked.userAcked(), "durable ACK_USER must survive restart for the UI column");
+    assertEquals("USER-1", acked.userId());
+    assertNotNull(acked.ackUserAt());
+    InboxStore.ActiveAlert open = active.stream()
+        .filter(a -> a.alert().alertId().equals("ALT-OPEN")).findFirst().orElseThrow();
+    assertFalse(open.userAcked());
+    assertNull(open.userId());
+    assertNull(open.ackUserAt());
+
+    // A newer revision resets the durable ack — redisplay must show un-acked again.
+    assertEquals(InboxStore.StoreResult.STORED, reopened.store(alert("ALT-ACKED", 2)));
+    InboxStore.ActiveAlert refreshed = reopened.activeAlertsWithAck().stream()
+        .filter(a -> a.alert().alertId().equals("ALT-ACKED")).findFirst().orElseThrow();
+    assertEquals(2, refreshed.alert().revision());
+    assertFalse(refreshed.userAcked(), "new content requires a fresh human acknowledgement");
+    reopened.close();
+  }
+
   @Test void activeAlertsNewestFirst() {
     inbox.store(alert("ALT-OLD", 1));
     inbox.store(new AlertRecord("ALT-NEW", 1, "DLV-NEW", null, null, null, "INFO",

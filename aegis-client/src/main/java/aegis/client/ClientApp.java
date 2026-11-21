@@ -157,8 +157,10 @@ public class ClientApp extends Application {
 
   private void reloadFromInbox() {
     rows.clear();
-    for (AlertRecord a : inbox.activeAlerts()) {
-      rows.add(new AlertRow(a, false));
+    // L2: keep the durable user-ack state — an alert already acknowledged in a previous
+    // session (or before reconnect) must not show up as un-acked again.
+    for (InboxStore.ActiveAlert a : inbox.activeAlertsWithAck()) {
+      rows.add(new AlertRow(a.alert(), a.userAcked()));
     }
   }
 

@@ -101,7 +101,10 @@ final class TestServer implements AutoCloseable {
     }
 
     /** HELLO -> SERVER_HELLO -> AUTH_DEVICE -> AUTH_RESULT. */
-    void handshake(boolean authOk) throws Exception {
+    void handshake(boolean authOk) throws Exception { handshake(authOk, -1); }
+
+    /** Handshake whose SERVER_HELLO advertises heartbeatIntervalMs (>=100ms) when given. */
+    void handshake(boolean authOk, long heartbeatIntervalMs) throws Exception {
       if (socket instanceof javax.net.ssl.SSLSocket) sawTlsSocket = true;
       Envelope hello = read();
       if (!"HELLO".equals(hello.type())) throw new IOException("expected HELLO, got " + hello.type());
@@ -109,6 +112,7 @@ final class TestServer implements AutoCloseable {
       ObjectNode sh = MAPPER.createObjectNode();
       sh.put("serverId", "LOOPBACK-TEST");
       sh.putArray("supportedVersions").add(Protocol.VERSION);
+      if (heartbeatIntervalMs >= 100) sh.put("heartbeatIntervalMs", heartbeatIntervalMs);
       write("SERVER_HELLO", hello.messageId(), sh);
       Envelope auth = read();
       if (!"AUTH_DEVICE".equals(auth.type())) throw new IOException("expected AUTH_DEVICE, got " + auth.type());

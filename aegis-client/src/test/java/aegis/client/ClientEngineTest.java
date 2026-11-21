@@ -346,6 +346,101 @@ class ClientEngineTest {
     await("server HEARTBEAT_ACK processed", 5_000, () -> engine.isOnline());
   }
 
+  // ---- M1 regression: a malformed frame must not kill the controller thread ----
+
+  @Test void malformedAlertPushIsDroppedAndControllerSurvives() throws Exception {
+    ObjectNode bad = alertPayload("ALT-BAD", 1, "DLV-BAD", "SIMULATION — missing title");
+    bad.remove("title"); // AlertRecord.requireText throws IllegalArgumentException
+    server = new TestServer(TestServer.pushScript(List.of(bad,
+        alertPayload("ALT-OK", 1, "DLV-OK", "SIMULATION — valid after malformed")), List.of(), false));
+    startEngine(server);
+    await("valid push after malformed frame is ACKed", 10_000, () -> server.framesOfType("ACK_RECEIVED").stream()
+        .anyMatch(e -> "ALT-OK".equals(e.payload().path("alertId").asText())));
+    assertEquals(AlertClientEngine.State.ONLINE, engine.state(), "controller must survive a malformed frame");
+    assertEquals(1, server.connections.get(), "malformed frame must not drop the connection");
+    assertEquals(1, listener.fresh.size(), "only the valid push pops up");
+    assertEquals("ALT-OK", listener.fresh.get(0).alertId());
+    assertTrue(inbox.find("ALT-BAD").isEmpty(), "malformed push must not be stored");
+    assertEquals(1, inbox.count());
+    assertTrue(listener.errors.stream().anyMatch(e -> e.contains("malformed frame")),
+        "the dropped frame must surface via listenerError: " + listener.errors);
+  }
+
+  @Test void malformedRevisionPushIsDroppedAndControllerSurvives() throws Exception {
+    ObjectNode bad = alertPayload("ALT-BAD", 1, "DLV-BAD", "SIMULATION — revision zero");
+    bad.put("revision", 0); // revision must be a positive integer
+    server = new TestServer(TestServer.pushScript(List.of(bad,
+        alertPayload("ALT-OK", 1, "DLV-OK", "SIMULATION — valid after malformed")), List.of(), false));
+    startEngine(server);
+    await("valid push after malformed revision is ACKed", 10_000, () -> server.framesOfType("ACK_RECEIVED").stream()
+        .anyMatch(e -> "ALT-OK".equals(e.payload().path("alertId").asText())));
+    assertEquals(AlertClientEngine.State.ONLINE, engine.state());
+    assertEquals(1, server.connections.get());
+    assertEquals(1, listener.fresh.size());
+    assertEquals(1, inbox.count());
+    assertTrue(listener.errors.stream().anyMatch(e -> e.contains("malformed frame")));
+  }
+
+  @Test void malformedSyncResultEntryIsDroppedAndControllerSurvives() throws Exception {
+    ObjectNode bad = alertPayload("ALT-BAD", 1, "DLV-BAD", "SIMULATION — missing deliveryId");
+    bad.remove("deliveryId"); // SYNC_RESULT.alerts entry fails AlertRecord.fromPayload
+    server = new TestServer((idx, s) -> {
+      s.handshake(true);
+      Envelope sync = s.read();
+      server.frames.add(sync);
+      assertEquals("SYNC_REQUEST", sync.type());
+      ObjectNode p = TestServer.MAPPER.createObjectNode();
+      p.putArray("alerts").add(bad);
+      p.putArray("cancels");
+      s.write("SYNC_RESULT", sync.messageId(), p);
+      s.pushAlert(alertPayload("ALT-OK", 1, "DLV-OK", "SIMULATION — valid after bad sync"), "push-ok");
+      s.recordLoop(List.of(), false);
+    });
+    startEngine(server);
+    await("engine online", 10_000, engine::isOnline);
+    assertTrue(engine.requestSync());
+    await("valid push after malformed SYNC_RESULT is ACKed", 10_000, () -> server.framesOfType("ACK_RECEIVED").stream()
+        .anyMatch(e -> "ALT-OK".equals(e.payload().path("alertId").asText())));
+    assertEquals(AlertClientEngine.State.ONLINE, engine.state(), "controller must survive a malformed SYNC_RESULT");
+    assertEquals(1, server.connections.get());
+    assertEquals(1, listener.fresh.size());
+    assertEquals("ALT-OK", listener.fresh.get(0).alertId());
+    assertTrue(inbox.find("ALT-BAD").isEmpty());
+    assertEquals(1, inbox.count());
+    assertTrue(listener.errors.stream().anyMatch(e -> e.contains("malformed frame")));
+  }
+
+  // ---- L1 regression: watchdog/soTimeout anchor to the negotiated interval ----
+
+  @Test void watchdogAnchorsToNegotiatedIntervalOnHealthyServer() throws Exception {
+    // Healthy server advertises 700ms (> 3 x cfg timeout 200ms) and answers every
+    // HEARTBEAT: the link must stay up — no false suspects, no reconnect churn.
+    server = new TestServer((idx, s) -> {
+      s.handshake(true, 700);
+      s.recordLoop(List.of(), false);
+    });
+    startEngine(server, config(server.port(), 8, 5, 200), Thread::sleep, new Random(1));
+    await("four client HEARTBEATs at the negotiated cadence", 10_000,
+        () -> server.framesOfType("HEARTBEAT").size() >= 4);
+    assertEquals(1, server.connections.get(),
+        "healthy server at the negotiated interval must not trigger false suspects");
+    assertTrue(engine.isOnline());
+    assertTrue(listener.errors.stream().noneMatch(e -> e.contains("heartbeat suspect")),
+        "unexpected suspects: " + listener.errors);
+  }
+
+  @Test void watchdogSuspectsAfterThreeNegotiatedIntervalsWhenServerGoesSilent() throws Exception {
+    // Negotiated 300ms with cfg timeout 10s: silence must be judged against the
+    // negotiated interval (suspect ~900ms), not the local cfg (would take 30s).
+    server = new TestServer((idx, s) -> {
+      s.handshake(true, 300);
+      while (!s.socket.isClosed()) { s.read(); } // swallow everything, never reply
+    });
+    startEngine(server, config(server.port(), 8, 5, 10_000), Thread::sleep, new Random(1));
+    await("watchdog reconnect after 3 x negotiated 300ms silence", 8_000, () -> server.connections.get() >= 2);
+    assertTrue(listener.errors.stream().anyMatch(e -> e.contains("heartbeat suspect")));
+  }
+
   @Test void stopIsCleanAndInboxRemainsUsable() throws Exception {
     server = new TestServer(TestServer.pushScript(
         List.of(alertPayload("ALT-1", 1, "DLV-1", "SIMULATION — drill")), List.of(), false));

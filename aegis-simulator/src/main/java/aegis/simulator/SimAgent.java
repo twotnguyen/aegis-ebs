@@ -31,12 +31,19 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * <p>No JavaFX, no local persistence: dedup is {@link DedupIndex} in memory and
  * knownRevisions for SYNC_REQUEST are tracked per agent. One virtual thread per agent.
+ * AUTH_RESULT ok=false is permanent: the agent fails fast (counted in
+ * {@link SimStats#authRejections}) instead of retrying until the deadline.
  */
 public final class SimAgent implements Runnable {
 
   /** Fault-injected disconnect — expected, not an error. */
   private static final class FaultDisconnectException extends IOException {
     FaultDisconnectException() { super("fault injection: disconnect after delivery"); }
+  }
+
+  /** Permanent auth rejection (AUTH_RESULT ok=false) — stop the agent, do not retry. */
+  private static final class AuthRejectedException extends IOException {
+    AuthRejectedException(String m) { super(m); }
   }
 
   private final String deviceId;
@@ -88,6 +95,11 @@ public final class SimAgent implements Runnable {
         }
         connectedOnce = true;
         readLoop(s);
+      } catch (AuthRejectedException permanent) {
+        // L4: ok=false is permanent (bad credentials) — fail fast like AlertClientEngine
+        // instead of hammering auth until the deadline and inflating connectFailures.
+        stats.authRejections.increment();
+        break;
       } catch (FaultDisconnectException expected) {
         // injected disconnect: fall through to reconnect
       } catch (IOException | FrameException ex) {
@@ -129,7 +141,7 @@ public final class SimAgent implements Runnable {
     Envelope result = expect(codec.readFrame(in), "AUTH_RESULT");
     JsonNode ok = result.payload().get("ok");
     if (ok != null && ok.isBoolean() && !ok.booleanValue()) {
-      throw new IOException("AUTH_RESULT ok=false for " + deviceId);
+      throw new AuthRejectedException("AUTH_RESULT ok=false for " + deviceId);
     }
     lastHeartbeatSent = 0; // heartbeat promptly after (re)connect
   }

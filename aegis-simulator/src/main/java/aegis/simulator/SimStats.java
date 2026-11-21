@@ -21,12 +21,15 @@ public final class SimStats {
   public final LongAdder syncRequests = new LongAdder();
   public final LongAdder heartbeats = new LongAdder();
   public final LongAdder connectionErrors = new LongAdder();
+  /** Permanent AUTH_RESULT ok=false rejections — agent stops, no retry (fail-fast). */
+  public final LongAdder authRejections = new LongAdder();
 
   public record Snapshot(
       long agentsStarted, long agentsFinished, long connectSuccess, long connectFailures,
       long reconnects, long alertsReceived, long duplicatePushes, long cancelsReceived,
       long acksSent, long acksDropped, long acksDelayed, long duplicateAcks,
-      long disconnects, long syncRequests, long heartbeats, long connectionErrors) {
+      long disconnects, long syncRequests, long heartbeats, long connectionErrors,
+      long authRejections) {
 
     public String summary() {
       return """
@@ -36,12 +39,12 @@ public final class SimStats {
           alerts received         : %d   (duplicate pushes: %d, cancels: %d)
           ACK_RECEIVED sent       : %d   dropped: %d   delayed: %d   extra copies: %d
           fault disconnects       : %d   SYNC requests: %d   heartbeats answered: %d
-          connection errors       : %d
+          connection errors       : %d   auth rejections (permanent): %d
           =======================================================""".formatted(
           agentsStarted, agentsFinished, connectSuccess, connectFailures, reconnects,
           alertsReceived, duplicatePushes, cancelsReceived,
           acksSent, acksDropped, acksDelayed, duplicateAcks,
-          disconnects, syncRequests, heartbeats, connectionErrors);
+          disconnects, syncRequests, heartbeats, connectionErrors, authRejections);
     }
   }
 
@@ -50,6 +53,7 @@ public final class SimStats {
         agentsStarted.sum(), agentsFinished.sum(), connectSuccess.sum(), connectFailures.sum(),
         reconnects.sum(), alertsReceived.sum(), duplicatePushes.sum(), cancelsReceived.sum(),
         acksSent.sum(), acksDropped.sum(), acksDelayed.sum(), duplicateAcks.sum(),
-        disconnects.sum(), syncRequests.sum(), heartbeats.sum(), connectionErrors.sum());
+        disconnects.sum(), syncRequests.sum(), heartbeats.sum(), connectionErrors.sum(),
+        authRejections.sum());
   }
 }

@@ -116,4 +116,23 @@ class SimulatorSmokeTest {
       assertEquals(100, server.deviceIds.stream().distinct().count());
     }
   }
+
+  @Test void authRejectionFailsFastWithoutRetry() throws Exception {
+    SimTestUtil.TlsPair tls = SimTestUtil.generateTls(tmp);
+    SSLContext serverCtx = TlsSupport.serverContext(tls.keystore(), tls.password());
+    try (LoopbackEbspServer server = new LoopbackEbspServer(serverCtx, 2, false)) {
+      SimulatorConfig cfg = config(server.port(), tls.truststore(), 4, "clean", 7, 5, 1);
+      long start = System.currentTimeMillis();
+      SimStats.Snapshot s = SimulatorMain.run(cfg);
+      long elapsed = System.currentTimeMillis() - start;
+      assertEquals(4, s.agentsStarted());
+      assertEquals(4, s.agentsFinished(), "rejected agents stop immediately, not at the deadline");
+      assertEquals(4, s.authRejections(), "permanent rejection counted separately");
+      assertEquals(0, s.connectSuccess());
+      assertEquals(0, s.connectFailures(), "no retryable-failure inflation from a permanent rejection");
+      assertEquals(0, s.alertsReceived());
+      assertEquals(4, server.connections.get(), "exactly one attempt per agent — no auth hammering");
+      assertTrue(elapsed < 4000, "fleet must stop well before the 5s deadline, took " + elapsed + "ms");
+    }
+  }
 }

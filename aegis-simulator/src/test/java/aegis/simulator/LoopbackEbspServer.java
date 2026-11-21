@@ -36,6 +36,7 @@ final class LoopbackEbspServer implements AutoCloseable {
   private final SSLServerSocket serverSocket;
   private final ExecutorService exec = Executors.newVirtualThreadPerTaskExecutor();
   private final int alertsPerConnection;
+  private final boolean authOk;
 
   final AtomicInteger connections = new AtomicInteger();
   final AtomicInteger acksReceived = new AtomicInteger();
@@ -48,7 +49,13 @@ final class LoopbackEbspServer implements AutoCloseable {
   volatile boolean sawTlsSocket;
 
   LoopbackEbspServer(SSLContext serverTls, int alertsPerConnection) throws IOException {
+    this(serverTls, alertsPerConnection, true);
+  }
+
+  /** authOk=false: AUTH_RESULT ok=false (permanent rejection fixture for fail-fast tests). */
+  LoopbackEbspServer(SSLContext serverTls, int alertsPerConnection, boolean authOk) throws IOException {
     this.alertsPerConnection = alertsPerConnection;
+    this.authOk = authOk;
     this.serverSocket = (SSLServerSocket) serverTls.getServerSocketFactory()
         .createServerSocket(0, 256, InetAddress.getByName("127.0.0.1"));
     exec.submit(() -> {
@@ -71,6 +78,7 @@ final class LoopbackEbspServer implements AutoCloseable {
       if (s instanceof javax.net.ssl.SSLSocket) sawTlsSocket = true;
       s.setSoTimeout(15_000);
       String deviceId = handshake(s);
+      if (deviceId == null) return; // auth rejected: close without pushing anything
       deviceIds.add(deviceId);
       for (int k = 1; k <= alertsPerConnection; k++) {
         ObjectNode p = alertPayload("ALT-SIM-" + k, 1, "DLV-" + deviceId + "-" + k,
@@ -132,9 +140,10 @@ final class LoopbackEbspServer implements AutoCloseable {
     Envelope auth = codec.readFrame(s.getInputStream());
     if (!"AUTH_DEVICE".equals(auth.type())) throw new IOException("expected AUTH_DEVICE, got " + auth.type());
     ObjectNode ar = MAPPER.createObjectNode();
-    ar.put("ok", true);
+    ar.put("ok", authOk);
+    if (!authOk) ar.put("reason", "bad secret");
     write(s, "AUTH_RESULT", auth.messageId(), ar, "ar-" + UUID.randomUUID());
-    return deviceId;
+    return authOk ? deviceId : null;
   }
 
   private void write(Socket s, String type, String correlationId, ObjectNode payload, String messageId)
