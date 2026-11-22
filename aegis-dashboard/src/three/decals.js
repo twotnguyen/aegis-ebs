@@ -137,6 +137,36 @@ export function build(ctx = {}) {
       g.beginPath(); g.moveTo(X(0), Z(-hd)); g.lineTo(X(0), Z(hd)); g.stroke();
       g.setLineDash([]);
 
+      // hazard stripes at the four core approaches (yellow / dark diagonal)
+      const hazard = (hxc, hzc, w, d) => {
+        const px = X(hxc - w / 2), py = Z(hzc - d / 2), pw = w * sx, ph = d * sy;
+        g.save();
+        g.beginPath(); g.rect(px, py, pw, ph); g.clip();
+        g.fillStyle = 'rgba(250,204,21,0.35)'; g.fillRect(px, py, pw, ph);
+        g.strokeStyle = 'rgba(17,24,39,0.55)';
+        g.lineWidth = Math.max(3, 0.12 * sx);
+        for (let p = -d; p <= w + d; p += 0.45) {
+          const x0 = X(hxc - w / 2 + p), y0 = Z(hzc - d / 2);
+          g.beginPath(); g.moveTo(x0, y0); g.lineTo(x0 + d * sx, y0 + d * sy); g.stroke();
+        }
+        g.restore();
+      };
+      hazard(cw + 0.55, 0, 1.2, 1.6); hazard(-cw - 0.55, 0, 1.2, 1.6);
+      hazard(0, cd + 0.55, 1.6, 1.2); hazard(0, -cd - 0.55, 1.6, 1.2);
+
+      // wayfinding: green egress captions along the corridor, translucent floor no.
+      g.save();
+      g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.fillStyle = 'rgba(22,163,74,0.75)';
+      g.font = `700 ${Math.round(0.72 * sx)}px Arial, Helvetica, sans-serif`;
+      g.fillText('→ EXIT / THOÁT HIỂM', X(-hw * 0.52), Z(-gz * 0.45));
+      g.fillText('EXIT / THOÁT HIỂM ←', X(hw * 0.52), Z(gz * 0.45));
+      g.fillStyle = 'rgba(100,116,139,0.22)';
+      g.font = `700 ${Math.round(1.6 * sx)}px Arial, Helvetica, sans-serif`;
+      g.fillText(`F${pad(i + 1)}`, X(-hw + 3.2), Z(-hd + 2.2));
+      g.fillText(`F${pad(i + 1)}`, X(hw - 3.2), Z(hd - 2.2));
+      g.restore();
+
       // zone boundaries (dashed) + zoneCode labels at the corridor-facing corner
       g.font = `700 ${Math.round(1.3 * sx)}px Arial, Helvetica, sans-serif`;
       for (let zi = 0; zi < BUILDING.zonesPerFloor; zi++) {
@@ -189,13 +219,16 @@ export function build(ctx = {}) {
     : M.exitSign;                                     // shared lib fallback (not owned)
 
   const arrowItems = [];
+  // Các mũi tên nằm trên 2 nhánh hành lang, khoảng cách lấy theo core/zoneRect.
+  const ax = cw + (hw - cw) * 0.28, axFar = cw + (hw - cw) * 0.62;
+  const az = cd + (hd - cd) * 0.30, azFar = cd + (hd - cd) * 0.60;
   for (let i = 0; i < F; i++) {
     const y = floorY(i) + FINISH + DECAL_DY;
     // X corridor → stair doors at x = ±coreWidth/2
-    for (const [x, dx] of [[-13.5, 1], [-8.5, 1], [8.5, -1], [13.5, -1]])
+    for (const [x, dx] of [[-ax, 1], [-axFar, 1], [ax, -1], [axFar, -1]])
       arrowItems.push({ x, y, z: 0, dx, dz: 0, floor: i });
     // Z corridors → the X corridor (then stairs)
-    for (const [z, dz] of [[-9.5, 1], [-5, 1], [5, -1], [9.5, -1]])
+    for (const [z, dz] of [[-az, 1], [-azFar, 1], [az, -1], [azFar, -1]])
       arrowItems.push({ x: 0, y, z, dx: 0, dz, floor: i });
   }
   const arrows = new T.InstancedMesh(unitPlane, arrowMat, arrowItems.length);
@@ -220,11 +253,58 @@ export function build(ctx = {}) {
   gFloors.add(arrows);
 
   // =====================================================================
+  // 2b) Hazard stripe decals at the four zone doorways on every floor
+  //     (one shared texture + one InstancedMesh). Position follows zoneRect.
+  // =====================================================================
+  const hazardTex = canvasTex(128, 64, (g, w, h) => {
+    g.fillStyle = 'rgba(250,204,21,0.85)'; g.fillRect(0, 0, w, h);
+    g.strokeStyle = 'rgba(17,24,39,0.9)'; g.lineWidth = 10;
+    for (let p = -h; p < w + h; p += 22) {
+      g.beginPath(); g.moveTo(p, 0); g.lineTo(p + h, h); g.stroke();
+    }
+  });
+  const hazardMat = hazardTex
+    ? ownMat(new T.MeshStandardMaterial({
+        map: hazardTex, transparent: true, depthWrite: false, roughness: 0.8,
+        polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2,
+      }))
+    : basicFallback(0xfacc15, 0.55);
+  const hazardItems = [];
+  for (let i = 0; i < F; i++) {
+    const y = floorY(i) + FINISH + DECAL_DY + 0.002;
+    for (let zi = 0; zi < BUILDING.zonesPerFloor; zi++) {
+      const r = zoneRect(zi);
+      const sgnX = (zi % 2 === 0) ? -1 : 1;
+      hazardItems.push({ x: r.x - sgnX * (r.w / 2 - 0.95), y, z: r.z, floor: i, zone: zi });
+    }
+  }
+  const hazards = new T.InstancedMesh(unitPlane, hazardMat, hazardItems.length);
+  hazards.name = 'decals-zone-hazard-stripes';
+  {
+    const dummy = new T.Object3D();
+    hazardItems.forEach((it, k) => {
+      dummy.position.set(it.x, it.y, it.z);
+      dummy.rotation.set(-Math.PI / 2, 0, 0);
+      dummy.scale.set(1.6, 0.55, 1);
+      dummy.updateMatrix();
+      hazards.setMatrixAt(k, dummy.matrix);
+    });
+    hazards.instanceMatrix.needsUpdate = true;
+    hazards.computeBoundingSphere();
+  }
+  hazards.castShadow = false;
+  hazards.renderOrder = 3;
+  hazards.raycast = noRaycast;
+  hazards.userData = { module: 'decals', kind: 'hazard-stripes', floor: 'all', instances: hazardItems.length };
+  gFloors.add(hazards);
+
+  // =====================================================================
   // 3) Elevator floor-number signs above the core doors (structure.js:
   //    doorXs ±1.8, doorH 2.2, front wall face z = coreDepth/2).
   // =====================================================================
   const SIGN_W = 0.9, SIGN_H = SIGN_W * 160 / 256;
   const signZ = cd + 0.02;
+  const doorDx = cw * 0.3;                  // structure.js elevator door centres (±1.8 với lõi 12 m)
   const signMats = [];
   for (let i = 0; i < F; i++) {
     const tex = canvasTex(256, 160, (g) => {
@@ -256,7 +336,7 @@ export function build(ctx = {}) {
   for (let i = 0; i < F; i++) {
     const im = new T.InstancedMesh(unitPlane, signMats[i], 2);
     im.name = `decals-elevator-sign-F${pad(i + 1)}`;
-    [-1.8, 1.8].forEach((dx, k) => {
+    [-doorDx, doorDx].forEach((dx, k) => {
       signDummy.position.set(dx, floorY(i) + 2.62, signZ);
       signDummy.rotation.set(0, 0, 0);
       signDummy.scale.set(SIGN_W, SIGN_H, 1);
@@ -276,10 +356,14 @@ export function build(ctx = {}) {
   // 4) Parking lot markings (environment.js: lot x[-92,-50] z[16,46],
   //    stall rows centred z 36.75 / 25.25, aisle z 31, driveway x ≈ -71).
   // =====================================================================
-  const LOT_W = 42, LOT_D = 30, LOT_X = -71, LOT_Z = 31;
+  // environment.js (không thuộc module này) giữ bãi đỗ cố định x[-92,-50] z[16,46].
+  // Các hằng số cảnh quan này chỉ để khớp bãi đỗ, KHÔNG phải kích thước tòa nhà.
+  const LOT_X0 = -92, LOT_X1 = -50, LOT_Z0 = 16, LOT_Z1 = 46;
+  const LOT_W = LOT_X1 - LOT_X0, LOT_D = LOT_Z1 - LOT_Z0;
+  const LOT_X = (LOT_X0 + LOT_X1) / 2, LOT_Z = (LOT_Z0 + LOT_Z1) / 2;
   const parkTex = canvasTex(1050, 750, (g, w, h) => {
     const sx = w / LOT_W, sy = h / LOT_D;
-    const X = (x) => (x + 92) * sx, Z = (z) => (z - 16) * sy;
+    const X = (x) => (x - LOT_X0) * sx, Z = (z) => (z - LOT_Z0) * sy;
     g.clearRect(0, 0, w, h);
     g.strokeStyle = 'rgba(233,234,236,0.92)';
     g.lineWidth = Math.max(2, 0.12 * sx);
@@ -400,7 +484,7 @@ export function build(ctx = {}) {
     g.fillText('AEGIS', 256, 342);
   });
   const medallionMat = paintMat(medallionTex, basicFallback(0x38bdf8, 0.3), { roughness: 0.6 });
-  plane(gLobby, medallionMat, 'decals-lobby-medallion', 3.4, 3.4, 0, FINISH + DECAL_DY + 0.002, 10.8,
+  plane(gLobby, medallionMat, 'decals-lobby-medallion', 3.4, 3.4, 0, FINISH + DECAL_DY + 0.002, HD - BUILDING.zoneInset - 2,
     { flat: true, kind: 'lobby-logo', ud: { floor: 0 } });
 
   const wallLogoTex = canvasTex(512, 256, (g) => {
@@ -480,6 +564,7 @@ export function build(ctx = {}) {
     stats: {
       floors: F,
       exitArrows: arrowItems.length,
+      hazardDecals: hazardItems.length,
       elevatorSigns: F * 2,
       textures: ownedTex.length,
       triangles: Math.round(triangles),

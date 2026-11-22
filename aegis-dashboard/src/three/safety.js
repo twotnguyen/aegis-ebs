@@ -18,6 +18,9 @@ export function build(ctx) {
   const HD = BUILDING.depth / 2;
   const CW = BUILDING.coreWidth / 2;   // nửa rộng lõi (X)
   const CD = BUILDING.coreDepth / 2;   // nửa sâu lõi (Z)
+  const IHW = HW - BUILDING.zoneInset; // nửa khu nội thất (X)
+  const IHD = HD - BUILDING.zoneInset; // nửa khu nội thất (Z)
+  const GAP = BUILDING.zoneGap / 2;    // nửa chiều rộng hành lang
 
   const group = new T.Group();
   group.name = 'safety';
@@ -56,11 +59,11 @@ export function build(ctx) {
 
   // ---------------------------------------------------------------------------
   // 1) HAI BUỒNG THANG THOÁT HIỂM trong lõi (switchback, mỗi tầng 20 bậc).
-  //    Giếng thang: rộng 3.0 (X) × sâu 5.4 (Z), tâm x = ±2.6; dải giữa dành
-  //    cho thang máy (structure.js). Cửa buồng thang mở ra hành lang Đông/Tây.
+  //    Giếng thang: kích thước tỉ lệ với lõi (coreWidth/coreDepth), dải giữa
+  //    dành cho thang máy (structure.js). Cửa buồng thang mở ra hành lang Đông/Tây.
   // ---------------------------------------------------------------------------
-  const STAIR_X = [-2.6, 2.6];         // tâm 2 giếng thang
-  const SHAFT_W = 3.0, SHAFT_D = 5.4;  // kích thước giếng
+  const STAIR_X = [-CW * 0.46, CW * 0.46];   // tâm 2 giếng thang
+  const SHAFT_W = CW * 0.5, SHAFT_D = CD * 0.92;  // kích thước giếng
   const RUN_W = 1.3, TREAD = 0.28, RISER = pitch() / 20;
   const RUN_LEN = 10 * TREAD;          // 2.8
   const LAND_D = (SHAFT_D - RUN_LEN) / 2; // 1.3
@@ -171,24 +174,46 @@ export function build(ctx) {
   exitSign('exit-sign-ground-front', 0, 2.7, HD + 0.08, 0, { floor: 0, zone: null, area: 'facade-front', kind: 'exit-sign' });
   exitSign('exit-sign-ground-back', 0, 2.7, -HD - 0.08, Math.PI, { floor: 0, zone: null, area: 'facade-back', kind: 'exit-sign' });
   signCounts.exterior += 2;
+  const groundDoorItems = [];
   for (const sz of [1, -1]) {
-    doorItems.push({ x: -0.62, y: 1.1, z: sz * HD, sx: 0.12, sy: 2.2, sz: 0.12, floor: 0, zone: null, zoneCode: 'CORE' });
-    doorItems.push({ x: 0.62, y: 1.1, z: sz * HD, sx: 0.12, sy: 2.2, sz: 0.12, floor: 0, zone: null, zoneCode: 'CORE' });
-    doorItems.push({ x: 0, y: 2.32, z: sz * HD, sx: 1.36, sy: 0.16, sz: 0.12, floor: 0, zone: null, zoneCode: 'CORE' });
-    doorItems.push({ x: -0.28, y: 1.05, z: sz * HD, sx: 0.5, sy: 2.1, sz: 0.05, floor: 0, zone: null, zoneCode: 'CORE' });
-    doorItems.push({ x: 0.28, y: 1.05, z: sz * HD, sx: 0.5, sy: 2.1, sz: 0.05, floor: 0, zone: null, zoneCode: 'CORE' });
+    groundDoorItems.push({ x: -0.62, y: 1.1, z: sz * HD, sx: 0.12, sy: 2.2, sz: 0.12, floor: 0, zone: null, zoneCode: 'CORE' });
+    groundDoorItems.push({ x: 0.62, y: 1.1, z: sz * HD, sx: 0.12, sy: 2.2, sz: 0.12, floor: 0, zone: null, zoneCode: 'CORE' });
+    groundDoorItems.push({ x: 0, y: 2.32, z: sz * HD, sx: 1.36, sy: 0.16, sz: 0.12, floor: 0, zone: null, zoneCode: 'CORE' });
+    groundDoorItems.push({ x: -0.28, y: 1.05, z: sz * HD, sx: 0.5, sy: 2.1, sz: 0.05, floor: 0, zone: null, zoneCode: 'CORE' });
+    groundDoorItems.push({ x: 0.28, y: 1.05, z: sz * HD, sx: 0.5, sy: 2.1, sz: 0.05, floor: 0, zone: null, zoneCode: 'CORE' });
   }
+  instanced('ground-exit-doors', unitBox, M.steel, groundDoorItems);
+
+  // 2b) BIỂN CHỈ HƯỚNG thoát hiểm tại các giao lộ hành lang mỗi tầng.
+  //     Dùng chung canvas chữ EXIT ở trên, gom thành 2 InstancedMesh.
+  const dirPanelItems = [], dirTextItems = [];
+  const dirPanelGeo = geo(new T.BoxGeometry(0.08, 0.42, 1.0));
+  const dirTextGeo = geo(new T.PlaneGeometry(0.86, 0.32));
+  for (let f = 0; f < FLOORS; f++) {
+    const y = floorY(f) + 2.55;
+    for (const side of [-1, 1]) {
+      const px = side * (CW + 0.14);
+      dirPanelItems.push({ x: px, y, z: 0, floor: f, zone: null, zoneCode: 'CORE' });
+      dirTextItems.push({ x: px + side * 0.05, y, z: 0, ry: side * Math.PI / 2, floor: f, zone: null, zoneCode: 'CORE' });
+    }
+  }
+  instanced('corridor-exit-panels', dirPanelGeo, M.exitSign, dirPanelItems);
+  if (exitTextMat) instanced('corridor-exit-text', dirTextGeo, exitTextMat, dirTextItems);
+  signCounts.corridor = dirPanelItems.length;
 
   // ---------------------------------------------------------------------------
   // 3) BÌNH CHỮA CHÁY đỏ (InstancedMesh, materials.fireRed) dọc hành lang:
   //    6 bình/tầng (hành lang Tây, Đông, Nam, Bắc) × 10 tầng = 60 bình.
   // ---------------------------------------------------------------------------
+  // Vị trí bình/tủ chữa cháy dọc 4 nhánh hành lang, lấy theo core + zoneInset.
+  const ex = CW + (IHW - CW) * 0.34, exFar = CW + (IHW - CW) * 0.76;
+  const ez = CD + (IHD - CD) * 0.34, ezFar = CD + (IHD - CD) * 0.76;
   const extSpots = [
-    { x: -9, z: 0.58 }, { x: -16, z: 0.58 },
-    { x: 9, z: -0.58 }, { x: 16, z: -0.58 },
-    { x: 0.58, z: -8 }, { x: -0.58, z: 8 },
+    { x: -ex, z: GAP - 0.3 }, { x: -exFar, z: GAP - 0.3 },
+    { x: ex, z: -(GAP - 0.3) }, { x: exFar, z: -(GAP - 0.3) },
+    { x: -(GAP - 0.3), z: -ez }, { x: GAP - 0.3, z: ezFar },
   ];
-  const extBodyItems = [], extTopItems = [];
+  const extBodyItems = [], extTopItems = [], hoseItems = [], hoseDoorItems = [];
   const extBodyGeo = geo(new T.CylinderGeometry(0.09, 0.09, 0.45, 10, 1));
   for (let f = 0; f < FLOORS; f++) {
     const y = floorY(f);
@@ -197,10 +222,22 @@ export function build(ctx) {
       const meta = { floor: f, zone: zi, zoneCode: zoneCode(f, zi) };
       extBodyItems.push({ x: p.x, y: y + 0.55, z: p.z, ...meta });
       extTopItems.push({ x: p.x, y: y + 0.83, z: p.z, sx: 0.05, sy: 0.12, sz: 0.16, ...meta });
+      // tủ họng vòi (hose cabinet) gắn ngay sát tường hành lang
+      const alongX = Math.abs(p.x) > GAP;
+      const hx = alongX ? p.x : Math.sign(p.x) * (GAP + 0.14);
+      const hz = alongX ? Math.sign(p.z) * (GAP + 0.14) : p.z;
+      hoseItems.push({ x: hx, y: y + 1.05, z: hz, sx: 0.5, sy: 1.0, sz: 0.2, ...meta });
+      hoseDoorItems.push({
+        x: hx + (alongX ? 0 : Math.sign(hx) * 0.12),
+        y: y + 1.05, z: hz + (alongX ? Math.sign(hz) * 0.12 : 0),
+        sx: alongX ? 0.44 : 0.05, sy: 0.92, sz: alongX ? 0.05 : 0.44, ...meta,
+      });
     }
   }
   instanced('extinguishers', extBodyGeo, M.fireRed, extBodyItems);
   instanced('extinguisher-handles', unitBox, M.mullion, extTopItems);
+  instanced('fire-hose-cabinets', unitBox, M.fireRed, hoseItems);
+  instanced('fire-hose-doors', unitBox, M.steel, hoseDoorItems);
 
   // ---------------------------------------------------------------------------
   // 4) ĐẦU PHUN SPRINKLER trên trần (InstancedMesh): 12 đầu/tầng
@@ -215,13 +252,23 @@ export function build(ctx) {
         sprinklerItems.push({ x: r.x + dx, y: cy, z: r.z, floor: f, zone: zi, zoneCode: zoneCode(f, zi) });
       }
     }
-    for (const p of [{ x: -9, z: 0 }, { x: 9, z: 0 }, { x: 0, z: -8 }, { x: 0, z: 8 }]) {
+    for (const p of [{ x: -ex, z: 0 }, { x: ex, z: 0 }, { x: 0, z: -ez }, { x: 0, z: ez }]) {
       const zi = quadrant(p.x, p.z);
       sprinklerItems.push({ x: p.x, y: cy, z: p.z, floor: f, zone: zi, zoneCode: zoneCode(f, zi) });
     }
   }
   const pipeGeo = geo(new T.CylinderGeometry(0.025, 0.025, 0.14, 6, 1));
   const deflGeo = geo(new T.CylinderGeometry(0.075, 0.075, 0.02, 6, 1));
+  const mainPipeGeo = geo(new T.CylinderGeometry(1, 1, 1, 6, 1));
+  const mainPipeItems = [];
+  for (let f = 0; f < FLOORS; f++) {
+    const py = floorY(f) + FH - 0.10;
+    for (const z of [-GAP * 0.5, GAP * 0.5])
+      mainPipeItems.push({ x: 0, y: py, z, rz: Math.PI / 2, sx: 0.055, sy: 2 * IHW, sz: 0.055, floor: f, zone: null, zoneCode: 'CORRIDOR' });
+    for (const x of [-GAP * 0.5, GAP * 0.5])
+      mainPipeItems.push({ x, y: py, z: 0, rx: Math.PI / 2, sx: 0.055, sy: 2 * IHD, sz: 0.055, floor: f, zone: null, zoneCode: 'CORRIDOR' });
+  }
+  instanced('sprinkler-main-pipes', mainPipeGeo, M.steel, mainPipeItems);
   const pipeItems = sprinklerItems.map((s) => ({ ...s, y: s.y - 0.07 }));
   const deflItems = sprinklerItems.map((s) => ({ ...s, y: s.y - 0.15 }));
   instanced('sprinkler-pipes', pipeGeo, M.steel, pipeItems);
@@ -234,7 +281,13 @@ export function build(ctx) {
   const strobeBaseItems = [];
   const strobes = [];
   const domeGeo = geo(new T.SphereGeometry(0.13, 8, 4, 0, Math.PI * 2, 0, Math.PI / 2));
-  const strobeCorners = [[-5.9, -4.9], [5.9, -4.9], [-5.9, 4.9], [5.9, 4.9]];
+  const strobeCorners = [];
+  for (let zi = 0; zi < BUILDING.zonesPerFloor; zi++) {
+    const r = zoneRect(zi);
+    const sgx = (zi % 2 === 0) ? -1 : 1, sgz = (zi < 2) ? -1 : 1;
+    // góc ngoài của mỗi zone — nhìn rõ qua kính facade, không chồng lõi
+    strobeCorners.push([r.x + sgx * r.w * 0.28, r.z + sgz * r.d * 0.28]);
+  }
   for (let f = 0; f < FLOORS; f++) {
     const y = floorY(f) + 2.75;
     for (let zi = 0; zi < BUILDING.zonesPerFloor; zi++) {
@@ -276,17 +329,23 @@ export function build(ctx) {
     routes.add(mesh);
     return mesh;
   }
-  const zoneEntry = [[-7.5, -5.8], [7.5, -5.8], [-7.5, 5.8], [7.5, 5.8]];
+  // Điểm xuất phát của mỗi tuyến nằm trong zone, lệch về phía lõi theo zoneRect.
+  const zoneEntry = [];
+  for (let zi = 0; zi < BUILDING.zonesPerFloor; zi++) {
+    const r = zoneRect(zi);
+    const sgx = (zi % 2 === 0) ? -1 : 1, sgz = (zi < 2) ? -1 : 1;
+    zoneEntry.push([r.x - sgx * r.w * 0.25, r.z - sgz * r.d * 0.25]);
+  }
   let routeCount = 0;
   for (let f = 0; f < FLOORS; f++) {
     const y = floorY(f) + 0.03;
     for (let zi = 0; zi < BUILDING.zonesPerFloor; zi++) {
-      const ex = zoneEntry[zi][0], ez = zoneEntry[zi][1];
-      const sx = ex > 0 ? RX : -RX;
-      const sz = ez > 0 ? RZ : -RZ;
-      const doorX = ex > 0 ? CW + 0.2 : -CW - 0.2;
+      const entryX = zoneEntry[zi][0], entryZ = zoneEntry[zi][1];
+      const sx = entryX > 0 ? RX : -RX;
+      const sz = entryZ > 0 ? RZ : -RZ;
+      const doorX = entryX > 0 ? CW + 0.2 : -CW - 0.2;
       tube(`evac-F${String(f + 1).padStart(2, '0')}-${zoneCode(f, zi).slice(-1)}`,
-        [[ex, ez], [sx, sz], [sx, 0], [doorX, 0]], y, 24,
+        [[entryX, entryZ], [sx, sz], [sx, 0], [doorX, 0]], y, 24,
         { floor: f, zone: zi, zoneCode: zoneCode(f, zi), kind: 'evac-route' });
       routeCount++;
     }
@@ -297,10 +356,13 @@ export function build(ctx) {
   routeCount += 2;
 
   // ---------------------------------------------------------------------------
-  // 7) ĐIỂM TẬP KẾT ngoài trời (sân trước, lệch phải để tránh sảnh chính):
-  //    thảm tròn xanh + viền, biển báo, tuyến ngoài trời từ 2 cửa thoát hiểm.
   // ---------------------------------------------------------------------------
-  const AX = 14, AZ = 24, AR = 3;
+  // 7) ĐIỂM TẬP KẾT ngoài trời (thảm tròn xanh + viền, biển báo, tuyến nối tiếp).
+  //    Điểm tập kết ngoài trời lệch Đông, ngoài sân lát (plaza x≤width/2+...)
+  // nên không chắn lối vào sảnh; mọi tọa độ tỉ lệ với footprint.
+  const AX = HW + BUILDING.width * 0.17;
+  const AZ = HD + BUILDING.depth * 0.24;
+  const AR = Math.min(3, BUILDING.depth * 0.06);
   const assembly = new T.Group();
   assembly.name = 'assembly-point';
   assembly.userData = { floor: 0, zone: null, kind: 'assembly-point', x: AX, z: AZ, radius: AR };
@@ -345,8 +407,11 @@ export function build(ctx) {
   }
   group.add(assembly);
   // Tuyến ngoài trời: cửa trước → điểm tập kết; cửa sau → vòng mép sân → tập kết.
-  tube('evac-outdoor-front', [[0, HD + 0.4], [0, 20], [AX, 20], [AX, AZ - AR + 0.4]], 0.04, 40, { floor: 0, zone: null, kind: 'evac-route', area: 'outdoor' });
-  tube('evac-outdoor-back', [[0, -HD - 0.4], [23, -HD - 0.4], [23, 22], [AX + AR - 0.5, 22.6]], 0.04, 48, { floor: 0, zone: null, kind: 'evac-route', area: 'outdoor' });
+  const frontCornerZ = HD + BUILDING.depth * 0.05;  // trước đài phun nước
+  const backCornerZ = -(HD + BUILDING.depth * 0.08);
+  const sideX = HW + BUILDING.width * 0.11;         // vòng qua Đông tòa nhà
+  tube('evac-outdoor-front', [[0, HD + 0.4], [0, frontCornerZ], [AX, frontCornerZ], [AX, AZ - AR + 0.4]], 0.04, 40, { floor: 0, zone: null, kind: 'evac-route', area: 'outdoor' });
+  tube('evac-outdoor-back', [[0, -HD - 0.4], [0, backCornerZ], [sideX, backCornerZ], [sideX, AZ], [AX - AR + 0.5, AZ]], 0.04, 48, { floor: 0, zone: null, kind: 'evac-route', area: 'outdoor' });
   routeCount += 2;
 
   // ---------------------------------------------------------------------------
@@ -397,7 +462,7 @@ export function build(ctx) {
   group.userData = {
     kind: 'safety',
     devices: {
-      exitSigns: signCounts.stair + signCounts.exterior,
+      exitSigns: signCounts.stair + signCounts.exterior + signCounts.corridor,
       stairwells: 2,
       extinguishers: extBodyItems.length,
       sprinklers: sprinklerItems.length,

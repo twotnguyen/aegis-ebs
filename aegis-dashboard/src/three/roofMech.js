@@ -20,6 +20,7 @@ export function build(ctx = {}) {
   const W = B.width, D = B.depth, HW = W / 2, HD = D / 2;
   const PARAPET = B.roofParapet;
   const coreW = B.coreWidth, coreD = B.coreDepth;
+  const CW = coreW / 2, CD = coreD / 2;
   const PT = 0.25;                          // parapet thickness (matches facade.js)
   const TAG = { floor: 'roof' };
 
@@ -79,7 +80,7 @@ export function build(ctx = {}) {
   ], 'roofmech-overrun-louvers');
 
   // ---------------------------------------------------------------- helipad (circle + H)
-  const hx = W / 4, hz = D / 4 - 1, HR = 5.2;   // front-right quadrant, clear of core/beacon
+  const hx = W / 4, hz = D / 4 - D * 0.02, HR = Math.min(W, D) * 0.104;   // góc phải-trước, tránh lõi/cột cờ
   const paintWhite = own(new T.MeshStandardMaterial({
     color: 0xe9eaec, roughness: 0.55, metalness: 0, side: T.DoubleSide,
   }));
@@ -97,11 +98,12 @@ export function build(ctx = {}) {
   ], 'roofmech-helipad-H');
 
   // ---------------------------------------------------------------- HVAC units (instanced)
-  // Two units ride the roof plinths from structure.js (±(HW-10), -(HD/2+0.5), top H+0.5).
-  const plX = HW - 10, plZ = -(HD / 2 + 0.5);
+  // Hai bệ đỡ trong structure.js nằm ở ±W/6, -D*0.16 trên mái (top H+0.5).
+  const plX = W / 6, plZ = -D * 0.16;
   const hvacPos = [
     [plX, plZ, H + 0.5], [-plX, plZ, H + 0.5],
-    [HW - 5, -(HD - 3.5), H], [-(HW - 5), HD - 4, H],
+    [HW - W * 0.07, -(HD - D * 0.07), H],
+    [-(HW - W * 0.07), HD - D * 0.08, H],
   ];
   inst(unitBox, M.concreteDark, hvacPos.map(([x, z, y], i) => ({
     p: [x, y + 0.75, z], s: [2.8, 1.5, 2.0],
@@ -116,8 +118,8 @@ export function build(ctx = {}) {
   ], 'roofmech-hvac-ducts');
 
   // ---------------------------------------------------------------- cooling towers (instanced)
-  const ctZ = -(HD - 4);
-  const ctXs = [-HW + 5, -HW + 9, -HW + 13];
+  const ctZ = -(HD - D * 0.08);
+  const ctXs = [-HW + W * 0.07, -HW + W * 0.125, -HW + W * 0.18];
   const ctBase = H + 0.15, ctH = 2.3;
   inst(unitBox, M.concreteDark, ctXs.map((x) => ({
     p: [x, H + 0.075, ctZ], s: [3.0, 0.15, 3.0],
@@ -173,8 +175,9 @@ export function build(ctx = {}) {
 
   // ---------------------------------------------------------------- vent stacks (instanced)
   const ventPos = [
-    [-(HW - 5), 2], [-(HW - 5), 6], [-6, HD - 4.5],
-    [2, HD - 3.5], [HW - 5, -2], [6, -(HD - 4)],
+    [-(HW - W * 0.07), D * 0.04], [-(HW - W * 0.07), D * 0.12],
+    [-CW, HD - D * 0.09], [CW * 0.3, HD - D * 0.07],
+    [HW - W * 0.07, -D * 0.04], [CW, -(HD - D * 0.08)],
   ];
   inst(unitCyl, M.steel, ventPos.map(([x, z]) => ({
     p: [x, H + 0.45, z], s: [0.22, 0.9, 0.22],
@@ -183,12 +186,63 @@ export function build(ctx = {}) {
     p: [x, H + 0.96, z], s: [0.36, 0.12, 0.36],
   })), 'roofmech-vent-caps');
 
+  // ---------------------------------------------------------------- roof piping
+  // Đường ống thép nối 2 cụm HVAC với lõi, chạy song song mép mái.
+  const pipeY = H + 0.30, pipeZ = plZ + 2.4, pipeX = CW + 1.4;
+  const pipes = [];
+  for (const side of [-1, 1]) {
+    pipes.push({ p: [side * (plX + pipeX) / 2, pipeY, pipeZ], r: [0, 0, Math.PI / 2], s: [0.12, Math.abs(plX - pipeX), 0.12] });
+    pipes.push({ p: [side * pipeX, pipeY, (pipeZ + CD + 1.2) / 2], r: [Math.PI / 2, 0, 0], s: [0.12, Math.abs(CD + 1.2 - pipeZ), 0.12] });
+  }
+  pipes.push({ p: [0, pipeY, CD + 1.2], r: [0, 0, Math.PI / 2], s: [0.14, pipeX * 2, 0.14] });
+  inst(unitCyl, M.steel, pipes, 'roofmech-pipe-runs');
+  const jointGeo = new T.SphereGeometry(1, 8, 6);
+  inst(jointGeo, M.steel, [-1, 1].map((side) => ({
+    p: [side * pipeX, pipeY, pipeZ], s: [0.16, 0.16, 0.16],
+  })), 'roofmech-pipe-elbows');
+  inst(unitBox, M.concreteDark, [-1, 1].map((side) => ({
+    p: [side * (plX + pipeX) / 2, pipeY + 0.14, pipeZ], s: [0.35, 0.28, 0.35],
+  })), 'roofmech-pipe-valves');
+
+  // ---------------------------------------------------------------- access hatch + ladder
+  const hatchX = CW + 2.6, hatchZ = CD + 2.2;
+  box(M.steel, 1.3, 0.10, 1.3, hatchX, H + 0.05, hatchZ, 'roofmech-access-hatch');
+  box(M.concreteDark, 1.7, 0.14, 1.7, hatchX, H + 0.02, hatchZ, 'roofmech-hatch-curb');
+  const ladder = [];
+  for (const dz of [-0.25, 0.25])
+    ladder.push({ p: [ow / 2 + 0.24, ob + oh / 2, dz], s: [0.06, oh, 0.06] });
+  for (let k = 0; k < 6; k++)
+    ladder.push({ p: [ow / 2 + 0.24, ob + (k + 0.5) * oh / 6, 0], s: [0.05, 0.05, 0.5] });
+  inst(unitBox, M.steel, ladder, 'roofmech-overrun-ladder');
+
+  // ---------------------------------------------------------------- telecom antenna
+  // Góc sau-trái, xa cột beacon của facade và severity beacon do main.js đặt.
+  const ax = -(HW - W * 0.08), az = -(HD - D * 0.10);
+  const antH = Math.min(6, B.floorHeight * 1.75);
+  const antGeo = new T.CylinderGeometry(0.05, 0.12, antH, 8);
+  const ant = new T.Mesh(antGeo, M.steel);
+  ant.position.set(ax, H + antH / 2, az);
+  ant.name = 'roofmech-antenna-mast';
+  ant.userData = { floor: 'roof', part: 'antenna' };
+  ant.castShadow = true;
+  group.add(ant);
+  inst(unitBox, M.steel, [0.35, 0.6, 0.85].map((f) => ({
+    p: [ax, H + antH * f, az], s: [1.8 * (1 - f * 0.5), 0.05, 0.05],
+  })), 'roofmech-antenna-crossbars');
+  const dishGeo = new T.CylinderGeometry(0.55, 0.35, 0.12, 12);
+  const dish = new T.Mesh(dishGeo, M.concrete);
+  dish.position.set(ax, H + antH * 0.72, az + 0.3);
+  dish.rotation.x = Math.PI / 2;
+  dish.name = 'roofmech-antenna-dish';
+  dish.userData = { floor: 'roof', part: 'antenna' };
+  group.add(dish);
+
   // ---------------------------------------------------------------- railing on parapet coping
   const railY0 = H + PARAPET + 0.08;        // coping top (facade.js)
   const railH = 1.0;
   const rx = HW - PT / 2, rz = HD - PT / 2; // parapet centerlines
   const posts = [];
-  const nX = 20, nZ = 14;
+  const nX = Math.max(16, Math.round(W / 2.4)), nZ = Math.max(10, Math.round(D / 2.4));
   for (let j = 0; j <= nX; j++) {
     const x = -rx + (2 * rx * j) / nX;
     posts.push({ p: [x, railY0 + railH / 2, rz], s: [0.06, railH, 0.06] });

@@ -1,0 +1,47 @@
+{
+  "runId": "twin-enlarged-72x50-20261123",
+  "headBefore": "112d46c",
+  "mode": "LIVE — dashboard AEGIS trên http://127.0.0.1:5173, fleet 20 device thật",
+  "change": {
+    "footprintBefore": { "width": 44, "depth": 30, "area": 1320 },
+    "footprintAfter": { "width": 72, "depth": 50, "area": 3600 },
+    "areaMultiplier": 2.73,
+    "floors": 10,
+    "zones": 40,
+    "coreBefore": [9, 7],
+    "coreAfter": [12, 9]
+  },
+  "contextReduction": {
+    "source": "headless THREE build() before/after do subagent đo; đối chiếu bằng scene stats trong browser",
+    "instances": { "before": 2738, "after": 275, "deltaPercent": -89.96 },
+    "triangles": { "before": 55060, "after": 5730, "deltaPercent": -89.59 },
+    "cityContextTowers": 0,
+    "cityContextSkyline": 0,
+    "environmentContextBuildings": 0,
+    "environmentCars": 0,
+    "environmentTrees": 6,
+    "pavingTiles": 120,
+    "plazaWidth": 88
+  },
+  "browserMeasured": {
+    "sceneTriangles": 241336,
+    "meshes": 658,
+    "instancedMeshes": 230,
+    "instances": 14491,
+    "cameraPosition": [77.6, 35.6, 88],
+    "cameraTarget": [0, 17.1, 0],
+    "moduleErrors": [],
+    "stats": {
+      "environment": { "trees": 6, "cars": 0, "contextBuildings": 0, "pavingTiles": 120, "triangles": 5730 },
+      "cityContext": { "towers": 0, "glassTowers": 0, "cars": 0, "trees": 0, "parks": 0, "skyline": 0, "triangles": 0, "footprint": [72, 50] },
+      "decals": { "floors": 10, "exitArrows": 80, "hazardDecals": 40, "elevatorSigns": 20, "textures": 27, "triangles": 312 }
+    }
+  },
+  "visualCheck": "docs/evidence/dashboard/twin-enlarged-live.png — overview LIVE: tháp chính lấy trọn khung, 10 tầng/nội thất/mái rõ; không còn tòa nhà xung quanh; chỉ còn sân, cây, đường cổng; badge SIMULATION/LIVE đọc rõ.",
+  "verification": {
+    "npmBuild": "PASS (Vite built in 453ms; chỉ warning chunk >500kB)",
+    "npmTest": "14/14 PASS",
+    "javaVerify": "xem verify-summary.json (không đổi Java ở bản này)"
+  },
+  "note": "SIMULATION/TRAINING. Không đo FPS vì browser tab bị requestAnimationFrame throttle; số liệu trên là triangle/instance đếm trực tiếp từ scene LIVE, không suy diễn."
+}

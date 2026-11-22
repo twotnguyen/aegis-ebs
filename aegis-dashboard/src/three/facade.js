@@ -28,16 +28,24 @@ export function build(ctx) {
   const bayW = W / nX, bayD = D / nZ;
   const SILL = 0.9;                                 // spandrel upstand height
   const VISION = FH - SILL;                         // clear glass height
-  const ENT_BAYS = 6;                               // entrance width in bays
+  const ENT_BAYS = Math.max(4, 2 * Math.round(W * 0.06)); // ~12% of frontage, even
   const entW = ENT_BAYS * bayW, entHalf = entW / 2;
   const entJ0 = nX / 2 - ENT_BAYS / 2;              // first skipped bay (floor 0 front)
   const DOOR_H = 2.9;
+  const TRANSOM = SILL + VISION * 0.55;             // intermediate curtain-wall rail
+  const FIN_STEP = 3;                               // brise-soleil on every Nth side bay
+  const FIN_D = Math.min(0.9, D * 0.02);            // fin projection, from depth
 
   const group = new T.Group();
   group.name = 'facade';
 
   const ownedMaterials = [];   // materials created here (never dispose shared library)
   const ownedTextures = [];
+  const bandMat = new T.MeshStandardMaterial({
+    color: 0x7dd3fc, emissive: 0x38bdf8, emissiveIntensity: 0.5,
+    roughness: 0.35, metalness: 0.2,
+  });
+  ownedMaterials.push(bandMat); // slim illuminated spandrel band
   const dummy = new T.Object3D();
   const unitBox = new T.BoxGeometry(1, 1, 1);
   const unitPlane = new T.PlaneGeometry(1, 1);
@@ -78,7 +86,7 @@ export function build(ctx) {
   // ---------------------------------------------------------------- floors
   for (let i = 0; i < B.floors; i++) {
     const base = yOf(i);
-    const vision = [], spandrel = [], mullions = [];
+    const vision = [], spandrel = [], mullions = [], fins = [], band = [];
     const isEntranceFloor = (i === 0);
 
     for (const f of FACES) {
@@ -100,17 +108,31 @@ export function build(ctx) {
         const t = -f.half + j * f.bay;
         pushM(mullions, f, t, base + P / 2, 0.03, 0.09, P, 0.16);
       }
-      // --- horizontal mullions: base, sill, head ---
+      // --- horizontal mullions: base, sill, head, mid transom ---
       const headY = base + FH, sillY = base + SILL, baseY = base + 0.05;
       pushM(mullions, f, 0, baseY, 0.03, f.half * 2, 0.1, 0.16);
       pushM(mullions, f, 0, headY, 0.03, f.half * 2, 0.1, 0.16);
       if (entranceFace) {
         const segLen = f.half - entHalf, segC = entHalf + segLen / 2;
-        pushM(mullions, f, -segC, sillY, 0.03, segLen, 0.1, 0.16);
-        pushM(mullions, f, segC, sillY, 0.03, segLen, 0.1, 0.16);
+        for (const yy of [sillY, base + TRANSOM]) {
+          pushM(mullions, f, -segC, yy, 0.03, segLen, 0.1, 0.16);
+          pushM(mullions, f, segC, yy, 0.03, segLen, 0.1, 0.16);
+        }
       } else {
         pushM(mullions, f, 0, sillY, 0.03, f.half * 2, 0.1, 0.16);
+        pushM(mullions, f, 0, base + TRANSOM, 0.03, f.half * 2, 0.08, 0.14);
       }
+      // --- brise-soleil: vertical fins on the two side elevations ---
+      if (f.key === 'left' || f.key === 'right') {
+        for (let j = FIN_STEP / 2; j < f.n; j += FIN_STEP) {
+          const t = -f.half + (j + 0.5) * f.bay;
+          pushM(fins, f, t, base + SILL + VISION / 2, FIN_D / 2 + 0.12,
+            0.14, VISION, FIN_D);
+        }
+      }
+      // --- illuminated spandrel band at the slab edge, runs the full face ---
+      pushM(band, f, 0, base + FH + SLAB + 0.03, 0.13,
+        f.half * 2 - 0.2, 0.05, 0.07);
     }
 
     const tag = (part) => ({ floor: i, part });
@@ -118,6 +140,8 @@ export function build(ctx) {
     group.add(makeInstanced(unitPlane, M.glass, vision, `facade-glass-${fLabel}`, tag('curtain-wall')));
     group.add(makeInstanced(unitPlane, M.glassDark, spandrel, `facade-spandrel-${fLabel}`, tag('spandrel')));
     group.add(makeInstanced(unitBox, M.mullion, mullions, `facade-mullions-${fLabel}`, tag('mullions')));
+    group.add(makeInstanced(unitBox, M.mullion, fins, `facade-sunfins-${fLabel}`, tag('brise-soleil')));
+    group.add(makeInstanced(unitBox, bandMat, band, `facade-light-band-${fLabel}`, tag('spandrel-band')));
   }
 
   // ---------------------------------------------------------------- entrance (floor 0, front +Z)
@@ -131,8 +155,9 @@ export function build(ctx) {
   entrance.add(box(M.mullion, 0.2, FH, 0.24, entHalf, FH / 2, frontZ + 0.06, 'entrance-jamb-R', entTag));
   entrance.add(box(M.mullion, entW, 0.14, 0.2, 0, DOOR_H + 0.07, frontZ + 0.06, 'entrance-transom-bar', entTag));
 
-  // 4 glass door leaves + 2 sidelights, framed in mullion stiles/rails
-  const doorLeafW = 1.5, nLeaves = 4;
+  // 4-6 glass door leaves + 2 sidelights, framed in mullion stiles/rails
+  const nLeaves = Math.max(4, 2 * Math.round(entW / 4));
+  const doorLeafW = Math.min(1.8, entW / (nLeaves + 1.5));
   const doorsW = doorLeafW * nLeaves;
   const sideW = (entW - doorsW) / 2;
   const doorGlassMat = M.glass;
@@ -164,7 +189,7 @@ export function build(ctx) {
   entrance.add(transom);
 
   // Canopy: slab + fascia + warm underside light strip + 2 steel columns
-  const canopyY = FH + 0.15, canopyW = entW + 2.4, canopyD = 3.8;
+  const canopyY = FH + 0.15, canopyW = entW + 2.4, canopyD = Math.min(4.5, D * 0.076);
   entrance.add(box(M.concreteDark, canopyW, 0.16, canopyD, 0, canopyY, frontZ + canopyD / 2 - 0.15, 'entrance-canopy', entTag));
   entrance.add(box(M.mullion, canopyW + 0.1, 0.24, 0.1, 0, canopyY - 0.02, frontZ + canopyD - 0.2, 'entrance-canopy-fascia', entTag));
   const stripMat = M.emissive(0xffe9c4, 1.0); ownedMaterials.push(stripMat);
@@ -231,11 +256,16 @@ export function build(ctx) {
     s.userData = { floor: B.floors - 1, part: 'signage' };
     group.add(s);
   };
-  // main roof sign on front + back parapet faces
-  addSign(16, 0, H + PARAPET / 2, HD + 0.04, 0, 'sign-roof-front');
-  addSign(16, 0, H + PARAPET / 2, -HD - 0.04, Math.PI, 'sign-roof-back');
+  // main roof sign on front / back parapet faces — width capped by parapet height
+  const roofSignW = Math.min(W * 0.42, PARAPET * 15.5);
+  addSign(roofSignW, 0, H + PARAPET / 2, HD + 0.04, 0, 'sign-roof-front');
+  addSign(roofSignW, 0, H + PARAPET / 2, -HD - 0.04, Math.PI, 'sign-roof-back');
+  // same identity repeated on the two side elevations
+  const sideSignW = roofSignW * 0.55;
+  addSign(sideSignW, HW + 0.04, H + PARAPET / 2, 0, Math.PI / 2, 'sign-roof-right');
+  addSign(sideSignW, -HW - 0.04, H + PARAPET / 2, 0, -Math.PI / 2, 'sign-roof-left');
   // entrance sign above canopy
-  addSign(6.4, 0, FH + 0.85, HD + 0.16, 0, 'sign-entrance');
+  addSign(Math.min(entW * 0.8, W * 0.16), 0, FH + 0.85, HD + 0.16, 0, 'sign-entrance');
 
   // ---------------------------------------------------------------- roof parapet
   const roof = new T.Group();

@@ -4,13 +4,13 @@ export const BUILDING = {
   floors: 10,
   floorHeight: 3.4,      // clear height per floor
   slabThickness: 0.4,
-  width: 44,             // X footprint (m)
-  depth: 30,             // Z footprint (m)
+  width: 72,             // X footprint (m) — enlarged 44 -> 72 (2.7x total area)
+  depth: 50,             // Z footprint (m) — enlarged 30 -> 50
   zonesPerFloor: 4,      // 2x2 quadrant zones A/B/C/D
-  zoneInset: 1.6,        // gap from facade
-  zoneGap: 1.4,          // gap between zones (corridor)
-  coreWidth: 9,          // central elevator/stair core
-  coreDepth: 7,
+  zoneInset: 2.2,        // gap from facade
+  zoneGap: 1.8,          // gap between zones (corridor)
+  coreWidth: 12,         // central elevator/stair core
+  coreDepth: 9,
   podiumFloors: 1,       // ground podium slightly wider
   roofParapet: 1.1,
 };

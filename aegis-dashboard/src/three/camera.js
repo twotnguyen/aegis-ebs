@@ -59,6 +59,14 @@ const FLY_DURATION = 1.15;       // seconds for preset / fly-to-floor moves
 const EXPLODE_SPEED = 6;         // exponential approach rate (1/s)
 const EXPLODE_GAP_RATIO = 0.9;   // extra gap per floor = ratio * pitch()
 const RESCAN_INTERVAL = 0.4;     // seconds between scene-graph change checks
+
+// --- framing coefficients (all distances are derived from config metrics) ---
+const FRAME_MARGIN = 1.15;       // padding on the exact 8-corner frustum fit
+const OVERVIEW_SPAN = 1.65;      // overview  >= span * 1.65
+const ELEVATION_SPAN = 1.9;      // front/back/side >= span * 1.9
+const TOP_SPAN = 1.85;           // top (plan) >= span * 1.85
+const FLOOR_SPAN = 1.3;          // floor view >= span * 1.3
+const FLOOR_ELEVATION = 0.62;    // ~35.5 deg above the plate: zone rectangles stay legible
 const GHOST_OPACITY = 0.07;      // non-isolated building objects
 const GHOST_ENV_OPACITY = 0.18;  // ground / context while isolating
 
@@ -114,7 +122,8 @@ function makeMetrics(config) {
   const coreDepth = num(B.coreDepth, BUILDING.coreDepth);
   const pitch = num(pitchFn(), floorHeight + slabThickness);
   const height = num(totalFn(), floors * pitch);
-  return { B, floors, floorHeight, slabThickness, width, depth, coreDepth, pitch, height, floorY: floorYFn, totalHeight: totalFn };
+  const span = Math.max(width, depth);
+  return { B, floors, floorHeight, slabThickness, width, depth, span, coreDepth, pitch, height, floorY: floorYFn, totalHeight: totalFn };
 }
 
 // --- controls ---------------------------------------------------------------
@@ -127,7 +136,8 @@ function tuneControls(controls, m) {
   controls.panSpeed = 0.8;
   controls.screenSpacePanning = true;
   controls.minDistance = Math.max(2, m.floorHeight * 0.8);
-  controls.maxDistance = m.height * 3 + Math.max(m.width, m.depth) * 2;
+  // Large footprint (span = max(W,D)) needs plenty of zoom-out headroom.
+  controls.maxDistance = Math.max(m.height * 4, m.span * 6, 400);
   controls.minPolarAngle = 0.08;                 // never exactly straight down
   controls.maxPolarAngle = Math.PI / 2 - 0.03;   // never below the plaza
   controls.autoRotate = false;
@@ -194,38 +204,88 @@ export function build(ctx = {}) {
 
   // --- poses ---------------------------------------------------------------
 
+  // Exact frustum fit: smallest distance along `dir` from `target` that keeps
+  // every corner of a config-sized box inside the camera frustum. Fitting the
+  // 8 corners (instead of a bounding sphere) guarantees no clipped corners at
+  // any azimuth, including the wide 72x50 footprint.
+  const _fitP = new THREE.Vector3();
+  const _fitDir = new THREE.Vector3();
+  const _fitRight = new THREE.Vector3();
+  const _fitUp = new THREE.Vector3();
+  const WORLD_UP = new THREE.Vector3(0, 1, 0);
+
+  function frustumFit(dir, target, box, margin = FRAME_MARGIN) {
+    const fov = camera.isPerspectiveCamera && Number.isFinite(camera.fov) && camera.fov > 0 ? camera.fov : 45;
+    const aspect = camera.isPerspectiveCamera && Number.isFinite(camera.aspect) && camera.aspect > 0 ? camera.aspect : 16 / 9;
+    const tanV = Math.tan(fov * Math.PI / 360);
+    const tanH = tanV * aspect;
+    _fitDir.copy(dir);
+    if (_fitDir.lengthSq() < 1e-8) _fitDir.set(0, 0, 1);
+    _fitDir.normalize();
+    _fitRight.crossVectors(WORLD_UP, _fitDir);
+    if (_fitRight.lengthSq() < 1e-8) _fitRight.set(1, 0, 0);   // near-vertical plan view
+    _fitRight.normalize();
+    _fitUp.crossVectors(_fitDir, _fitRight).normalize();
+    let need = 0;
+    for (const x of [-box.w * 0.5, box.w * 0.5]) {
+      for (const y of [box.minY, box.maxY]) {
+        for (const z of [-box.d * 0.5, box.d * 0.5]) {
+          _fitP.set(x - target.x, y - target.y, z - target.z);
+          const along = _fitP.dot(_fitDir);
+          const h = Math.abs(_fitP.dot(_fitRight)) / tanH;
+          const v = Math.abs(_fitP.dot(_fitUp)) / tanV;
+          need = Math.max(need, along + h, along + v);
+        }
+      }
+    }
+    return Math.max(need * margin, m.pitch);
+  }
+
+  // Explode lifts the upper floors, so frame the expanded envelope when active.
+  function buildingBox() {
+    const extra = state.explode ? explodeGap() * (m.floors - 1) * state.explodeAmount : 0;
+    return { w: m.width, d: m.depth, minY: 0, maxY: m.height + extra };
+  }
+
   function presetPose(name) {
-    const H = m.height, W = m.width, D = m.depth;
-    const span = Math.max(W, D);
+    const W = m.width, D = m.depth, span = m.span;
+    const box = buildingBox();
+    const H = box.maxY;
     const target = new THREE.Vector3();
     const position = new THREE.Vector3();
+    const dir = new THREE.Vector3();
+    let dist = 0;
     switch (name) {
       case 'front':
-        target.set(0, H * 0.42, 0);
-        position.set(0, H * 0.42, span * 1.7);
-        break;
       case 'back':
-        target.set(0, H * 0.42, 0);
-        position.set(0, H * 0.42, -span * 1.7);
+      case 'side': {
+        target.set(0, H * 0.45, 0);                 // centered on the full envelope
+        if (name === 'front') dir.set(0, 0.06, 1);  // slight lift keeps the plaza in frame
+        else if (name === 'back') dir.set(0, 0.06, -1);
+        else dir.set(1, 0.06, 0);
+        dist = Math.max(span * ELEVATION_SPAN, frustumFit(dir, target, box));
         break;
-      case 'side':
-        target.set(0, H * 0.42, 0);
-        position.set(span * 1.7, H * 0.42, 0);
+      }
+      case 'top': {
+        target.set(0, H * 0.45, 0);
+        const tilt = 0.12, az = 0.3;               // near-plan; tilt clears minPolarAngle
+        dir.set(Math.sin(az) * Math.sin(tilt), Math.cos(tilt), Math.cos(az) * Math.sin(tilt));
+        dist = Math.max(span * TOP_SPAN, frustumFit(dir, target, box));
         break;
-      case 'top':
-        target.set(0, H * 0.2, 0);
-        position.set(H * 0.02, H * 2.0, H * 0.02);
-        break;
+      }
       case 'lobby':
         target.set(0, m.floorY(0) + EYE_HEIGHT * 0.8, -m.coreDepth * 0.5);
         position.set(0, m.floorY(0) + EYE_HEIGHT + 0.5, D * 0.5 - 2);
-        break;
+        return { position, target };
       case 'overview':
-      default:
-        target.set(0, H * 0.42, 0);
-        position.set(W * 0.95, H * 0.85, D * 1.55);
+      default: {
+        target.set(0, H * 0.45, 0);
+        dir.set(W * 0.95, H * 0.43, D * 1.55);      // same 3/4 bearing, pure config units
+        dist = Math.max(span * OVERVIEW_SPAN, frustumFit(dir, target, box));
         break;
+      }
     }
+    position.copy(target).addScaledVector(dir.normalize(), dist);
     return { position, target };
   }
 
@@ -236,15 +296,14 @@ export function build(ctx = {}) {
   }
 
   function floorPose(i) {
-    const y = m.floorY(i) + m.floorHeight * 0.5;
-    const dist = Math.max(m.width, m.depth) * 1.05 + m.floorHeight * 2;
-    const el = 0.34;                       // ~19.5° above the floor plate
-    const az = currentAzimuth();           // keep the user's current side
-    const horiz = dist * Math.cos(el);
-    return {
-      position: new THREE.Vector3(Math.sin(az) * horiz, y + dist * Math.sin(el), Math.cos(az) * horiz),
-      target: new THREE.Vector3(0, y, 0),
-    };
+    const centerY = m.floorY(i) + m.floorHeight * 0.5;
+    const target = new THREE.Vector3(0, centerY, 0);  // floor center => all 4 zones balanced
+    const az = currentAzimuth();                      // keep the user's current side
+    const el = FLOOR_ELEVATION;
+    const dir = new THREE.Vector3(Math.sin(az) * Math.cos(el), Math.sin(el), Math.cos(az) * Math.cos(el));
+    const plate = { w: m.width, d: m.depth, minY: centerY - m.pitch * 0.5, maxY: centerY + m.pitch * 0.5 };
+    const dist = Math.max(m.span * FLOOR_SPAN, frustumFit(dir, target, plate));
+    return { position: target.clone().addScaledVector(dir.normalize(), dist), target };
   }
 
   const easeInOutCubic = (k) => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
