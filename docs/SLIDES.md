@@ -48,7 +48,8 @@
 - **Tiêu đề:** AEGIS — Emergency Broadcast System cho tòa nhà văn phòng · CMP180 Capstone.
 - Nhóm: AEGIS-EBS. Thành viên / MSSV: Nguyễn Ngọc Tình (2380614851) · Bùi Thanh Long Ẩn (2380600103) · Nguyễn Hoàng Tùng (2380602485) · Võ Thành Đông (2380600518). Lớp/Khóa: SE 2023–2027 · GVHD: ThS. Nguyễn Văn Cẩn · Năm học 2025–2026.
 - **Dòng bắt buộc:** `SIMULATION / TRAINING — không thay thế hệ thống báo cháy/sơ tán chứng nhận.`
-- **Demo:** chiếu dashboard 3D 10 tầng, kết nối xanh, nhãn TLS/version (system reveal).
+- **Demo:** chiếu dashboard 3D 10 tầng, kết nối xanh, nhãn TLS/version (system reveal). Thanh điều hướng có **6 tab** (thay vì 5 tab cũ): **Twin · Incidents · Chaos · Reports · Funnel · Operator** — tab Operator publish/cancel alert thật và start/stop fleet device.
+- **Demo web-only (khuyến nghị cho bảo vệ):** `bash scripts/demo-web.sh` → `http://localhost:5173` → tab Operator: Fleet Start (20) → Publish FIRE_DRILL F05 (zone đỏ + ACK trên dashboard LIVE) → Retry (1 device im lặng, `FAILED` sau 3s/6s/12s) → Cancel; bridge HTTP `http://localhost:9445`. Không thêm số liệu mới; ảnh LIVE lưu tại `docs/evidence/dashboard/`.
 - **Ghi chú:** mở đầu dứt khoát, nêu ngay giới hạn mô phỏng để định khung trung thực.
 
 ### Slide 2 — Bài toán (problem) (0:20–1:10)

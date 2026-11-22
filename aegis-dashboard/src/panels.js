@@ -1,6 +1,7 @@
 // ---------------------------------------------------------------------------
 // Aegis EBS — tabbed panels: Incident timeline/replay · Chaos control ·
-// Reports (p50/p95/p99 + CSV/JSON export) · Delivery funnel per alert.
+// Reports (p50/p95/p99 + CSV/JSON export) · Delivery funnel per alert ·
+// Operator bridge (REAL publish/cancel/fleet commands via HTTP bridge).
 // The 3D twin keeps rendering behind the panels; the "Twin" tab restores the
 // classic HUD-only view. All DOM lives in index.html; this module wires it.
 // ---------------------------------------------------------------------------
@@ -33,7 +34,7 @@ export function createPanels(deps) {
 
   // --- tabs -------------------------------------------------------------------
 
-  const TABS = ['twin', 'incidents', 'chaos', 'reports', 'funnel'];
+  const TABS = ['twin', 'incidents', 'chaos', 'reports', 'funnel', 'operator'];
 
   function setTab(name) {
     if (!TABS.includes(name)) return;
@@ -56,6 +57,7 @@ export function createPanels(deps) {
     else if (tab === 'chaos') renderChaos();
     else if (tab === 'reports') renderReports();
     else if (tab === 'funnel') renderFunnel();
+    else if (tab === 'operator') renderOperator();
   }
   const refreshIfActive = (tab) => {
     if (activeTab === tab) refresh(tab);
@@ -507,6 +509,231 @@ export function createPanels(deps) {
       ),
     );
   });
+
+  // --- operator bridge (REAL commands over HTTP -> EBSP/TLS) --------------------
+  // This tab does NOT touch the mock simulation. The Python bridge at
+  // http://localhost:9445 forwards commands to the real client/server stack.
+  // The Chaos tab stays mock-only.
+
+  const OP_DEFAULT_HOST = (globalThis.location?.hostname === '127.0.0.1')
+    ? '127.0.0.1' : 'localhost';
+  const OP_DEFAULT_BRIDGE = `http://${OP_DEFAULT_HOST}:9445`;
+  const OP_BUTTONS = ['op-ping', 'op-fleet-start', 'op-fleet-stop', 'op-publish', 'op-retry-demo', 'op-cancel'];
+  const BRIDGE_BASE = (() => {
+    let override = '';
+    try {
+      override = new URLSearchParams(globalThis.location?.search ?? '').get('bridge')?.trim() ?? '';
+    } catch { /* keep default */ }
+    return (override || OP_DEFAULT_BRIDGE).replace(/\/+$/, '');
+  })();
+  const opState = { busy: false, lastAlertId: null, stats: null };
+
+  const opStamp = () => new Date().toLocaleTimeString('en-GB', { hour12: false });
+
+  function opSetStatus(text, kind = '') {
+    const el = $('op-status');
+    if (!el) return;
+    el.textContent = text;
+    el.className = `pill${kind ? ` op-status-${kind}` : ''}`;
+  }
+
+  function opLogLine(text, kind = 'info') {
+    const box = $('op-log');
+    if (!box) return;
+    box.querySelector('.op-log-empty')?.remove();
+    const line = document.createElement('div');
+    line.className = `op-log-line op-log-${kind}`;
+    line.textContent = `[${opStamp()}] ${text}`;
+    box.append(line);
+    while (box.childElementCount > 200) box.firstElementChild.remove();
+    box.scrollTop = box.scrollHeight;
+  }
+
+  /** Find the first non-empty value for any of `keys`, including nested objects. */
+  function opPick(obj, keys) {
+    if (!obj || typeof obj !== 'object') return undefined;
+    for (const key of keys) {
+      if (obj[key] !== undefined && obj[key] !== null) return obj[key];
+    }
+    for (const value of Object.values(obj)) {
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        const found = opPick(value, keys);
+        if (found !== undefined) return found;
+      }
+    }
+    return undefined;
+  }
+
+  function opDeliveryCount(data) {
+    const direct = opPick(data, ['deliveryCount', 'delivery_count', 'deliveredCount', 'delivered']);
+    if (direct !== undefined) return direct;
+    for (const key of ['deliveries', 'deliveryResults', 'deliveryTargets', 'targets']) {
+      const arr = opPick(data, [key]);
+      if (Array.isArray(arr)) return arr.length;
+    }
+    return undefined;
+  }
+
+  async function opFetch(path, body) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 15000);
+    try {
+      const init = { signal: controller.signal, headers: { Accept: 'application/json' } };
+      if (body !== undefined) {
+        init.method = 'POST';
+        init.headers['Content-Type'] = 'application/json';
+        init.body = JSON.stringify(body);
+      }
+      const res = await fetch(`${BRIDGE_BASE}${path}`, init);
+      const raw = await res.text();
+      let data = null;
+      try { data = raw ? JSON.parse(raw) : null; } catch { /* non-JSON response */ }
+      if (!res.ok || data?.ok === false) {
+        const detail = data?.error ?? data?.message ?? raw?.slice(0, 200) ?? '';
+        throw new Error(`${path} → HTTP ${res.status}${detail ? ` · ${detail}` : ''}`);
+      }
+      return data ?? { ok: true, note: 'empty response' };
+    } catch (err) {
+      if (err?.name === 'AbortError') throw new Error(`${path} → timeout sau 15s`);
+      throw err;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  function opAuth() {
+    return { username: $('op-user').value.trim(), password: $('op-pass').value };
+  }
+
+  function opPublishBody(overrides = {}) {
+    return {
+      ...opAuth(),
+      floor: $('op-floor').value,
+      zone: $('op-zone').value,
+      category: $('op-category').value,
+      priority: $('op-priority').value,
+      title: $('op-title').value.trim(),
+      instruction: $('op-instruction').value.trim(),
+      silent: $('op-silent').checked,
+      ...overrides,
+    };
+  }
+
+  /** Log time + alertId + deliveryCount and remember the alert for Cancel. */
+  function opRemember(data, body) {
+    const alertId = opPick(data, ['alertId', 'alert_id', 'alertID']) ?? body?.alertId;
+    if (alertId != null) {
+      opState.lastAlertId = String(alertId);
+      const field = $('op-alert-id');
+      if (field) field.value = opState.lastAlertId;
+    }
+    const dc = opDeliveryCount(data);
+    const extra = opPick(data, ['state', 'deliveryState']);
+    opLogLine(
+      `OK · alertId=${alertId ?? '–'} · deliveryCount=${dc ?? '–'}${extra ? ` · state=${extra}` : ''}`,
+      'ok',
+    );
+  }
+
+  async function opShowStats() {
+    try {
+      opState.stats = await opFetch('/api/fleet/stats');
+      renderOperator();
+      opLogLine(`fleet stats · ${JSON.stringify(opState.stats)}`);
+    } catch (err) {
+      opLogLine(`fleet stats ERROR · ${err.message}`, 'error');
+    }
+  }
+
+  function renderOperator() {
+    const bridge = $('op-bridge');
+    if (bridge) bridge.textContent = `bridge: ${BRIDGE_BASE}`;
+    const stats = opState.stats;
+    const field = $('op-fleet-stats');
+    if (field) {
+      if (!stats) field.textContent = 'fleet: –';
+      else {
+        const count = opPick(stats, ['deviceCount', 'deviceTotal', 'count', 'total', 'fleetSize', 'devices']);
+        const online = opPick(stats, ['online', 'onlineCount', 'connected']);
+        const silent = opPick(stats, ['silent', 'silentCount', 'silentDevices']);
+        field.textContent = `fleet: ${Array.isArray(count) ? count.length : (count ?? '–')}` +
+          `${online != null ? ` · online ${online}` : ''}${silent != null ? ` · silent ${silent}` : ''}`;
+      }
+    }
+  }
+
+  async function opWithBusy(label, fn) {
+    if (opState.busy) return;
+    opState.busy = true;
+    for (const id of OP_BUTTONS) {
+      const btn = $(id);
+      if (btn) btn.disabled = true;
+    }
+    opSetStatus('busy', 'busy');
+    opLogLine(`${label} · gửi lệnh…`);
+    try {
+      await fn();
+      opSetStatus('ok', 'ok');
+    } catch (err) {
+      opLogLine(`${label} · ERROR · ${err.message}`, 'error');
+      opSetStatus('error', 'error');
+    } finally {
+      opState.busy = false;
+      for (const id of OP_BUTTONS) {
+        const btn = $(id);
+        if (btn) btn.disabled = false;
+      }
+    }
+  }
+
+  $('op-ping').addEventListener('click', () => opWithBusy('health', async () => {
+    const data = await opFetch('/api/health');
+    opLogLine(`health OK · ${JSON.stringify(data)}`, 'ok');
+    await opShowStats();
+  }));
+
+  $('op-fleet-start').addEventListener('click', () => opWithBusy('fleet start', async () => {
+    const count = Math.max(1, Math.min(500, Number($('op-count').value) || 20));
+    const body = { count, silentFloor: 1 };
+    const data = await opFetch('/api/fleet/start', body);
+    opLogLine(`fleet start OK · count=${count} · silentFloor=1${data ? ` · ${JSON.stringify(data)}` : ''}`, 'ok');
+    await opShowStats();
+  }));
+
+  $('op-fleet-stop').addEventListener('click', () => opWithBusy('fleet stop', async () => {
+    const data = await opFetch('/api/fleet/stop', {});
+    opLogLine(`fleet stop OK${data ? ` · ${JSON.stringify(data)}` : ''}`, 'ok');
+    await opShowStats();
+  }));
+
+  $('op-publish').addEventListener('click', () => opWithBusy('publish', async () => {
+    const body = opPublishBody();
+    opRemember(await opFetch('/api/publish', body), body);
+  }));
+
+  $('op-retry-demo').addEventListener('click', () => opWithBusy('retry-demo', async () => {
+    // Scope to F01-A: the started fleet has 12 real devices there, one of which
+    // is silent. Building-wide would mix in 460 offline seeded devices and make
+    // the single retry→FAILED case hard to read.
+    $('op-floor').value = '1';
+    $('op-zone').value = 'A';
+    $('op-silent').checked = true;
+    const body = opPublishBody({
+      floor: '1', zone: 'A', silent: true,
+      category: 'FIRE_DRILL', priority: 'CRITICAL',
+      title: 'RETRY DEMO — F01-A silent',
+      instruction: '1 of 12 devices does not auto-ACK; expect retry then FAILED.',
+    });
+    opLogLine('retry-demo · F01-A · silent=true → 11 ACK + 1 retry→FAILED', 'warn');
+    opRemember(await opFetch('/api/publish', body), body);
+  }));
+
+  $('op-cancel').addEventListener('click', () => opWithBusy('cancel', async () => {
+    const alertId = $('op-alert-id').value.trim() || opState.lastAlertId;
+    if (!alertId) throw new Error('chưa có alertId — hãy publish trước hoặc điền ô Alert ID');
+    const body = { ...opAuth(), alertId, reason: 'Operator cancel via dashboard' };
+    opRemember(await opFetch('/api/cancel', body), body);
+  }));
 
   // --- init ------------------------------------------------------------------------
 

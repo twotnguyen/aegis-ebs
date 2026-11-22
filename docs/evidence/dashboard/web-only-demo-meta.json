@@ -1,0 +1,37 @@
+{
+  "runId": "web-only-demo-20261123",
+  "mode": "LIVE — thao tác 100% qua http://localhost:5173 tab Operator",
+  "command": "bash scripts/demo-web.sh",
+  "flow": [
+    "Fleet Start 20 (12 device F01-A + F02..F10)",
+    "Publish FIRE_DRILL F05 zone A -> 12 delivery, ACK_RECEIVED that",
+    "Retry demo F01-A silent -> 11 RECEIVED + 1 FAILED attempt_count=4",
+    "Cancel alert -> OK"
+  ],
+  "verified": {
+    "fleet": 20,
+    "publishAlertId": "56f26749-f215-409a-a9fc-842b16dcce80",
+    "publishDeliveryCount": 12,
+    "retryAlertId": "5e7c7607-b926-47a4-9b02-a459f746436b",
+    "retryStates": {
+      "RECEIVED": 11,
+      "FAILED": 1
+    },
+    "failedDevice": "DEV-A-F01-A-01",
+    "failedAttemptCount": 4,
+    "bridgeFleetStats": {
+      "pushes": 12,
+      "acked": 11,
+      "pushFrames": 15
+    },
+    "dashboardBadge": "LIVE",
+    "connected": 20
+  },
+  "machine": {
+    "os": "macOS 15.7.3",
+    "cpu": "Apple M3 Pro",
+    "java": "24.0.1",
+    "node": "26.7.0"
+  },
+  "note": "SIMULATION/TRAINING. Số liệu đọc trực tiếp từ aegis.db và /api/fleet/stats sau các thao tác trên web; ảnh chụp từ browser thật."
+}

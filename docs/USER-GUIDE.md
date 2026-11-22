@@ -2,6 +2,25 @@
 
 > SIMULATION/TRAINING ONLY. Mọi lệnh chạy từ gốc repo `aegis-ebs/`.
 
+> **Khuyến nghị cho bảo vệ: web-only.** Dùng luồng một lệnh ở mục 0. Các mục 1–9 giữ nguyên cho người muốn studio/chaos thật (client JavaFX, simulator, fault injection, benchmark).
+
+## 0. Demo web-only — khuyến nghị cho bảo vệ
+
+Một lệnh khởi động server + bridge + dashboard; không cần JavaFX, simulator hay cấu hình TLS thủ công.
+
+```bash
+bash scripts/demo-web.sh
+```
+
+1. Mở `http://localhost:5173` (dashboard) — bridge HTTP của tab Operator chạy tại `http://localhost:9445`. Đợi status feed chuyển xanh (`LIVE`).
+2. Chọn tab **Operator** — tab thứ sáu trên thanh điều hướng (Twin · Incidents · Chaos · Reports · Funnel · Operator).
+3. Bấm **Fleet Start (20)** — khởi động 20 device ảo; danh sách fleet trên tab Operator chuyển sang trạng thái ONLINE.
+4. Bấm **Publish FIRE_DRILL cho F05** — zone F05 chuyển đỏ trên digital twin; các ACK (`ACK_RECEIVED` rồi `ACK_USER`) hiện trên dashboard LIVE và bộ đếm tăng dần.
+5. Chạy **Retry demo** — nút này tự chọn F01-A (12 device có thật trong fleet, 1 device im lặng): server gửi lại sau 3s, 6s, 12s (cùng `deliveryId`, `messageId` mới); sau 3 attempt device đó chuyển `FAILED`, 11 device còn lại vẫn ACK. Không dùng ALL/ALL vì 460 device chưa có fleet sẽ tạo nhiều FAILED làm lu mờ ca retry.
+6. Bấm **Cancel** — hủy alert; tombstone hủy được đồng bộ, zone trở lại trạng thái bình thường trên dashboard LIVE.
+
+Dừng demo bằng `Ctrl+C` tại terminal đang chạy `scripts/demo-web.sh`.
+
 ## 1. Chuẩn bị
 ```bash
 brew install maven            # Java 24 (Temurin) + Maven 3.10
@@ -50,10 +69,10 @@ Scenarios: `clean | lossy | delayed | duplicate | flaky | mixed`. In SUMMARY (ag
 ```bash
 cd aegis-dashboard && npm install && npm run dev   # http://localhost:5173
 ```
-Tự nối `ws://localhost:9444`; chưa có server → MOCK FEED. Phím 1–5: Twin · Incidents · Chaos · Reports · Funnel. Tòa nhà 3D đổi màu zone theo severity; click tầng để fly-to/cutaway/explode.
+Tự nối `ws://localhost:9444`; chưa có server → MOCK FEED. Phím 1–6: Twin · Incidents · Chaos · Reports · Funnel · **Operator**. Tab Operator dùng bridge HTTP `http://localhost:9445` để publish/cancel alert thật và start/stop fleet device (xem mục 0). Tòa nhà 3D đổi màu zone theo severity; click tầng để fly-to/cutaway/explode.
 
 ## 6. Phát cảnh báo FIRE_DRILL (operator)
-Dùng operator client hoặc harness `target/e2e-dev/ebsp.py` (Operator.publish). Quy trình quan sát được:
+Với demo web-only dùng tab **Operator** trên dashboard (mục 0); với studio/chaos thật dùng operator client hoặc harness `target/e2e-dev/ebsp.py` (Operator.publish). Quy trình quan sát được:
 1. Operator `ALERT_CREATE`/`ALERT_PUBLISH` (requestId idempotent) → server kiểm RBAC + snapshot target.
 2. Fanout `ALERT_PUSH` tới thiết bị target (priority CRITICAL ưu tiên).
 3. Client lưu durable inbox → `ACK_RECEIVED`; người bấm → `ACK_USER`.

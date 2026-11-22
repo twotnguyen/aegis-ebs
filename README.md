@@ -38,7 +38,7 @@ Modular monolith Java, 4 plane: **command** (dashboard/operator) · **delivery**
 | `aegis-network-lab` | UDP discovery + trust gate, multicast ALERT_HINT, benchmark TCP vs multicast | 31 |
 | `aegis-dashboard` | Web Vite + Three.js 3D twin, timeline/chaos/reports/funnel (Node) | 14 |
 
-**Tổng: 338 test Java + 14 test dashboard = 352** (đếm từ surefire XML + `node --test`, xem `docs/BUILD.md`). Cổng: TLS `9443` · WS status `9444` · UDP discovery `9999` · multicast `239.10.10.10:9998` · Vite `5173`.
+**Tổng: 338 test Java + 14 test dashboard = 352** (đếm từ surefire XML + `node --test`, xem `docs/BUILD.md`). Cổng: TLS `9443` · WS status `9444` · bridge Operator `9445` · UDP discovery `9999` · multicast `239.10.10.10:9998` · Vite `5173`.
 
 ## 3. Công nghệ
 
@@ -52,7 +52,7 @@ aegis-ebs/
 ├── aegis-protocol/  aegis-core/  aegis-persistence/  aegis-server/
 ├── aegis-client/    aegis-simulator/  aegis-network-lab/
 ├── aegis-dashboard/         # Node + Vite + Three.js (3D twin)
-├── scripts/                 # dev.sh, test.sh, initdb.sh, gen-server-cert.sh
+├── scripts/                 # dev.sh, test.sh, initdb.sh, gen-server-cert.sh, demo-web.sh
 ├── docs/                    # PROTOCOL, ARCHITECTURE, ERD, SECURITY, SLIDES, BUILD,
 │   ├── BAO-CAO.md           #   báo cáo theo mẫu HUTECH MauBCMH
 │   ├── TEST-PLAN.md  DEMO-RUNBOOK.md
@@ -61,6 +61,18 @@ aegis-ebs/
 ```
 
 ## 5. Quickstart
+
+### Demo web-only — khuyến nghị cho bảo vệ
+
+Một lệnh khởi động server + bridge + dashboard; phần còn lại thao tác hoàn toàn trên web:
+
+```bash
+bash scripts/demo-web.sh
+```
+
+- Mở `http://localhost:5173` → tab **Operator** (tab thứ sáu; bridge HTTP `http://localhost:9445`).
+- **Fleet Start (20)** → **Publish FIRE_DRILL F05** (zone đỏ + ACK trên dashboard LIVE) → **Retry demo** (1 device im lặng, `FAILED` sau 3s/6s/12s) → **Cancel**.
+- `Ctrl+C` để dừng. Các lệnh thiết lập thủ công bên dưới chỉ cần khi muốn studio/chaos thật; chi tiết xem `docs/USER-GUIDE.md` mục 0.
 
 ### Prerequisites
 ```bash
@@ -149,7 +161,8 @@ mvn -q -pl aegis-network-lab compile exec:java \
 - Test plan: `docs/TEST-PLAN.md` (30 acceptance + 16 chaos scenario C01–C16).
 - Peer-review độc lập từng module: `docs/reviews/` (verdict + issues + khuyến nghị).
 - Metrics đo thật (server monotonic p50/p95/p99, tách timeout); benchmark multicast đo thật 2026-11-21 (8 subscriber × 200 message, macOS loopback): **−87.5% gói / −97.8% byte trên link nguồn** — `target/lab-report/fanout-report.{json,md}`.
-- Bằng chứng đo đạc lưu tại `docs/evidence/`: `verify/` (347 test Java + 51 XML), `benchmark/` (100 client), `chaos/` (5 preset C01–C05 + runs), `dashboard/` (ảnh LIVE), `video/aegis-ebs-demo.mp4` (video thuyết trình 12 phút, 720,05 s). Mỗi bộ kèm runId/commit SHA/máy đo/timestamp; `scripts/make-demo-video.py` tái tạo video từ evidence thật.
+- Bằng chứng đo đạc lưu tại `docs/evidence/`: `verify/` (347 test Java + 51 XML), `benchmark/` (100 client), `chaos/` (5 preset C01–C05 + runs), `dashboard/` (ảnh LIVE + `web-only-demo-live.png` và metadata luồng demo 100% trên web), `video/aegis-ebs-demo.mp4` (video thuyết trình 12 phút, 720,05 s). Mỗi bộ kèm runId/commit SHA/máy đo; `scripts/make-demo-video.py` tái tạo video từ evidence thật.
+- **Demo web-only (`scripts/demo-web.sh`):** bằng chứng `docs/evidence/dashboard/web-only-demo-live.{png}` + `web-only-demo-meta.json` — Fleet Start 20 → publish F05 (12 delivery, ACK) → Retry F01-A (11 RECEIVED + 1 FAILED attempt_count=4) → Cancel, thao tác 100% trên tab Operator.
 - **Không bịa số liệu** — mọi kết quả báo cáo đều từ lần chạy thật kèm runId/commit SHA/máy đo.
 
 ## 7. Bảo mật (demo)

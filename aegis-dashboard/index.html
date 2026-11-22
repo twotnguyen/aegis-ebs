@@ -20,6 +20,7 @@
           <button class="tab" data-tab="chaos" title="Chaos control panel (key 3)">Chaos</button>
           <button class="tab" data-tab="reports" title="Latency reports & export (key 4)">Reports</button>
           <button class="tab" data-tab="funnel" title="Per-alert delivery funnel (key 5)">Funnel</button>
+          <button class="tab" data-tab="operator" title="Real publish/cancel via bridge (key 6)">Operator</button>
         </nav>
         <div class="top-badges">
           <span id="replay-badge" class="badge badge-replay" hidden>REPLAY</span>
@@ -174,6 +175,65 @@
             </table>
           </div>
         </section>
+
+        <!-- Operator bridge: REAL commands (EBSP/TLS), not the mock feed -->
+        <section id="view-operator" class="view" hidden>
+          <div class="panel">
+            <h2>Operator bridge <span id="op-bridge" class="pill">bridge: –</span> <span id="op-fleet-stats" class="pill">fleet: –</span> <span id="op-status" class="pill">idle</span></h2>
+            <p class="hint op-note">Lệnh thật qua EBSP/TLS — KHÔNG phải mock; tab Chaos vẫn là mock.</p>
+            <div class="op-grid">
+              <label>User <input id="op-user" type="text" value="admin" autocomplete="off" /></label>
+              <label>Password <input id="op-pass" type="password" value="admin-demo-secret" autocomplete="off" /></label>
+              <label>Floor
+                <select id="op-floor">
+                  <option value="ALL">ALL</option>
+                  <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                  <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+                  <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+                  <option value="10">10</option>
+                </select>
+              </label>
+              <label>Zone
+                <select id="op-zone">
+                  <option value="ALL">ALL</option><option value="A">A</option>
+                  <option value="B">B</option><option value="C">C</option><option value="D">D</option>
+                </select>
+              </label>
+              <label>Priority
+                <select id="op-priority">
+                  <option value="CRITICAL">CRITICAL</option><option value="EMERGENCY">EMERGENCY</option>
+                  <option value="WARNING">WARNING</option><option value="INFO">INFO</option>
+                </select>
+              </label>
+              <label>Category
+                <select id="op-category">
+                  <option value="FIRE_DRILL">FIRE_DRILL</option><option value="HAZMAT">HAZMAT</option>
+                  <option value="SECURITY">SECURITY</option><option value="ANNOUNCEMENT">ANNOUNCEMENT</option>
+                </select>
+              </label>
+              <label class="op-wide">Title <input id="op-title" type="text" value="FIRE DRILL — OPERATOR DEMO" /></label>
+              <label class="op-wide">Instruction <input id="op-instruction" type="text" value="Evacuate via stairwell B. This is a simulation." /></label>
+              <label class="op-check"><input id="op-silent" type="checkbox" /> silent — 1 device KHÔNG auto-ACK (retry → FAILED)</label>
+              <label>Count <input id="op-count" type="number" min="1" max="500" step="1" value="20" /></label>
+              <label class="op-wide">Alert ID (publish gần nhất / để trống để cancel) <input id="op-alert-id" type="text" placeholder="tự động điền sau publish" autocomplete="off" /></label>
+            </div>
+            <div class="row">
+              <button id="op-ping">Ping health + stats</button>
+              <button id="op-fleet-start">Fleet start</button>
+              <button id="op-fleet-stop">Fleet stop</button>
+            </div>
+            <div class="row">
+              <button id="op-publish">Publish</button>
+              <button id="op-retry-demo">Retry demo (F01-A + silent)</button>
+              <button id="op-cancel">Cancel alert</button>
+            </div>
+            <p class="hint">Fleet start dùng <code>count</code> từ ô Count và <code>silentFloor=1</code> (1 device im lặng). Override bridge: <code>?bridge=http://host:port</code>.</p>
+          </div>
+          <div class="panel">
+            <h2>Bridge log <span class="pill">time · alertId · deliveryCount</span></h2>
+            <div id="op-log" class="op-log"><div class="hint op-log-empty">Chưa có lệnh bridge. Bấm “Ping health + stats” để kiểm tra kết nối.</div></div>
+          </div>
+        </section>
       </div>
 
       <div id="tooltip" hidden></div>
@@ -182,7 +242,7 @@
         <span class="dot">·</span>
         <span id="last-update">last update: –</span>
         <span class="dot">·</span>
-        <span>drag to orbit · scroll to zoom · hover a zone for details · keys 1–5 switch views</span>
+        <span>drag to orbit · scroll to zoom · hover a zone for details · keys 1–6 switch views</span>
       </footer>
     </div>
     <noscript>This dashboard requires JavaScript (WebGL).</noscript>

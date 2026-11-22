@@ -8,8 +8,10 @@
 // toggles + tooltip are owned by ui.js; navigation (orbit / fly-to-floor /
 // cutaway / explode / isolation) by camera.js; day/night rig by lighting.js.
 // Data: src/ws.js (live WebSocket → mock fallback), contract in src/data.js.
-// Views (tabs, keys 1–5): Twin · Incidents (timeline/replay) · Chaos ·
-// Reports (p50/p95/p99 + CSV/JSON) · Funnel (per-alert delivery funnel).
+// Views (tabs, keys 1–6): Twin · Incidents (timeline/replay) · Chaos ·
+// Reports (p50/p95/p99 + CSV/JSON) · Funnel (per-alert delivery funnel) ·
+// Operator (REAL publish/cancel/fleet via the HTTP bridge at :9445; the
+// Chaos tab remains mock-only).
 // The 3D twin keeps rendering behind every panel; replay repaints it from
 // INCIDENT_EVENT payload counters. If WebGL is unavailable the panels still
 // work (a notice replaces the scene).
