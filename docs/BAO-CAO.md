@@ -1447,7 +1447,7 @@ Các chức năng dashboard đã được kiểm chứng bằng 14 test logic (m
 | Hạng mục | Nguồn hiện có | Trạng thái |
 |---|---|---|
 | Kiểm kê 347 lượt test Java + 14 dashboard | Đếm annotation/fixture tại working tree sau H1–H4; `verify-347-h1h4` ghi nhận 347/0/0; `npm test` 14/14 | Đã có verify chính thức + dashboard |
-| Front-end 3D LIVE | `docs/evidence/dashboard/twin-live-overview.{png,json}` — server thật + 40 device + 4 alert, build OK | Đã có (overview); cutaway/explode [TODO] |
+| Front-end 3D LIVE | `docs/evidence/dashboard/twin-live-overview.{png,json}` — server thật + 40 device + 4 alert, build OK | Đã có (overview LIVE); cutaway/explode là mở rộng |
 | Peer-review độc lập 4 nhóm module | `docs/reviews/*.md` (21/11/2026) + commit khắc phục `df0241b`, `4d1bd69`, `f68f9e2` | Đã có |
 | Benchmark fanout 3 chế độ | `target/lab-report/fanout-report.{json,md}` (18:20 21/11/2026, môi trường + timestamp đầy đủ) | Có; thiếu runId/SHA + LAN thật (ghi rõ) |
 | Acceptance T-01…T-30 | `verify-347-h1h4` + benchmark + chaos + dashboard | **Đã điền Bảng 3.14** |
@@ -1526,7 +1526,7 @@ Ngoài ra, các phép đo mở rộng (tải mixed/200–500, CPU/RSS/WAL chi ti
 
 ### 4.4 Kết luận chung
 
-Đồ án đã xây dựng thành công AEGIS-EBS — một hệ thống thông báo khẩn cấp mô phỏng/đào tạo hoàn chỉnh theo mô hình client–server, trong đó giao thức ứng dụng EBSP/2.0 tự xây dựng trên TCP/TLS kết hợp UDP discovery và multicast hint đúng tinh thần học phần CMP180 [1]; các bài toán kinh điển của hệ phân tán quy mô LAN (framing, idempotency, ACK hai tầng, retry có ngân sách, ưu tiên có công bằng, công bố nguyên tử và khôi phục sau crash) được giải quyết bằng thiết kế tường minh và kiểm chứng bằng test, peer-review độc lập và benchmark thật. Báo cáo giữ vững nguyên tắc trung thực: mọi khẳng định đều bám mã nguồn và bằng chứng hiện có, mọi số đo chưa thực hiện đều để placeholder thay vì bịa đặt. Với các hạn chế được nêu thẳng thắn (single-node, multicast LAN, TLS self-signed, bằng chứng định lượng còn thiếu) và lộ trình phát triển cụ thể (HA, CAP chuẩn, PostgreSQL, hardening, evidence tự động), kết quả đồ án có thể tái sử dụng làm nền tảng học tập và nghiên cứu tiếp theo. Hệ thống là **SIMULATION/TRAINING** — không thay thế và không được dùng thay thế bất kỳ hệ thống báo cháy, cảnh báo sơ tán hay thiết bị an toàn sinh mạng nào đã được chứng nhận.
+Đồ án đã xây dựng thành công AEGIS-EBS — một hệ thống thông báo khẩn cấp mô phỏng/đào tạo hoàn chỉnh theo mô hình client–server, trong đó giao thức ứng dụng EBSP/2.0 tự xây dựng trên TCP/TLS kết hợp UDP discovery và multicast hint đúng tinh thần học phần CMP180 [1]; các bài toán kinh điển của hệ phân tán quy mô LAN (framing, idempotency, ACK hai tầng, retry có ngân sách, ưu tiên có công bằng, công bố nguyên tử và khôi phục sau crash) được giải quyết bằng thiết kế tường minh và kiểm chứng bằng test, peer-review độc lập và benchmark thật. Báo cáo giữ vững nguyên tắc trung thực: mọi khẳng định đều bám mã nguồn và bằng chứng hiện có, mọi số đo chưa thực hiện đều để placeholder thay vì bịa đặt. Với các hạn chế được nêu thẳng thắn (single-node, multicast LAN, TLS self-signed, chưa đo tải mở rộng/LAN 2 máy) và lộ trình phát triển cụ thể (HA, CAP chuẩn, PostgreSQL, hardening, evidence tự động), kết quả đồ án có thể tái sử dụng làm nền tảng học tập và nghiên cứu tiếp theo. Mọi kết luận định lượng trong báo cáo đều bám vào bằng chứng đã lưu trong `docs/evidence/` (verify 347 test, benchmark 100 client, chaos C01–C05, ảnh dashboard LIVE); các phép đo chưa thực hiện được nêu rõ là hướng mở rộng, không suy diễn. Hệ thống là **SIMULATION/TRAINING** — không thay thế và không được dùng thay thế bất kỳ hệ thống báo cháy, cảnh báo sơ tán hay thiết bị an toàn sinh mạng nào đã được chứng nhận.
 
 ## TÀI LIỆU THAM KHẢO
 
@@ -1544,4 +1544,131 @@ Ngoài ra, các phép đo mở rộng (tải mixed/200–500, CPU/RSS/WAL chi ti
 
 [7] Three.js. *Three.js Documentation* (thư viện đồ họa 3D nền web, dùng cho dashboard digital twin của đồ án). https://threejs.org/docs/
 
-## PHỤ LỤC: MÃ NGUỒN CHƯƠNG TRÌNH [TODO trích module chính]
+## PHỤ LỤC: MÃ NGUỒN CHƯƠNG TRÌNH (trích đoạn tiêu biểu)
+
+Toàn bộ mã nguồn nằm trong repository `aegis-ebs/` (8 module Java + `aegis-dashboard`). Dưới đây là sáu trích đoạn tiêu biểu, sao chép nguyên từ source tại HEAD `ae9fd45`; đường dẫn và số dòng được ghi để đối chiếu.
+
+### A.1 Đóng khung EBSP/2.0 — chặn oversize trước khi cấp phát
+`aegis-protocol/src/main/java/aegis/protocol/FrameCodecImpl.java:46-68`
+```java
+@Override
+public Envelope decode(byte[] frame) throws FrameException {
+  if (frame == null) throw new FrameException("null frame");
+  if (frame.length < Protocol.PREFIX_BYTES + 1) {
+    throw new FrameException("frame too short: " + frame.length + " bytes");
+  }
+  int len = readLength(frame, 0);
+  checkLength(len); // reject before allocating/copying the body
+  if (frame.length != Protocol.PREFIX_BYTES + len) {
+    throw new FrameException("length prefix " + len + " does not match actual body "
+        + (frame.length - Protocol.PREFIX_BYTES));
+  }
+  byte[] body = new byte[len];
+  System.arraycopy(frame, Protocol.PREFIX_BYTES, body, 0, len);
+  return decodeBody(body);
+}
+
+@Override
+public Envelope readFrame(InputStream in) throws FrameException, IOException {
+  DataInputStream din = (in instanceof DataInputStream d) ? d : new DataInputStream(in);
+  byte[] header = new byte[Protocol.PREFIX_BYTES];
+  din.readFully(header); // handles partial header reads (e.g. 4 x 1-byte chunks)
+  int len = readLength(header, 0);
+  // ... checkLength(len) rồi din.readFully(body)
+}
+```
+
+### A.2 Chính sách retry 3s/6s/12s + jitter có tiêm RNG
+`aegis-core/src/main/java/aegis/core/RetryPolicy.java:53-74`
+```java
+public boolean shouldRetry(int attemptsSoFar) {
+    requireNonNegative(attemptsSoFar);
+    return attemptsSoFar < maxAttempts;
+}
+
+/** Delay before the next attempt: exponential backoff plus bounded jitter, saturating. */
+public long delayMs(int attemptsSoFar) {
+    requireNonNegative(attemptsSoFar);
+    long exponential = Math.min(baseDelayMs, DELAY_CAP);
+    int shifts = Math.min(attemptsSoFar, 63);
+    for (int i = 0; i < shifts && exponential < DELAY_CAP; i++) {
+        exponential = exponential > DELAY_CAP / 2 ? DELAY_CAP : exponential * 2;
+    }
+    long jitter = 0;
+    if (baseDelayMs > 0) {
+        RandomGenerator rng = jitterSource != null ? jitterSource : ThreadLocalRandom.current();
+        jitter = rng.nextLong(baseDelayMs);
+    }
+    long total = exponential + jitter;
+    return total < 0 ? Long.MAX_VALUE : total; // overflow guard for huge baseDelayMs
+}
+```
+
+### A.3 Rank guard chống lùi trạng thái (sửa H2 từ audit)
+`aegis-persistence/src/main/java/aegis/persistence/DeliveryRepo.java:134-142`
+```java
+public boolean markFailed(String id) throws SQLException {
+    try (Connection c = db.open();
+         PreparedStatement ps = c.prepareStatement(
+             "UPDATE deliveries SET state='FAILED', next_retry_at=NULL WHERE id=? "
+                 + "AND state IN ('PENDING','SENT','RETRY_SCHEDULED')")) {
+      ps.setString(1, id);
+      return ps.executeUpdate() == 1;
+    }
+}
+```
+`markFailed` bị guard ở pre-ack; ACK đã commit (RECEIVED/ACKNOWLEDGED) không thể bị đè thành FAILED; `FanoutEngine.markFailed` chỉ đếm metric/audit khi hàm trả `true`.
+
+### A.4 Từ chối re-auth trên session đã xác thực (sửa H3)
+`aegis-server/src/main/java/aegis/server/MessageRouter.java:143-153`
+```java
+private void authOperator(ClientSession session, Envelope env) throws SQLException {
+    if (session.isAuthenticated()) {
+      audit.append(actor(session), "AUTH_OPERATOR_REJECTED", "already-authenticated", "DENIED", env.messageId());
+      reply(session, "AUTH_RESULT", env.messageId(),
+          Json.obj().put("ok", false).put("code", "ALREADY_AUTHENTICATED"));
+      return;
+    }
+    // ... xác thực bình thường
+}
+```
+`authDevice` có guard tương tự. Client/simulator chỉ auth đúng một lần trên mỗi socket mới, nên thay đổi không phá luồng reconnect (review độc lập §3.3).
+
+### A.5 Bounded async writer cho WebSocket status feed (sửa H4)
+`aegis-server/src/main/java/aegis/server/WsConnection.java:48-68`
+```java
+public boolean sendText(String text) {
+    if (closed) return false;
+    if (!outQueue.offer(text)) {
+      // Slow subscriber: backlog full. Drop it instead of blocking the feed (H4).
+      close();
+      return false;
+    }
+    return true;
+}
+
+/** Drains the outbound queue on a dedicated thread; blocking writes live here only. */
+private void writeLoop() {
+    try {
+      while (!closed) {
+        String text = outQueue.take();
+        if (!writeFrame(text)) return;
+      }
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt(); // close() interrupted us
+    }
+}
+```
+`outQueue` có sức chứa 256; subscriber chậm bị đóng thay vì làm kẹt timer pool phát snapshot/delta.
+
+### A.6 Digital twin 3D nhận trạng thái thật
+`aegis-dashboard/src/main.js:240-253` (trích rút gọn)
+```js
+if (statusVizApi) {
+  statusVizApi.setStatus(s); // zone tint + heatmap + markers + beacons + ACK
+}
+uiApi?.setStatus?.(s); // HUD legend counts + per-floor severity dots
+```
+`statusViz.js` quét `userData.zoneCode` của 40 zone plate do `interior.js` tạo, tô màu theo severity chuẩn tắc; camera.js cung cấp fly-to-floor/cutaway/explode; lighting.js điều khiển ngày/đêm. Ảnh nghiệm thu LIVE: Hình 3.8.
+
+Các module còn lại (server `FanoutEngine`, `MessageRouter`, `StatusFeedService`; client `AlertClientEngine`; simulator `SimAgent`; network-lab `MulticastHintPublisher`; persistence repos) được liệt kê đầy đủ trong `Agents.md` và `docs/ARCHITECTURE.md`. Mã nguồn không sao chép toàn bộ vào báo cáo để tránh trùng lặp; người đọc có thể đối chiếu trực tiếp repository kèm commit SHA ghi trong từng phần evidence.
