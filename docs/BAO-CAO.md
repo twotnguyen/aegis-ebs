@@ -1447,7 +1447,8 @@ Các chức năng dashboard đã được kiểm chứng bằng 14 test logic (m
 | Hạng mục | Nguồn hiện có | Trạng thái |
 |---|---|---|
 | Kiểm kê 347 lượt test Java + 14 dashboard | Đếm annotation/fixture tại working tree sau H1–H4; `verify-347-h1h4` ghi nhận 347/0/0; `npm test` 14/14 | Đã có verify chính thức + dashboard |
-| Front-end 3D LIVE | `docs/evidence/dashboard/twin-live-overview.{png,json}` — server thật + 40 device + 4 alert, build OK | Đã có (overview LIVE); cutaway/explode là mở rộng |
+| Front-end 3D LIVE | `docs/evidence/dashboard/twin-live-overview.{png,json}` — server thật + 40 device + 4 alert, build OK | Có overview LIVE |
+| Video demo 12 phút | `docs/evidence/video/aegis-ebs-demo.mp4` (720,05 s, H.264/AAC, voiceover tiếng Việt từ evidence thật; metadata + khung kiểm chứng trong cùng thư mục) | Có (video thuyết trình từ evidence, không phải quay live) |
 | Peer-review độc lập 4 nhóm module | `docs/reviews/*.md` (21/11/2026) + commit khắc phục `df0241b`, `4d1bd69`, `f68f9e2` | Đã có |
 | Benchmark fanout 3 chế độ | `target/lab-report/fanout-report.{json,md}` (18:20 21/11/2026, môi trường + timestamp đầy đủ) | Có; thiếu runId/SHA + LAN thật (ghi rõ) |
 | Acceptance T-01…T-30 | `verify-347-h1h4` + benchmark + chaos + dashboard | **Đã điền Bảng 3.14** |

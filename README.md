@@ -149,7 +149,7 @@ mvn -q -pl aegis-network-lab compile exec:java \
 - Test plan: `docs/TEST-PLAN.md` (30 acceptance + 16 chaos scenario C01–C16).
 - Peer-review độc lập từng module: `docs/reviews/` (verdict + issues + khuyến nghị).
 - Metrics đo thật (server monotonic p50/p95/p99, tách timeout); benchmark multicast đo thật 2026-11-21 (8 subscriber × 200 message, macOS loopback): **−87.5% gói / −97.8% byte trên link nguồn** — `target/lab-report/fanout-report.{json,md}`.
-- Bằng chứng đo đạc lưu trữ tại `docs/evidence/` (kèm runId/commit SHA/máy đo/timestamp); các ô `[TODO]` trong `docs/SLIDES.md` trỏ về đây.
+- Bằng chứng đo đạc lưu tại `docs/evidence/`: `verify/` (347 test Java + 51 XML), `benchmark/` (100 client), `chaos/` (5 preset C01–C05 + runs), `dashboard/` (ảnh LIVE), `video/aegis-ebs-demo.mp4` (video thuyết trình 12 phút, 720,05 s). Mỗi bộ kèm runId/commit SHA/máy đo/timestamp; `scripts/make-demo-video.py` tái tạo video từ evidence thật.
 - **Không bịa số liệu** — mọi kết quả báo cáo đều từ lần chạy thật kèm runId/commit SHA/máy đo.
 
 ## 7. Bảo mật (demo)

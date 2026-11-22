@@ -1,0 +1,11 @@
+{
+  "generatedFrom": "docs/DEMO-VIDEO-SCRIPT.md + docs/evidence/",
+  "voice": "macOS say -v Linh (vi_VN)",
+  "resolution": "1280x720",
+  "fps": 24,
+  "durationSeconds": 720,
+  "realEvidenceSlides": [
+    8
+  ],
+  "note": "Video dựng từ evidence thật (ảnh dashboard LIVE, số đo benchmark/chaos/verify) + voiceover TTS; KHÔNG phải bản quay màn hình live 12 phút. Dùng làm video nộp/bảo vệ có caption + số liệu đã kiểm chứng."
+}
