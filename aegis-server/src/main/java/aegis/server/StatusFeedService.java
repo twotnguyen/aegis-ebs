@@ -49,8 +49,9 @@ public final class StatusFeedService implements StatusNotifier {
   private final Map<String, Counters> counters = new ConcurrentHashMap<>();
   private final List<WsConnection> subscribers = new CopyOnWriteArrayList<>();
   private volatile ArrayNode alertCache;
+  private final AtomicLong alertsGeneration = new AtomicLong();
+  private final AtomicLong cacheGeneration = new AtomicLong(-1);
   private volatile ObjectNode lastBroadcast;
-  private volatile boolean alertsDirty = false;
 
   public StatusFeedService(String buildingId, ServerStore store, AlertRepo alerts,
                            SessionRegistry sessions, MetricsRegistry metrics, Clock clock) {
@@ -101,9 +102,9 @@ public final class StatusFeedService implements StatusNotifier {
 
   @Override
   public void alertsChanged() {
-    // coalesce: the batch cycle rebuilds at most once per statusBatchMs, so a
-    // publish flood never turns the command path into O(N^2) stats queries
-    alertsDirty = true;
+    // Coalesced via a monotonic generation: a publish during a rebuild bumps the
+    // generation again so the next cycle/subscribe refreshes. No lost dirty bit.
+    alertsGeneration.incrementAndGet();
   }
 
   @Override
@@ -243,18 +244,23 @@ public final class StatusFeedService implements StatusNotifier {
 
   public void subscribe(WsConnection conn) {
     rebuildIfDirty();
+    // Contract: snapshot is the FIRST frame a subscriber sees. Enqueue it before
+    // adding to subscribers so a concurrent broadcastDelta cannot jump the queue
+    // (review H1-H4 residual R1). Async writer preserves FIFO order.
+    conn.sendText(Json.write(snapshot()));
     subscribers.add(conn);
-    conn.sendText(Json.write(snapshot())); // contract: snapshot immediately on connect
   }
 
   private void rebuildIfDirty() {
-    if (!alertsDirty) return;
-    alertsDirty = false;
+    long target = alertsGeneration.get();
+    if (cacheGeneration.get() == target) return;
     try {
       rebuildAlertCache();
+      // Publish a newer generation during the rebuild? Keep the older cached
+      // generation so the next cycle/subscribe rebuilds again (no lost signal).
+      cacheGeneration.accumulateAndGet(target, (cur, seen) -> cur < seen ? seen : cur);
     } catch (SQLException e) {
-      LOG.warn("alert cache rebuild failed: {}", e.toString());
-      alertsDirty = true; // retry next cycle
+      LOG.warn("alert cache rebuild failed: {}", e.toString()); // cacheGeneration stays old -> retry
     }
   }
 
