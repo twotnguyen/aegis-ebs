@@ -106,43 +106,43 @@
 - **Ghi chú:** nêu bất biến §5; đây là trọng số reliability 25%.
 
 ### Slide 9 — Bằng chứng reliability (số thật) (5:20–6:20)
-- **Acceptance targets (chưa đo → phải đo):** NFR-003 p95 dispatch→ACK_RECEIVED ≤ 2s (100 client, LAN khai báo); NFR-004 > 99% ACK_RECEIVED trong 10s (loại target fault-injected); NFR-005 đúng 1 popup; NFR-006 không mất row đã commit.
-- **Bảng kết quả thật** `[TODO: điền số đo thật + runId/SHA/máy]`:
+- **Acceptance targets so với kết quả đo (runId `276dedf5`):** NFR-003 p95 dispatch→ACK_RECEIVED ≤ 2s → **đo 1,307s (đạt)**; NFR-004 > 99% ACK_RECEIVED trong 10s → **đo 100% (đạt)**; NFR-005 đúng 1 popup → **0 duplicate push/ACK**; NFR-006 không mất row đã commit → **100 delivery bền vững, FK sạch**. (Các ngưỡng NFR lấy từ docs/BAO-CAO.md §3.1.)
+- **Bảng kết quả thật** (runId/SHA/máy nêu ở tiêu đề bảng):
 
-| Chỉ số | Định nghĩa | Kết quả thật |
+| Chỉ số | Định nghĩa | Kết quả thật (runId `276dedf5`, commit `c1dbab5`, M3 Pro) |
 |---|---|---|
-| p50 / p95 / p99 (ms) | `ackReceipt − dispatchStart` monotonic, cùng process | `[TODO]` |
-| Tỷ lệ ACK_RECEIVED | tử số/mẫu số thật (loại fault-injected) | `[TODO]` |
-| Retry volume | tổng attempt sau lần đầu / delivery | `[TODO]` |
-| Throughput / CPU / RSS | đo khi 100 client × 15 phút | `[TODO]` |
-| Popup trùng | số popup / (deviceId,alertId,revision) | `[TODO]` |
+| p50 / p95 / p99 (ms) | `ackReceipt − dispatchStart` monotonic, cùng process | **773 / 1307 / 1334** (100 mẫu) |
+| Tỷ lệ ACK_RECEIVED | received/targeted (fleet 100, clean, seed 42) | **100% (100/100)** |
+| Retry volume | attemptCount−1 / delivery | **0** (attemptHistogram `{1:100}`) |
+| Throughput | 100 delivery hoàn tất trong ~1,34 s | **≈75 delivery/s** (CPU/RSS chưa capture) |
+| Popup trùng | duplicate push/ACK | **0 duplicate push** (clean); chaos duplicate 22 ACK bị dedup, không popup trùng |
 
-- **Cách đo percentile:** timestamp monotonic phía server (dispatch & receipt) mỗi delivery; **báo cáo riêng timeout/omission** để tránh thiên lệch mẫu thành công (MetricsRegistry.recordLatency).
-- **Demo:** offline recovery — disconnect/reconnect → alert active sync, revision cũ ẩn; chiếu metrics dashboard.
-- **Ghi chú:** tuyệt đối không bịa số; nếu chưa đo, nói rõ "đang đo" và chiếu quy trình đo.
+- **Cách đo percentile:** timestamp monotonic phía server (dispatch & receipt) mỗi delivery; báo cáo riêng timeout/omission để tránh thiên lệch mẫu thành công (MetricsRegistry.recordLatency). Bằng chứng: `docs/evidence/benchmark/276dedf5…/summary.json` + bench.db/server.log/sim.log.
+- **Demo:** offline recovery — disconnect/reconnect → alert active sync, revision cũ ẩn; chiếu metrics dashboard. Chaos flaky (runId `8e92ca3c`) đo 21 disconnect → 21 reconnect, ACK vẫn 100%.
+- **Ghi chú:** các số trên là lần chạy thật, không suy diễn; CPU/RSS/tải mixed chưa đo thì nói rõ "chưa đo".
 
 ### Slide 10 — Kết quả chaos C01–C16 (6:20–7:30)
 - **Chaos Lab:** tiêm lỗi có seed deterministic, tự sinh báo cáo; so sánh baseline vs faulty run.
-- **Bảng chaos** (blueprint §12) — `[TODO: điền kết quả thật + evidence mỗi dòng]`:
+- **Bảng kết quả thật** (`docs/evidence/chaos/*.json`, fleet 50, seed 42, M3 Pro/Java 24.0.1):
 
 | ID | Lỗi tiêm | Thuộc tính kỳ vọng | Bằng chứng |
 |---|---|---|---|
-| C01 | Drop ACK_RECEIVED 1 lần | Retry; alert hiện đúng 1 lần | Event log + ảnh |
-| C02 | Delay ACK 5s | Retry/backoff đúng | Delivery attempts |
-| C03 | Duplicate ALERT_PUSH | Inbox idempotent; re-ACK | Local DB unique key |
-| C04 | Disconnect 20% agent | Target còn lại không bị chặn | Queue + status graph |
-| C05 | Reconnect 20% client | Active sync, chặn stale | Sync trace |
-| C06 | Kill server sau commit, trước send | Pending work recovered | Restart report |
-| C07 | Kill sau socket write, trước ACK commit | Resend, không trùng hiển thị | Retry + inbox |
-| C08 | Floor manager publish trái phép | DENIED + audit | Auth log |
-| C09 | Cert TLS giả/không rõ | Connection rejected | Security trace |
-| C10 | Frame oversize, UTF-8/JSON lỗi | Reject, không crash/unbounded alloc | Fuzz test |
-| C11 | 100 client nhận CRITICAL giữa INFO burst | Critical expedited; fairness | p95 theo class |
-| C12 | Cancel khi client offline | Tombstone giao khi reconnect | Client UI state |
-| C13 | UDP forged server response | Không trust khi chưa verify TLS | Trace |
-| C14 | Multicast bị chặn | TCP primary vẫn chạy | Comparison lab |
-| C15 | SQLite writer contention tạm thời | Bounded retry; persistence nhất quán | DB health |
-| C16 | Slow client / full writer queue | Client khác tiếp tục; slow target hiện rõ | Queue depth graph |
+| C01 | Drop ACK_RECEIVED 1 lần | Retry; alert hiện đúng 1 lần | **ĐO THẬT** 15 drop → 15 retry, ACK 98% (49/50), 1 FAILED đúng ngân sách; `lossy.json` e1943406 |
+| C02 | Delay ACK 5s | Retry/backoff đúng | **ĐO THẬT** 50 ACK delay, ACK 100%, 0 retry; `delayed.json` d04af662 |
+| C03 | Duplicate ALERT_PUSH | Inbox idempotent; re-ACK | **ĐO THẬT** 22 ACK dedup, ACK 100%; `duplicate.json` 04c97420 |
+| C04 | Disconnect 20% agent | Target còn lại không bị chặn | **ĐO THẬT** 21 disconnect→21 reconnect, ACK 100%; `flaky.json` 8e92ca3c |
+| C05 | Reconnect 20% client | Active sync, chặn stale | **ĐO THẬT** mixed 13 reconnect, ACK 100%; `mixed.json` 3fe99b11 |
+| C06 | Kill server sau commit, trước send | Pending work recovered | Unit/integration: `RecoveryScannerTest` 4 + `TlsLoopback` crashRecovery |
+| C07 | Kill sau socket write, trước ACK commit | Resend, không trùng hiển thị | `ClientEngineTest` 20 (pending ACK resend) |
+| C08 | Floor manager publish trái phép | DENIED + audit | `ServerSecurityFixesTest` 12 + `ScopedRBACTest` 13 |
+| C09 | Cert TLS giả/không rõ | Connection rejected | `ClientTlsSmokeTest` 2 + probe review-c |
+| C10 | Frame oversize, UTF-8/JSON lỗi | Reject, không crash/unbounded alloc | `FrameCodecValidationTest` 23 |
+| C11 | 100 client nhận CRITICAL giữa INFO burst | Critical expedited; fairness | `PrioritySchedulerTest` 13 + probe flood 5000 |
+| C12 | Cancel khi client offline | Tombstone giao khi reconnect | `TlsLoopback` cancel tombstone + `ClientEngineTest` |
+| C13 | UDP forged server response | Không trust khi chưa verify TLS | `DiscoveryTrustTest` 6 + `DiscoveryNonceEchoTest` 6 |
+| C14 | Multicast bị chặn | TCP primary vẫn chạy | `UnicastFallbackTest` 2 + benchmark 3 chế độ (−87,5% gói) |
+| C15 | SQLite writer contention tạm thời | Bounded retry; persistence nhất quán | `DbTest` 3 + `PeerReviewFixesTest$ConcurrentFirstOpen` |
+| C16 | Slow client / full writer queue | Client khác tiếp tục; slow target hiện rõ | `BoundedWriterQueueTest` 6 + `TlsLoopback` slowClient |
 
 - **Demo:** priority preemption (INFO burst → CRITICAL) + server restart khôi phục delivery từ DB.
 - **Ghi chú:** mỗi scenario phải có seed + lệnh chạy + evidence; không tuyên bố "đã pass" khi chưa chạy thật.
@@ -187,7 +187,7 @@
 - **Ghi chú:** nêu hạn chế chủ động, đúng tinh thần NFR-018 + blueprint §0.2.
 
 ### Slide 15 — Kết luận & hướng phát triển (10:40–11:15)
-- **Đạt được so mục tiêu:** tự xây EBSP/2.0 trên TCP/UDP Java; ACK 2 tầng + retry idempotent + dedup + reconnect + crash recovery; RBAC scoped + audit; digital twin + chaos lab + đo lường. `[TODO: đối chiếu kết quả thật]`
+- **Đạt được so mục tiêu:** tự xây EBSP/2.0 trên TCP/UDP Java; ACK 2 tầng + retry idempotent + dedup + reconnect + crash recovery; RBAC scoped + audit; digital twin 3D + chaos lab + đo lường. Bằng chứng: `verify-347-h1h4` (347 Java/14 dashboard), benchmark 100 client, chaos C01–C05, ảnh LIVE. 4 finding HIGH của audit chuyên sâu đã sửa (`docs/reviews/backend-depth-audit-fixes.md`).
 - **Hướng phát triển:** HA/active-passive; PostgreSQL khi có bằng chứng bottleneck; CAP XML export validate schema; floor edge relay (nghiên cứu); nâng Argon2id + PKI thật; hoàn thiện gateway thực thi bảo mật wire.
 - **Ghi chú:** kết luận bám mục tiêu slide 3; không tuyên bố vượt quá bằng chứng.
 
@@ -284,9 +284,10 @@
 ## 6. Checklist chuẩn bị bảo vệ
 
 - [ ] Điền thông tin nhóm/MSSV/lớp (slide 1) và ký lời cam đoan trong BAO-CAO.
-- [ ] Thay **toàn bộ** `[TODO: số thật]` bằng bằng chứng thật + runId/SHA/máy/timestamp (slide 9, 10). **Không bịa số.**
-- [ ] Chạy `mvn -q test` toàn reactor; lưu surefire XML làm bằng chứng số test pass.
-- [ ] Chạy chaos C01–C16 có seed; lưu log/report/ảnh mỗi scenario.
+- [x] Thay **toàn bộ** `[TODO: số thật]` bằng bằng chứng thật + runId/SHA/máy/timestamp (slide 9, 10) — xong; xem `docs/evidence/`.
+- [x] Chạy `mvn -B -ntp verify` toàn reactor; lưu 51+ surefire XML trong `docs/evidence/verify/` (347 pass).
+- [x] Chaos có seed: C01–C05 chạy thật bằng `scripts/chaos-run.sh` (`failed=[]`); C06–C16 có unit/integration + probe trong surefire/reviews.
+- [ ] Nếu có máy thứ hai: chạy lại chaos/multicast trên LAN Win+Mac thật; hiện tại đo trên máy M3 Pro single-host loopback.
 - [ ] Chuẩn bị truststore demo (`scripts/gen-server-cert.sh`) + kiểm tra `keytool -list`; nếu demo 2 máy, sinh lại SAN với IP thật.
 - [ ] Kiểm tra multicast hội trường (`probe`); chuẩn bị fallback unicast + video nếu bị chặn.
 - [ ] Gắn nhãn SIMULATION/TRAINING trên mọi slide/demo.

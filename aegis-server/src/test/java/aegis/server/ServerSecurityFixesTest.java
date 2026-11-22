@@ -524,4 +524,54 @@ class ServerSecurityFixesTest {
     ServerStore sixStore = new ServerStore(xdb, atSix, new AlertRepo(xdb, atSix), new DeliveryRepo(xdb, atSix));
     assertEquals(List.of(alert.id()), sixStore.expireOverdue(), "overdue alert must expire");
   }
+
+  // ---- 11. H3: re-authentication on a live session is rejected --------------
+
+  @Test
+  @Order(11)
+  void reAuthenticationOnAuthenticatedSessionIsRejected() throws Exception {
+    TestTlsClient dev = authDevice("DEV-A-F03-A-01");
+    // Re-binding a DIFFERENT device on the same live session must be refused so the
+    // registry's byDeviceId index can never route the old device's pushes here (H3).
+    Envelope reDev = dev.request("AUTH_DEVICE",
+        Json.obj().put("deviceCode", "DEV-A-F04-A-01").put("credential", "device-demo-secret"), 8000);
+    assertEquals("AUTH_RESULT", reDev.type());
+    assertFalse(reDev.payload().get("ok").asBoolean(), "re-auth must be rejected: " + reDev.payload());
+    assertEquals("ALREADY_AUTHENTICATED", reDev.payload().get("code").asText());
+    // Re-auth as an operator on the same device session is likewise refused.
+    Envelope reOp = dev.request("AUTH_OPERATOR",
+        Json.obj().put("username", "admin").put("password", "admin-demo-secret"), 8000);
+    assertFalse(reOp.payload().get("ok").asBoolean());
+    assertEquals("ALREADY_AUTHENTICATED", reOp.payload().get("code").asText());
+    // The session keeps its original device identity (still bound, not logged out).
+    Envelope hb = dev.request("HEARTBEAT", Json.obj(), 8000);
+    assertEquals("HEARTBEAT_ACK", hb.type());
+    dev.close();
+  }
+
+  // ---- 12. H4: a slow WS subscriber is dropped without blocking the feed ----
+
+  @Test
+  @Order(12)
+  void wsSlowSubscriberIsDroppedWithoutBlockingSender() throws Exception {
+    // Socket pair whose peer NEVER reads: the TCP send buffer fills, so a blocking
+    // writer would stall. The bounded async writer must instead drop the subscriber
+    // once its backlog fills, and sendText must never block the caller (H4).
+    try (java.net.ServerSocket ss = new java.net.ServerSocket(0)) {
+      java.net.Socket peer = new java.net.Socket("localhost", ss.getLocalPort());
+      java.net.Socket serverSide = ss.accept();
+      WsConnection conn = new WsConnection(serverSide);
+      String big = "x".repeat(60000); // ~60 KB text frame
+      boolean dropped = false;
+      long start = System.nanoTime();
+      for (int i = 0; i < 4000 && !dropped; i++) {
+        if (!conn.sendText(big)) dropped = true;
+      }
+      long elapsedMs = (System.nanoTime() - start) / 1_000_000;
+      assertTrue(dropped, "a non-draining subscriber must be dropped once its backlog fills");
+      assertTrue(conn.isClosed(), "dropped subscriber must be closed");
+      assertTrue(elapsedMs < 5000, "sendText must stay non-blocking (took " + elapsedMs + " ms)");
+      peer.close();
+    }
+  }
 }

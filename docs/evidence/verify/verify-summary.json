@@ -1,17 +1,15 @@
 {
-  "runId": "verify-8f01589",
-  "commit": "8f01589",
+  "runId": "verify-347-h1h4",
   "command": "mvn -B -ntp verify",
   "result": "BUILD SUCCESS",
-  "capturedAt": "2026-11-21T14:38:07Z",
+  "capturedAt": "2026-11-21T15:03:26Z",
   "machine": {
     "os": "macOS 15.7.3",
     "cpu": "Apple M3 Pro",
     "cores": 12,
     "ramGB": 18,
     "arch": "arm64",
-    "java": "24.0.1",
-    "maven": "Apache Maven 3.10.1 (3afd8084b5629f80b97750906a719879ed4cd283)"
+    "java": "24.0.1"
   },
   "modules": [
     {
@@ -30,14 +28,14 @@
     },
     {
       "module": "aegis-persistence",
-      "tests": 52,
+      "tests": 59,
       "failures": 0,
       "errors": 0,
       "skipped": 0
     },
     {
       "module": "aegis-server",
-      "tests": 63,
+      "tests": 65,
       "failures": 0,
       "errors": 0,
       "skipped": 0
@@ -64,7 +62,7 @@
       "skipped": 0
     }
   ],
-  "totalJavaTests": 338,
+  "totalJavaTests": 347,
   "totalFailures": 0,
   "totalErrors": 0,
   "dashboardTests": {
@@ -72,5 +70,5 @@
     "pass": 14,
     "fail": 0
   },
-  "note": "Official full-reactor verification on measurement machine; surefire XML preserved per module. TlsLoopbackIntegrationTest teardown hardened (UncheckedIOException catch) this run."
+  "note": "Full-reactor verify AFTER fixing backend-depth-audit H1-H4 (scheduleRetry/markFailed rank guards, re-auth rejection, WS bounded async writer). +9 tests vs prior 338 (7 DeliveryRankGuardTest + 2 ServerSecurityFixesTest H3/H4)."
 }

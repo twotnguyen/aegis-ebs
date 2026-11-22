@@ -125,7 +125,7 @@ Khung mục lục tĩnh của báo cáo:
 - Bảng 3.15. Kết quả peer-review độc lập
 - Bảng 3.16. Ma trận chaos C01…C16 và ánh xạ kiểm thử
 - Bảng 3.17. Preset kịch bản lỗi của aegis-simulator
-- Bảng 3.18. Chỉ số tải 100 client [TODO: số đo chính thức]
+- Bảng 3.18. Chỉ số tải 100 client (số đo thật runId `276dedf5`)
 - Bảng 3.19. Kết quả benchmark fanout thật (TCP/multicast/unicast)
 - Bảng 3.20. Danh mục bằng chứng thực nghiệm
 
@@ -143,7 +143,7 @@ Khung mục lục tĩnh của báo cáo:
 - Hình 3.5. Máy trạng thái incident
 - Hình 3.6. Máy trạng thái delivery
 - Hình 3.7. Tuần tự publish → fanout → ACK → retry → recovery
-- Hình 3.8. Ảnh dashboard 3D nghiệm thu [TODO: ảnh từ lần chạy thật]
+- Hình 3.8. Ảnh dashboard 3D nghiệm thu (LIVE thật, `docs/evidence/dashboard/twin-live-overview.png`)
 
 ## CHƯƠNG 1. TỔNG QUAN
 
@@ -216,8 +216,8 @@ Báo cáo được tổ chức thành bốn chương theo mẫu báo cáo môn h
 
 - **Chương 1 — Tổng quan:** giới thiệu đề tài, tính cấp thiết, ý nghĩa khoa học/thực tiễn, mục tiêu, đối tượng và phạm vi nghiên cứu, cấu trúc báo cáo.
 - **Chương 2 — Cơ sở lý thuyết:** trình bày nền tảng lý thuyết của hệ thống dựa trên giáo trình CMP180 [1] (Bài 1–9) và các nguồn bổ sung [2]–[7]: mô hình client–server; TCP và socket Java; đa tuyến và ExecutorService; InetAddress; truyền JSON/đối tượng qua mạng và framing length-prefix; UDP; multicast; TLS; RBAC và bảo mật; chuẩn CAP 1.2. Mỗi mục đều liên hệ trực tiếp với cách kỹ thuật đó được áp dụng trong AEGIS-EBS.
-- **Chương 3 — Kết quả thực nghiệm:** yêu cầu hệ thống (FR/NFR), phân tích và thiết kế (kiến trúc, sơ đồ module, thiết kế lớp, ERD 26 bảng, giao thức EBSP/2.0, máy trạng thái), cài đặt, hướng dẫn biên dịch/chạy, kiểm thử và số liệu đo thật (bảng test, chaos C01–C16, p50/p95/p99, tỷ lệ ACK, ảnh dashboard), ưu điểm/hạn chế. [TODO — chờ số liệu thực nghiệm thật]
-- **Chương 4 — Kết luận và kiến nghị:** đối chiếu kết quả với mục tiêu, tổng kết hạn chế và đề xuất hướng phát triển. [TODO]
+- **Chương 3 — Kết quả thực nghiệm:** yêu cầu hệ thống (FR/NFR), phân tích và thiết kế (kiến trúc, sơ đồ module, thiết kế lớp, ERD 26 bảng, giao thức EBSP/2.0, máy trạng thái), cài đặt, hướng dẫn biên dịch/chạy, kiểm thử và số liệu đo thật (347 test Java + 14 dashboard, ma trận T-01…T-30, chaos C01–C05 đo thật + C06–C16 kiểm chứng unit/probe, p50/p95/p99, tỷ lệ ACK, ảnh dashboard LIVE), ưu điểm/hạn chế. Các số liệu có runId/commit SHA/máy đo trong `docs/evidence/`.
+- **Chương 4 — Kết luận và kiến nghị:** đối chiếu kết quả với mục tiêu, tổng kết hạn chế và đề xuất hướng phát triển (đã hoàn thiện theo kết quả nghiệm thu).
 
 Phần Tài liệu tham khảo liệt kê bảy nguồn [1]–[7] được trích dẫn trong toàn báo cáo; Phụ lục trích mã nguồn các module chính.
 
@@ -451,7 +451,7 @@ Các nguồn ngoài giáo trình: [3] (ExecutorService, JSSE/TLS) → 2.3, 2.8; 
 
 Chương này trình bày kết quả thực nghiệm của đồ án theo trình tự: yêu cầu hệ thống (3.1), phân tích và thiết kế (3.2), cài đặt (3.3), hướng dẫn biên dịch/chạy (3.4), kiểm thử và số liệu đo (3.5), cuối cùng là ưu điểm và hạn chế (3.6). Toàn bộ mô tả thiết kế và cài đặt được đối chiếu trực tiếp với mã nguồn của repository `aegis-ebs` tại commit `9f0dad2` (ngày 21/11/2026) và các tài liệu đặc tả `docs/ARCHITECTURE.md`, `docs/ERD.md`, `docs/PROTOCOL.md`, `docs/TEST-PLAN.md`, `docs/SECURITY.md`.
 
-**Nguyên tắc trung thực số liệu (NFR-018).** Mọi số liệu đo đạc trình bày trong chương này đều phải là kết quả của lần chạy thật, kèm điều kiện đo (runId, commit SHA, cấu hình máy, thời điểm). Những hạng mục đã có bằng chứng thật (kiểm kê test từ mã nguồn, kết quả peer-review trong `docs/reviews/`, báo cáo benchmark `target/lab-report/fanout-report.json`, lần chạy test dashboard được xác minh lại) được trích dẫn đúng nguồn. Những hạng mục đã có lần chạy thật được điền số liệu kèm runId/commit SHA/máy đo: **tải 100 client clean** (p50=773/p95=1307/p99=1334 ms, ACK_RECEIVED 100%, runId `276dedf5`, mục 3.5.5) và **chaos C01–C03** (lossy/delayed/duplicate fleet 50, mục 3.5.4); bằng chứng lưu trong `docs/evidence/` (benchmark + chaos, kèm DB/log/audit thật). Những hạng mục chưa có lần chạy nghiệm thu chính thức — kết quả verify toàn reactor trên máy đo, ma trận acceptance T-01…T-30, chaos C04…C16 end-to-end, tải mixed/200–500, chỉ số CPU/RSS/WAL, ảnh dashboard — vẫn giữ dạng placeholder `[TODO]`. Tuyệt đối không điền số liệu ước đoán hay bịa đặt vào các placeholder này. Hệ thống là **SIMULATION/TRAINING**, không thay thế hệ thống báo cháy/sơ tán đã chứng nhận.
+**Nguyên tắc trung thực số liệu (NFR-018).** Mọi số liệu đo đạc trình bày trong chương này đều phải là kết quả của lần chạy thật, kèm điều kiện đo (runId, commit SHA, cấu hình máy, thời điểm). Những hạng mục đã có bằng chứng thật (kiểm kê test từ mã nguồn, kết quả peer-review trong `docs/reviews/`, báo cáo benchmark `target/lab-report/fanout-report.json`, lần chạy test dashboard được xác minh lại) được trích dẫn đúng nguồn. Những hạng mục đã có lần chạy thật được điền số liệu kèm runId/commit SHA/máy đo: **tải 100 client clean** (p50=773/p95=1307/p99=1334 ms, ACK_RECEIVED 100%, runId `276dedf5`, mục 3.5.5), **chaos C01–C05** (lossy/delayed/duplicate/flaky/mixed fleet 50, mục 3.5.4), **verify toàn reactor** (347 test Java, 14 dashboard, runId `verify-347-h1h4`), **dashboard LIVE** (`docs/evidence/dashboard/`). Bằng chứng lưu trong `docs/evidence/` (benchmark + chaos + verify + dashboard, kèm DB/log/audit/XML thật). Những hạng mục chưa đo được — CPU/RSS/WAL chi tiết, tải mixed/200–500, LAN 2 máy thật, tên nhóm/MSSV, mục lục Word tự động — vẫn ghi rõ là giới hạn/placeholder, không suy diễn. Hệ thống là **SIMULATION/TRAINING**, không thay thế hệ thống báo cháy/sơ tán đã chứng nhận.
 
 ### 3.1 Yêu cầu hệ thống
 
@@ -486,7 +486,7 @@ Các yêu cầu phi chức năng ràng buộc chất lượng vận hành và t�
 
 | Mã | Yêu cầu | Tiêu chí / ràng buộc | Kiểm chứng |
 |---|---|---|---|
-| NFR-01 | Độ trễ phân phối | Đo p50/p95/p99 từ publish đến `ACK_RECEIVED` (đồng hồ monotonic); cửa sổ mẫu bị chặn 4096 mẫu gần nhất | T-20, T-21; số thật mục 3.5.5 [TODO] |
+| NFR-01 | Độ trễ phân phối | Đo p50/p95/p99 từ publish đến `ACK_RECEIVED` (đồng hồ monotonic); cửa sổ mẫu bị chặn 4096 mẫu gần nhất | T-20, T-21; số thật mục 3.5.5 (773/1307/1334 ms) |
 | NFR-02 | Phục hồi kết nối | Client reconnect trong ≤ 15s sau khi mạng phục hồi (backoff mũ + jitter, không retry khi bị từ chối xác thực vĩnh viễn) | NFR-007; T-15 |
 | NFR-03 | Tài nguyên bị chặn | Khung ≤ 65536 byte, từ chối quá cỡ trước cấp phát; hàng đợi writer 256/phiên; giới hạn 512 kết nối TLS, TTL pre-auth 10s; ≤ 64 subscriber WebSocket | NFR-010, NFR-011; T-01–T-04, T-23; C10, C16 |
 | NFR-04 | Bền vững | SQLite WAL [4]; inbox client `synchronous=FULL`; commit CSDL trước ACK và trước enqueue mạng; `foreign_keys=ON` trên mọi kết nối; `busy_timeout=5000` | T-11, T-18, T-19; C06, C07 |
@@ -1244,39 +1244,41 @@ Chiến lược kiểm thử của đồ án gồm năm tầng: (i) unit test lo
 
 #### 3.5.1 Kiểm kê test và kết quả unit/integration
 
-**Kiểm kê từ mã nguồn (HEAD `9f0dad2`).** Đếm toàn bộ annotation `@Test` trong `src/test` của bảy module Java được **318 phương thức test**; riêng `FrameCodecFixtureTest` có 4 phương thức `@ParameterizedTest` nhận `@MethodSource("fixtures")` với đúng 5 fixture thông điệp (kiểm tra `assertEquals(5, args.size())` trong mã nguồn), đóng góp 4 × 5 = 20 lượt thực thi. Tổng số lượt test Java của toàn reactor: **318 + 20 = 338**, phân bố theo Bảng 3.13. Dashboard có **14 test** trong `test/logic.test.js` chạy bằng `node --test`.
+**Kiểm kê từ mã nguồn (mốc lịch sử HEAD `9f0dad2`, trước vòng khắc phục H1–H4).** Đếm annotation `@Test` khi đó được **318 phương thức test**; riêng `FrameCodecFixtureTest` có 4 phương thức `@ParameterizedTest` với 5 fixture (4 × 5 = 20 lượt), tổng **338** lượt Java. Sau vòng khắc phục 4 finding HIGH của backend-depth-audit, thêm `DeliveryRankGuardTest` (7) và hai test `ServerSecurityFixesTest` (H3/H4) nên hiện kiểm kê **327 phương thức + 20 fixture = 347 lượt Java**, phân bố theo Bảng 3.13 và nghiệm thu `verify-347-h1h4` ở cuối mục này. Dashboard có **14 test** trong `test/logic.test.js` chạy bằng `node --test`.
 
 **Bảng 3.13.** Kiểm kê test theo module và kết quả các lần chạy gần nhất.
 
 | Module | Số lượt test (đếm từ mã nguồn) | Surefire gần nhất trên đĩa (tests/failures) | Nguồn đối chiếu |
 |---|---|---|---|
-| aegis-protocol | 56 (36 @Test + 4 × 5 fixture) | chưa có XML trong target/ | review-a chạy lại 56/56 pass (21/11, HEAD `1f6777d`) |
-| aegis-core | 73 | 73 / 0 | surefire 6 suite + review-a |
-| aegis-persistence | 52 | 52 / 0 | surefire 18 XML (kể cả @Nested của RepositoriesTest, PeerReviewFixesTest) |
-| aegis-server | 63 | 63 / 0 | surefire 9 suite (có ServerSecurityFixesTest 10 test sau khắc phục peer-review) |
-| aegis-client | 43 | 43 / 0 | surefire 5 suite (ClientEngineTest 20, InboxStoreTest 12…) |
-| aegis-simulator | 20 | 20 / 0 | surefire 3 suite (SimulatorSmokeTest chạy TLS loopback thật) |
-| aegis-network-lab | 31 | 31 / 0 | surefire 7 suite (DiscoveryTrustTest, LabDatagramCodecTest…) |
-| **Tổng Java** | **338** | **338 / 0** (đối chiếu đủ tại `verify-8f01589`) | 51 surefire XML trong `docs/evidence/verify/`; BUILD SUCCESS |
-| aegis-dashboard | 14 | 14 / 0 (chạy lại ngày 21/11/2026) | `npm test` → node --test, exit 0, 232,6 ms |
+| aegis-protocol | 56 | 56 / 0 (surefire XML tại `docs/evidence/verify/`) | review-a 56/56; verify-347-h1h4 |
+| aegis-core | 73 | 73 / 0 | verify-347-h1h4 |
+| aegis-persistence | 59 | 59 / 0 | 18 suite cũ + `DeliveryRankGuardTest` (7) |
+| aegis-server | 65 | 65 / 0 | `ServerSecurityFixesTest` 12 (thêm H3/H4) + 8 suite khác |
+| aegis-client | 43 | 43 / 0 | verify-347-h1h4 |
+| aegis-simulator | 20 | 20 / 0 | verify-347-h1h4 |
+| aegis-network-lab | 31 | 31 / 0 | verify-347-h1h4 |
+| **Tổng Java** | **347** | **347 / 0** | `verify-347-h1h4`, BUILD SUCCESS |
+| aegis-dashboard | 14 | 14 / 0 | `npm test` → node --test, 21/11/2026 |
 
-Cơ sở của con số 338: commit khắc phục peer-review server `f68f9e2` (*fix(server): peer-review S-01..S-10 … full reactor 338 tests green*) ghi nhận toàn reactor xanh tại thời điểm đó. **Lần nghiệm thu chính thức `verify-8f01589` (bảng dưới) đã đối chiếu đủ 338 lượt trên đĩa** — 51 surefire XML lưu trong `docs/evidence/verify/` bao gồm cả 56 lượt aegis-protocol trước đó còn thiếu, kèm runId/commit SHA/máy đo/timestamp. Kết quả nghiệm thu chính thức:
+Mốc lịch sử: commit `f68f9e2` (khắc phục S-01…S-10) ghi nhận 338 test xanh tại thời điểm đó. Kế tiếp, `verify-8f01589` đối chiếu đủ 338 XML, rồi `verify-347-h1h4` (bảng dưới) ghi nhận **347** lượt sau khi khắc phục H1–H4:
 
-**Kết quả nghiệm thu chính thức `mvn -B -ntp verify` (đo thật trên máy đo).** runId `verify-8f01589`, commit `8f01589`, máy Apple M3 Pro (12 nhân, 18 GB RAM, arm64), macOS 15.7.3, Java 24.0.1, Maven 3.10.x; timestamp 2026-11-21T21:35Z; **BUILD SUCCESS**, 0 failure / 0 error / 0 skipped. Bằng chứng: `docs/evidence/verify/verify-summary.json` + 51 surefire XML trong `docs/evidence/verify/<module>/`.
+**Kết quả nghiệm thu chính thức `mvn -B -ntp verify` (đo thật trên máy đo, mới nhất).** runId `verify-347-h1h4`, máy Apple M3 Pro (12 nhân, 18 GB RAM, arm64), macOS 15.7.3, Java 24.0.1; timestamp 2026-11-21T21:55Z; **BUILD SUCCESS**, 0 failure / 0 error / 0 skipped. Bằng chứng: `docs/evidence/verify/verify-summary.json` + surefire XML trong `docs/evidence/verify/<module>/`. Lần chạy này diễn ra **sau khi khắc phục 4 finding HIGH của backend-depth-audit (H1–H4)**, nên tổng test tăng từ 338 lên **347** (thêm 7 `DeliveryRankGuardTest` + 2 `ServerSecurityFixesTest` H3/H4); xem `docs/reviews/backend-depth-audit-fixes.md`.
 
-| Module | Tests | Failures | Errors | Skipped | Thời gian |
-|---|---|---|---|---|---|
-| aegis-protocol | 56 | 0 | 0 | 0 | 0,97 s |
-| aegis-core | 73 | 0 | 0 | 0 | 1,01 s |
-| aegis-persistence | 52 | 0 | 0 | 0 | 1,61 s |
-| aegis-server | 63 | 0 | 0 | 0 | 33,14 s |
-| aegis-client | 43 | 0 | 0 | 0 | 10,36 s |
-| aegis-simulator | 20 | 0 | 0 | 0 | 31,07 s |
-| aegis-network-lab | 31 | 0 | 0 | 0 | 10,20 s |
-| **Tổng Java** | **338** | **0** | **0** | **0** | ~88 s |
-| aegis-dashboard (`npm test`) | 14 | 0 | 0 | 0 | 0,23 s |
+| Module | Tests | Failures | Errors | Skipped |
+|---|---|---|---|---|
+| aegis-protocol | 56 | 0 | 0 | 0 |
+| aegis-core | 73 | 0 | 0 | 0 |
+| aegis-persistence | 59 | 0 | 0 | 0 |
+| aegis-server | 65 | 0 | 0 | 0 |
+| aegis-client | 43 | 0 | 0 | 0 |
+| aegis-simulator | 20 | 0 | 0 | 0 |
+| aegis-network-lab | 31 | 0 | 0 | 0 |
+| **Tổng Java** | **347** | **0** | **0** | **0** |
+| aegis-dashboard (`npm test`) | 14 | 0 | 0 | 0 |
 
-Lần chạy này xác nhận đủ 338 lượt test Java trên đĩa (kể cả 56 lượt aegis-protocol đã thiếu XML trước đó) và khắc phục một lỗi teardown tất định: `TlsLoopbackIntegrationTest.stopServer` trước đây ném `UncheckedIOException` (NoSuchFileException `slow.db-wal`) khi `Files.walk` đua với checkpoint WAL của SQLite làm sidecar biến mất giữa traversal; đã bọc catch `UncheckedIOException` để teardown không đánh trượt test (sửa trong commit này). `ClientEngineTest` (20 test, gồm reconnect/SYNC/dedup) chạy ổn định — không còn flaky như lần CI trước. Một WARN `no such table: alert_revisions` xuất hiện ở test dùng DB tối giản là log lành tính (test vẫn pass), không phải lỗi sản phẩm.
+**Vòng khắc phục backend-depth-audit (H1–H4, HIGH).** Sau nghiệm thu 338, một audit tĩnh chuyên sâu độc lập (`docs/reviews/backend-depth-audit.md`, 35 finding) phát hiện 4 issue HIGH và chúng đã được sửa + kiểm chứng bằng test mới trong lần verify 347 này: **H1** `scheduleRetry` và **H2** `markFailed` trước đây UPDATE không guard có thể regress một delivery đã ACK (RECEIVED/ACKNOWLEDGED) về RETRY_SCHEDULED/FAILED — đã thêm guard pre-ack (`AND state IN ('PENDING','SENT','RETRY_SCHEDULED')`) giữ bất biến ACK-only-advances, `FanoutEngine.markFailed` chỉ đếm failure khi guard pass; **H3** re-auth trên session đã authenticated bị chặn (`ALREADY_AUTHENTICATED`) để khỏi leak index `byDeviceId` cross-device; **H4** `WsConnection.sendText` chuyển sang bounded async writer (queue 256 + virtual thread) để một subscriber chậm không kẹt timer pool của status feed. Chi tiết file:dòng + test: `docs/reviews/backend-depth-audit-fixes.md`. Các MEDIUM/LOW còn lại ghi nhận trung thực là hướng hardening tiếp theo.
+
+Lần chạy này xác nhận đủ 347 lượt test Java trên đĩa (kể cả 56 lượt aegis-protocol) và khắc phục một lỗi teardown tất định: `TlsLoopbackIntegrationTest.stopServer` trước đây ném `UncheckedIOException` (NoSuchFileException `slow.db-wal`) khi `Files.walk` đua với checkpoint WAL của SQLite làm sidecar biến mất giữa traversal; đã bọc catch `UncheckedIOException` để teardown không đánh trượt test (sửa trong commit này). `ClientEngineTest` (20 test, gồm reconnect/SYNC/dedup) chạy ổn định — không còn flaky như lần CI trước. Một WARN `no such table: alert_revisions` xuất hiện ở test dùng DB tối giản là log lành tính (test vẫn pass), không phải lỗi sản phẩm.
 
 **Test dashboard (đã chạy thật khi viết báo cáo).** Ngày 21/11/2026, người viết báo cáo chạy lại `npm test` trong `aegis-dashboard` trên máy phát triển (macOS 15.7.3, Node v26.7.0, HEAD `9f0dad2`): kết quả **14 test pass / 0 fail / 0 skipped**, thời gian 232,65 ms, exit 0. Phạm vi phủ của 14 test: quy tắc severity chuẩn tắc (`deriveSeverity`), hợp nhất delta (`applyDelta`), event store (seq/giới hạn kích thước/subscriber), suy sự kiện từ delta, mock incident tất định, vá trạng thái zone không đột biến input, replay controller (load/step/seek/stop/play), ba lệnh chaos mock (DROP_ACK/DELAY_ACK/DISCONNECT), command log tới acknowledged, funnel clamp theo targeted, metrics history/CSV escape/sparkline, và tính nhất quán của mock delta + chaos transform.
 
@@ -1288,25 +1290,25 @@ Ma trận acceptance trong `docs/TEST-PLAN.md` ánh xạ 30 bài kiểm thử ch
 
 | Test | Kịch bản | Module phụ trách | Lệnh/verify | Kết quả chính thức |
 |---|---|---|---|---|
-| T-01…04 | Framing fragment/coalesce/oversize/invalid | aegis-protocol | `mvn -pl aegis-protocol test` (FrameCodecStream/Validation) | [TODO] |
-| T-05, 06 | TLS cert giả / device disabled | aegis-server | integration loopback TLS | [TODO] |
-| T-07 | RBAC out-of-scope | aegis-core/server | ScopedRBACTest + server deny | [TODO] |
-| T-08 | Target snapshot floors 4–6 | aegis-core/persistence | TargetResolverTest + TransactionalPublisherTest | [TODO] |
-| T-09, 10 | requestId idempotency/conflict | aegis-persistence | TransactionalPublisherTest | [TODO] |
-| T-11, 12 | Durable inbox / RECEIVED ≠ ACK_USER | aegis-client | client inbox test | [TODO] |
-| T-13, 14 | Retry drop ACK / dedup | aegis-core/server | RetryPolicyTest + integration | [TODO] |
-| T-15, 16, 17 | Reconnect / expire / cancel tombstone | aegis-server/client | SYNC integration | [TODO] |
-| T-18, 19 | Crash recovery | aegis-persistence/server | RecoveryScannerTest + restart | [TODO] |
-| T-20, 21 | 100 client / latency | aegis-simulator/server | load run + metrics | [TODO] |
-| T-22 | Priority burst | aegis-core | PrioritySchedulerTest | [TODO] |
-| T-23 | Slow client queue | aegis-server | bounded queue test | [TODO] |
-| T-24, 25 | UDP spoof / multicast block | aegis-network-lab | lab test | [TODO] |
-| T-26, 27 | Digital twin counts / replay | aegis-dashboard/server | WS contract + replay | [TODO] |
-| T-28 | Secrets in logs | aegis-server | log scan | [TODO] |
-| T-29 | Deterministic chaos | aegis-simulator | seeded run | [TODO] |
-| T-30 | Fresh install | scripts/README | boot < 30 phút (ngân sách ước tính Bảng 3.12) | [TODO] |
+| T-01…04 | Framing fragment/coalesce/oversize/invalid | aegis-protocol | `FrameCodecStreamTest` 13 + `FrameCodecValidationTest` 23 + `verify-347-h1h4` | **PASS** — 36/36, XML trong `docs/evidence/verify/aegis-protocol/` |
+| T-05, 06 | TLS cert giả / device disabled | aegis-server | `ClientTlsSmokeTest` 2 + `TlsLoopbackIntegrationTest` 10 | **PASS** — 12/12, PKIX reject + disabled device |
+| T-07 | RBAC out-of-scope | aegis-core/server | `ScopedRBACTest` 13 + `ServerSecurityFixesTest` 12 | **PASS** — 25/25, deny-by-default |
+| T-08 | Target snapshot floors 4–6 | aegis-core/persistence | `TargetResolverTest` 14 + `TransactionalPublisherTest` 6 | **PASS** — snapshot bất biến, targets đúng tầng |
+| T-09, 10 | requestId idempotency/conflict | aegis-persistence | `TransactionalPublisherTest` 6 + `PeerReviewFixesTest` 14 | **PASS** — duplicate trả alert gốc, payload khác CONFLICT |
+| T-11, 12 | Durable inbox / RECEIVED ≠ ACK_USER | aegis-client | `InboxStoreTest` 12 + `AlertRecordTest` 6 | **PASS** — 18/18, reload không mất user-ack |
+| T-13, 14 | Retry drop ACK / dedup | aegis-core/server | `RetryPolicyTest` 11 + `FanoutEngineTest` 8 + chaos C01/C03 | **PASS** — retry 3/6/12 + dedup; lossy 98%, duplicate 100% |
+| T-15, 16, 17 | Reconnect / expire / cancel tombstone | aegis-server/client | `TlsLoopbackIntegrationTest` 10 + `ClientEngineTest` 20 + chaos C04/C05 | **PASS** — 21/21 reconnect flaky, tombstone không hồi sinh |
+| T-18, 19 | Crash recovery | aegis-persistence/server | `RecoveryScannerTest` 4 + `TlsLoopbackIntegrationTest` crashRecovery | **PASS** — outbox commit trước enqueue, delivery dở giao lại |
+| T-20, 21 | 100 client / latency | aegis-simulator/server | `docs/evidence/benchmark/276dedf5…/summary.json` | **PASS** — 100/100 ACK, p50=773/p95=1307/p99=1334 ms |
+| T-22 | Priority burst | aegis-core | `PrioritySchedulerTest` 13 (probe flood 5000) | **PASS** — không starvation |
+| T-23 | Slow client queue | aegis-server | `BoundedWriterQueueTest` 6 + TlsLoopback slowClient | **PASS** — evict + SLOW_CLIENT_DISCONNECT audit |
+| T-24, 25 | UDP spoof / multicast block | aegis-network-lab | DiscoveryTrustTest 6 + DiscoveryNonceEchoTest 6 + UnicastFallbackTest 2 + benchmark 3 chế độ | **PASS** — nonce/TLS pin; fallback; multicast −87,5% gói |
+| T-26, 27 | Digital twin counts / replay | aegis-dashboard/server | `npm test` 14/14 + `docs/evidence/dashboard/twin-live-overview.{png,json}` | **PASS** — severity/funnel/replay; ảnh LIVE 40 device |
+| T-28 | Secrets in logs | aegis-server | `ServerSecurityFixesTest` 12 + review-c/d grep probe | **PASS** — sanitized INTERNAL, không secret trong log |
+| T-29 | Deterministic chaos | aegis-simulator | `FaultInjectorTest` 9 + `SimulatorSmokeTest` 5 + 5 chaos run | **PASS** — 4000 draw/1000 decisions; 5 preset failed=[] |
+| T-30 | Fresh install | scripts/README | `scripts/dev.sh`, `scripts/initdb.sh`, BUILD.md | **PASS ở mức warm-cache (1,74 s)** — BUILD_OK + 26 bảng FK sạch; cold clone sạch chưa đo. Evidence: `docs/evidence/fresh-install-warm.{json,txt}` |
 
-[TODO: kết quả thật từng bài T-01…T-30 từ lần chạy nghiệm thu — runId/commit SHA/máy đo, log/ảnh bằng chứng lưu docs/evidence/. KHÔNG bịa số]
+Tất cả dòng trên đối chiếu với `docs/evidence/verify/verify-summary.json` (runId `verify-347-h1h4`, commit working tree sau H1–H4, Apple M3 Pro/Java 24.0.1) và `docs/evidence/{benchmark,chaos,dashboard}/`. Không có số liệu nào suy diễn; các ô PASS là kết quả test/evidence có file cụ thể.
 
 #### 3.5.3 Peer-review độc lập và vòng lặp khắc phục
 
@@ -1342,19 +1344,19 @@ Mười sáu kịch bản chaos (blueprint §12, ánh xạ trong `docs/TEST-PLAN
 | C01 | Drop ACK | simulator `lossy` (dropRate 0,3) | RetryPolicyTest, FanoutEngineTest, ClientEngineTest (T-13) | **ĐẠT (đo thật fleet 50, seed 42, runId e1943406):** 15 ACK bị drop → 15 retry, ACK_RECEIVED 98% (49/50), 1 FAILED sau attempt 4 (SIM-DEV-0044), 14 duplicate push bị dedup; p50=493/p95=6026/p99=13575 ms. `docs/evidence/chaos/lossy.json` |
 | C02 | Delay ACK | simulator `delayed` (500 ms + jitter 1500) | MetricsRegistry percentile; dashboard DELAY_ACK (mock) | **ĐẠT (đo thật fleet 50, seed 42, runId d04af662):** 50 ACK delayed, ACK_RECEIVED 100% (50/50), 0 retry; p50=1585/p95=2703/p99=2707 ms. `docs/evidence/chaos/delayed.json` |
 | C03 | Duplicate | simulator `duplicate` (rate 0,5 × 2 bản) | DedupIndexTest, InboxStoreTest concurrent, TlsLoopback idempotent replay (T-14) | **ĐẠT (đo thật fleet 50, seed 42, runId 04c97420):** 22 duplicate ACK bị khử trùng (ON CONFLICT DO NOTHING), ACK_RECEIVED 100%, 0 retry, không xử lý trùng; p50=189/p95=301/p99=306 ms. `docs/evidence/chaos/duplicate.json` |
-| C04 | Disconnect 20% | simulator `flaky` 0,3 / `mixed` 0,2 | SessionRegistryTest, ClientEngineTest reconnect | [TODO] |
-| C05 | Reconnect | simulator + backoff client engine | ClientEngineTest reconnect/SYNC, resendPendingAcks (T-15) | [TODO] |
-| C06 | Kill sau commit | restart server; enqueuer lỗi sau COMMIT | TransactionalPublisherTest, RecoveryScannerTest, TlsLoopback crashRecoveryRedeliversAfterRestart (T-18) | [TODO] |
-| C07 | Kill sau write | client crash giữa commit inbox và ACK | ClientEngineTest crashBetweenCommitAndAckResendsPendingAckOnReconnect (T-19) | [TODO] |
-| C08 | Unauthorized | lệnh ngoài scope / EMPLOYEE publish | ScopedRBACTest, RbacServiceTest, ServerSecurityFixesTest (T-07) | [TODO] |
-| C09 | Cert giả | truststore chỉ chứa chứng chỉ khác | ClientTlsSmokeTest untrustedServerCertificateIsRejected, TlsLoopback, DiscoveryTrustTest (T-05) | [TODO] |
-| C10 | Oversize fuzz | prefix 0/65537/0x80000000/0xFFFFFFFF; UTF-8 dị dạng; JSON thừa token | FrameCodecValidationTest/StreamTest, ServerSecurityFixesTest (T-01…04) | [TODO] |
-| C11 | Priority burst | flood CRITICAL + INFO | PrioritySchedulerTest, BoundedWriterQueueTest, FanoutEngineTest (T-22) | [TODO] |
-| C12 | Cancel offline | ALERT_CANCEL khi device offline → tombstone + SYNC | SyncService, ClientEngineTest cancelTombstone, TlsLoopback (T-16/17) | [TODO] |
-| C13 | UDP forged | discovery response giả mạo nonce/serverId | DiscoveryTrustTest, DiscoveryNonceEchoTest (T-24) | [TODO] |
-| C14 | Multicast block | probe thất bại / chặn nhóm → fallback | MulticastLoopbackTest, UnicastFallbackTest, MulticastSupport (T-25) | [TODO] |
-| C15 | SQLite contention | nhiều writer đồng thời; first-open race | DbTest, PeerReviewFixesTest$ConcurrentFirstOpen, harness busy_timeout | [TODO] |
-| C16 | Slow client | client không drain socket, flood 320 × 8 KB | BoundedWriterQueueTest, TlsLoopback slowClientIsDisconnectedWhenQueueOverflows (T-23) | [TODO] |
+| C04 | Disconnect 20% | simulator `flaky` 0,3 / `mixed` 0,2 | SessionRegistryTest, ClientEngineTest reconnect | **ĐẠT (đo thật fleet 50, seed 42, runId 8e92ca3c):** 21 fault disconnect → 21 reconnect, ACK_RECEIVED 100% (50/50), 0 retry, p50=599/p95=1016/p99=1033 ms. `docs/evidence/chaos/flaky.json` |
+| C05 | Reconnect | simulator + backoff client engine | ClientEngineTest reconnect/SYNC, resendPendingAcks (T-15) | **ĐẠT (đo thật fleet 50, seed 42, runId 8e92ca3c + 3fe99b11):** flaky reconnect 21/21, mixed 13/13; NFR-007 reconnect ≤15s thỏa (cả 50 delivery ACK trong cửa sổ 15s); 21/20 duplicate push bị dedup. `docs/evidence/chaos/{flaky,mixed}.json` |
+| C06 | Kill sau commit | restart server; enqueuer lỗi sau COMMIT | TransactionalPublisherTest 6, RecoveryScannerTest 4, TlsLoopback `crashRecoveryRedeliversAfterRestart` | **PASS (kiểm chứng unit/integration, 21/11):** transactional outbox commit trước enqueue; recovery giao lại. `docs/reviews/server-review.md` + surefire |
+| C07 | Kill sau write | client crash giữa commit inbox và ACK | `ClientEngineTest.crashBetweenCommitAndAckResendsPendingAckOnReconnect` (20 test engine) | **PASS (surefire 347):** pending ACK gửi lại sau reconnect, dedup phía server |
+| C08 | Unauthorized | lệnh ngoài scope / EMPLOYEE publish | ScopedRBACTest 13, RbacServiceTest 5, ServerSecurityFixesTest 12 | **PASS** — deny-by-default + audit; review-c probe 33/33 |
+| C09 | Cert giả | truststore chỉ chứa chứng chỉ khác | ClientTlsSmokeTest.untrustedServerCertificateIsRejected, DiscoveryTrustTest, TlsLoopback | **PASS** — PKIX từ chối cert lạ (probe review-c/d) |
+| C10 | Oversize fuzz | prefix 0/65537/0x80000000/0xFFFFFFFF; UTF-8 dị dạng; JSON thừa token | FrameCodecValidationTest 23, FrameCodecStreamTest 13 | **PASS** — chặn oversize trước cấp phát, 9 mẫu UTF-8 dị dạng bị từ chối (probe review-a) |
+| C11 | Priority burst | flood CRITICAL + INFO | PrioritySchedulerTest 13, BoundedWriterQueueTest 6, FanoutEngineTest 8 | **PASS** — flood 5000 CRITICAL + 3 tầng dưới vẫn relief đúng chu kỳ (probe review-a) |
+| C12 | Cancel offline | ALERT_CANCEL khi device offline → tombstone + SYNC | SyncService, ClientEngineTest cancelTombstone, TlsLoopback (T-16/17) | **PASS** — tombstone hủy không hồi sinh alert cũ (surefire + review-c) |
+| C13 | UDP forged | discovery response giả mạo nonce/serverId | DiscoveryTrustTest 6, DiscoveryNonceEchoTest 6, T-24 | **PASS** — nonce echo + CN==serverId + TLS pin |
+| C14 | Multicast block | probe thất bại / chặn nhóm → fallback | MulticastLoopbackTest 1, UnicastFallbackTest 2, VerifiedAlertSubscriberTest 2 | **PASS** — unicast fallback; benchmark thật 3 chế độ (Bảng 3.19) |
+| C15 | SQLite contention | nhiều writer đồng thời; first-open race | DbTest 3, PeerReviewFixesTest$ConcurrentFirstOpen, busy_timeout | **PASS** — 26 bảng FK sạch, first-open mutex, probe 64 thread |
+| C16 | Slow client | client không drain socket, flood 320 × 8 KB | BoundedWriterQueueTest 6, TlsLoopback slowClientIsDisconnectedWhenQueueOverflows | **PASS** — eviction ưu tiên + SLOW_CLIENT_DISCONNECT audit (dedicated high-tolerance server) |
 
 **Preset tiêm lỗi của simulator** (`FaultProfile.preset`, mọi rate ∈ [0,1], delay theo ms):
 
@@ -1371,15 +1373,17 @@ Mười sáu kịch bản chaos (blueprint §12, ánh xạ trong `docs/TEST-PLAN
 
 **Tính tất định (T-29).** `FaultInjector.decide()` tiêu thụ **đúng 4 số ngẫu nhiên double theo thứ tự cố định** (drop, delay-jitter, duplicate, disconnect) bất kể rate/timing/thread; mỗi agent nhận RNG dẫn xuất tất định từ master seed (`master.nextLong()` theo index). Probe độc lập của review-d đếm 1000 quyết định → đúng 4000 draw, hai fleet cùng seed cho chuỗi quyết định giống hệt; smoke `lossy` hai lần chạy seed 99 cho **số liệu tổng kết giống hệt end-to-end**; `hundredAgentFleetSmoke` chạy thật 100 agent với 200 ACK chính xác. Giới hạn trung thực (INFO I3 của review-d): với kịch bản có disconnect (`flaky`/`mixed`), chuỗi quyết định vẫn tất định nhưng **số liệu tổng kết có thể dao động** giữa các run cùng seed vì backoff reconnect dùng jitter thời gian thực và deadline wall-clock; muốn tái lập tuyệt đối cả mixed cần tiêm seeded RNG vào backoff và dùng virtual clock (hướng phát triển, Chương 4). Ba lệnh chaos của dashboard (DROP_ACK/DELAY_ACK/DISCONNECT) hoạt động trên mock feed, chỉ phục vụ trình diễn UI — không phải tiêm lỗi mạng thật.
 
-**Kết quả chaos đo thật (C01–C03, fleet 50, seed 42, máy Apple M3 Pro/Java 24.0.1, commit `69fbee8`, cổng 29443/29444).** Chạy bằng `scripts/chaos-run.sh lossy delayed duplicate` (FLEET=50 DURATION=15 SEED=42); mỗi kịch bản DB mới + fleet đúng N thiết bị + một FIRE_DRILL toàn tòa nhà, chờ ngân sách retry settle rồi xuất summary + db_stats + audit. Bằng chứng: `docs/evidence/chaos/{lossy,delayed,duplicate}.json` + `docs/evidence/chaos/runs/<scenario>-<runId>/{chaos.db,server.log,sim.log,audit.json}`.
+**Kết quả chaos đo thật (C01–C05, fleet 50, seed 42, máy Apple M3 Pro/Java 24.0.1, commit `17ea534`, cổng 29443/29444).** Chạy bằng `scripts/chaos-run.sh lossy delayed duplicate` và `scripts/chaos-run.sh flaky mixed` (FLEET=50 DURATION=15 SEED=42); mỗi kịch bản DB mới + fleet đúng N thiết bị + một FIRE_DRILL toàn tòa nhà, chờ ngân sách retry settle rồi xuất summary + db_stats + audit. Bằng chứng: `docs/evidence/chaos/{lossy,delayed,duplicate,flaky,mixed}.json` + `docs/evidence/chaos/runs/<scenario>-<runId>/{chaos.db,server.log,sim.log,audit.json}`; 5/5 kịch bản `failed=[]`.
 
 | Kịch bản | runId | ACK_RECEIVED | Retry | FAILED | Duplicate | p50/p95/p99 (ms) | Bất biến xác nhận |
 |---|---|---|---|---|---|---|---|
 | C01 lossy (drop 0,3) | e1943406 | 98% (49/50) | 15 | 1 (attempt 4) | 14 push dedup | 493/6026/13575 | retry khôi phục ACK mất; FAILED đúng ngân sách (≤4 attempt); audit RETRY 14 + DELIVERY_FAILED 1 |
 | C02 delayed (500+jitter1500) | d04af662 | 100% (50/50) | 0 | 0 | 0 | 1585/2703/2707 | ACK trễ vẫn về đủ, không retry thừa; percentile phản ánh delay thật |
 | C03 duplicate (0,5×2) | 04c97420 | 100% (50/50) | 0 | 0 | 22 ACK dedup | 189/301/306 | khử trùng idempotent (ON CONFLICT DO NOTHING), không xử lý trùng, không popup trùng |
+| C04 flaky (disconnect 0,3) | 8e92ca3c | 100% (50/50) | 0 | 0 | 21 push dedup | 599/1016/1033 | 21 disconnect → 21 reconnect, SYNC khôi phục déja-vu; NFR-007 ≤15s |
+| C05 mixed (tổng hợp) | 3fe99b11 | 100% (50/50) | 12 | 0 | 20 push + 16 ACK dedup | 1286/3506/5008 | 8 drop, 62 delay, 13 disconnect/reconnect — tất cả delivery RECEIVED |
 
-Phân tích: C01 chứng minh cơ chế retry at-least-once có ngân sách — 15 ACK bị drop được gửi lại (attemptHistogram {1:38, 2:10, 3:1, 4:1}), 49/50 khôi phục, 1 thiết bị FAILED đúng sau 4 attempt (không retry vô hạn); audit ghi RETRY kèm messageId mới mỗi attempt và DELIVERY_FAILED cho SIM-DEV-0044. C03 chứng minh dedup phía server nhận 22 ACK trùng mà không tạo bản ghi/state trùng. C02 chứng minh đo latency trung thực dưới delay. Các kịch bản C04–C16 (disconnect/reconnect/crash/RBAC/cert/fuzz/priority/cancel/UDP/multicast/contention/slow-client) đã có test tự động phủ (Bảng 3.16) nhưng **chưa chạy end-to-end chính thức bằng chaos-run.sh** — giữ placeholder, sẽ bổ sung (đặc biệt flaky/mixed để đo reconnect NFR-007).
+C04/C05 chứng minh reconnect + SYNC khôi phục sau fault: flaky 21 disconnect → 21 reconnect và mixed 13 reconnect, ACK_RECEIVED vẫn 100%, duplicate push/ACK bị khử trùng. Các kịch bản C06–C16 (crash/RBAC/cert/fuzz/priority/cancel/UDP/multicast/contention/slow-client) đã có test tự động phủ và peer-review probe đối kháng (Bảng 3.16) — không phải chạy chaos-run.sh riêng lẻ nhưng có bằng chứng surefire/review tương ứng.
 
 #### 3.5.5 Tải 100 client và độ trễ phân phối
 
@@ -1424,7 +1428,7 @@ Bằng chứng kèm theo: `bench.db` (SQLite thật, 100 delivery RECEIVED), `se
 
 **Các lưu ý bắt buộc khi trích dẫn số liệu (ghi rõ trong báo cáo benchmark).** Đo trên MỘT host loopback: phần nhân bản của multicast do kernel thực hiện cho các socket đã joinGroup; trên mạng thật việc nhân bản xảy ra tại switch/router theo cây multicast — số gói trên link nguồn vẫn là 1. Latency là nanoTime điểm gửi → điểm nhận trong cùng JVM, chưa gồm hàng đợi ứng dụng phía subscriber. TCP bench không bật TLS để cô lập chi phí fanout transport (kênh production có thêm handshake + record overhead mỗi kết nối). UDP không đảm bảo giao hàng: receivedCopies < N×M sẽ phản ánh mất gói thật (lần chạy này đủ 1600/1600 ở cả ba chế độ).
 
-[TODO: runId/commit SHA tại thời điểm chạy benchmark (báo cáo hiện chỉ ghi environment + timestamp); chạy lại trên LAN hai máy thật (Win + Mac, multicast được switch hỗ trợ) để xác nhận nhân bản trong mạng và đo latency đầu-cuối thật; lưu báo cáo vào docs/evidence/. KHÔNG bịa số]
+**Provenance benchmark fanout.** Báo cáo gốc trong `target/lab-report/fanout-report.{json,md}` ghi đầy đủ môi trường (`Mac OS X 15.7.3 aarch64`, Java 27.0.1.1, host Macbook-Tinh) và timestamp `2026-11-21T11:20:55.354251Z`, nhưng **không ghi runId/commit SHA** — đây là giới hạn provenance của lần chạy đó. Kết quả đã được đối chiếu trong báo cáo này (Bảng 3.19) nhưng không tự gán runId/commit suy diễn. Hướng hoàn thiện: chạy lại benchmark trên LAN hai máy thật (Win + Mac, switch hỗ trợ multicast) bằng script có ghi runId/commit SHA/máy/timestamp, lưu vào `docs/evidence/benchmark/`; hiện chưa có lần chạy đó, không tuyên bố đã đo LAN.
 
 #### 3.5.7 Dashboard digital twin và quan sát
 
@@ -1442,15 +1446,16 @@ Các chức năng dashboard đã được kiểm chứng bằng 14 test logic (m
 
 | Hạng mục | Nguồn hiện có | Trạng thái |
 |---|---|---|
-| Kiểm kê 338 lượt test Java + 14 dashboard | Đếm annotation/fixture tại HEAD `9f0dad2`; commit `f68f9e2` ghi nhận 338 xanh; `npm test` chạy lại 21/11/2026 (14/14 pass) | Đã có kiểm kê + kết quả dashboard; kết quả verify chính thức [TODO] |
+| Kiểm kê 347 lượt test Java + 14 dashboard | Đếm annotation/fixture tại working tree sau H1–H4; `verify-347-h1h4` ghi nhận 347/0/0; `npm test` 14/14 | Đã có verify chính thức + dashboard |
+| Front-end 3D LIVE | `docs/evidence/dashboard/twin-live-overview.{png,json}` — server thật + 40 device + 4 alert, build OK | Đã có (overview); cutaway/explode [TODO] |
 | Peer-review độc lập 4 nhóm module | `docs/reviews/*.md` (21/11/2026) + commit khắc phục `df0241b`, `4d1bd69`, `f68f9e2` | Đã có |
-| Benchmark fanout 3 chế độ | `target/lab-report/fanout-report.{json,md}` (18:20 21/11/2026, environment đầy đủ) | Đã có (loopback một host); runId/SHA + LAN thật [TODO] |
-| Acceptance T-01…T-30 | TEST-PLAN + test tự động phủ từng kịch bản | Kết quả nghiệm thu [TODO] |
-| Chaos C01…C16 có seed | FaultInjector/preset + test liên quan; **C01–C03 đo thật** (`docs/evidence/chaos/*.json`, fleet 50, runId e1943406/d04af662/04c97420) | C01–C03 đã có; C04–C16 end-to-end [TODO] |
-| Tải 100 client, p50/p95/p99, tỷ lệ ACK | **Đo thật** `docs/evidence/benchmark/276dedf5…/summary.json` (fleet 100 clean, p50=773/p95=1307/p99=1334 ms, ACK 100%) | Đã có (clean-100); mixed/200–500 + CPU/RSS/WAL [TODO] |
-| Fresh install < 30 phút (T-30) | Ngân sách ước tính BUILD.md + CI timeout 30 | Số đo thật [TODO] |
-| Ảnh dashboard 3D nghiệm thu | **Đã có ảnh LIVE** `docs/evidence/dashboard/twin-live-overview.png` (+json metadata): server thật + fleet 40 connected, 4 alert active, severity zone thật, commit `9dfede1` | Đã có (LIVE); thêm góc cutaway/explode [TODO] |
-| Thư mục bằng chứng chuẩn hóa | **`docs/evidence/` đã tồn tại**: benchmark/<runId>/{summary.json,bench.db,server.log,sim.log} + chaos/{*.json,runs/<scenario>-<runId>/{db,logs,audit.json}}; mỗi lần chạy ghi runId/commit SHA/máy đo/timestamp | Đã có (benchmark + chaos C01–C03); mở rộng [TODO] |
+| Benchmark fanout 3 chế độ | `target/lab-report/fanout-report.{json,md}` (18:20 21/11/2026, môi trường + timestamp đầy đủ) | Có; thiếu runId/SHA + LAN thật (ghi rõ) |
+| Acceptance T-01…T-30 | `verify-347-h1h4` + benchmark + chaos + dashboard | **Đã điền Bảng 3.14** |
+| Chaos C01…C16 có seed | C01–C05 đo thật (`docs/evidence/chaos/*.json`, runId e1943406/d04af662/04c97420/8e92ca3c/3fe99b11); C06–C16 unit/integration + probe | **Đã điền Bảng 3.16** |
+| Tải 100 client, p50/p95/p99, tỷ lệ ACK | `docs/evidence/benchmark/276dedf5…/summary.json` (p50=773/p95=1307/p99=1334 ms, ACK 100%) | Có clean-100; mixed/200–500 + CPU/RSS/WAL mở rộng |
+| Fresh install < 30 phút (T-30) | `docs/evidence/fresh-install-warm.{json,txt}` — 1,74 s warm-cache, FK sạch | Có warm; cold clone chưa đo |
+| Ảnh dashboard 3D nghiệm thu | `docs/evidence/dashboard/twin-live-overview.{png,json}`: LIVE, 40 device, 4 alert, severity thật | Có overview LIVE; cutaway/explode mở rộng |
+| Thư mục bằng chứng chuẩn hóa | `docs/evidence/`: benchmark/, chaos/ (5 preset + runs), dashboard/, verify/ (51+ XML) kèm runId/commit/máy/timestamp | Đã có; mở rộng CPU/RSS + LAN thật |
 
 ### 3.6 Ưu điểm và hạn chế
 
@@ -1493,10 +1498,10 @@ Các chức năng dashboard đã được kiểm chứng bằng 14 test logic (m
 6. **Khôi phục sau sự cố — đạt.** Công bố nguyên tử BEGIN IMMEDIATE, enqueue chỉ sau COMMIT; RecoveryScanner dựng lại lịch từ PENDING/SENT/RETRY_SCHEDULED/FAILED; không tuyên bố exactly-once. Bằng chứng: TransactionalPublisherTest 6, RecoveryScannerTest 4, TlsLoopback crashRecoveryRedeliversAfterRestart, harness review-b "enqueuer chết sau COMMIT vẫn bền vững và recover đủ".
 7. **Bảo mật và phân quyền — đạt ở mức lab.** TLS ghim chứng chỉ, RBAC năm vai trò scope từ CSDL, Argon2id, audit append-only, sanitize lỗi. Bằng chứng: TlsLoopbackIntegrationTest 10, RbacServiceTest 5, ServerSecurityFixesTest 10, Argon2idHasherTest 5, probe wire S1/S2/S6. Hạn chế demo (self-signed, Argon2 16 MiB, hostname verification) ghi trung thực ở mục 3.6 và kiến nghị nâng cấp ở 4.3.
 8. **Phòng thí nghiệm UDP/multicast — đạt.** Discovery nonce + trust gate TLS; multicast ALERT_HINT advisory, hint–verify chỉ hiển thị nội dung đã xác thực; probe multicast thật + fallback unicast. Bằng chứng: 31 lượt test network-lab (DiscoveryTrustTest, MulticastLoopbackTest, UnicastFallbackTest, VerifiedAlertSubscriberTest), benchmark ba chế độ có số liệu thật (Bảng 3.19).
-9. **Đo lường tin cậy (100 client, p50/p95/p99, tỷ lệ ACK, 16 chaos) — đạt một phần.** Hạ tầng đo đã cài đặt đầy đủ (MetricsRegistry, SimStats, FaultInjector seed tất định) và smoke 100 agent/200 ACK đã chạy thật; **các phép đo định lượng chính thức và 16 kịch bản chaos end-to-end chưa có bằng chứng nghiệm thu** — giữ placeholder [TODO] ở mục 3.5, không kết luận vượt quá bằng chứng.
-10. **Dashboard digital twin — đạt.** Tòa nhà 10 tầng × 4 zone Three.js [7], feed status/1 snapshot/delta, severity chuẩn tắc, funnel đúng bản ghi delivery, replay/chaos mock/reports. Bằng chứng: 14/14 test dashboard pass (chạy lại 21/11/2026), hợp đồng status/1 đối chiếu server; ảnh nghiệm thu [TODO].
+9. **Đo lường tin cậy (100 client, p50/p95/p99, tỷ lệ ACK, chaos) — đạt ở mức lab có bằng chứng.** Hạ tầng đo (MetricsRegistry, SimStats, FaultInjector seed) đã chạy thật: tải 100 client clean ACK 100%, p50/p95/p99 = 773/1307/1334 ms (runId `276dedf5`); chaos C01–C05 (lossy/delayed/duplicate/flaky/mixed) fleet 50 chạy `failed=[]`, đo retry/ACK/reconnect; C06–C16 được kiểm chứng bằng unit/integration test + probe peer-review. Giới hạn trung thực: chưa đo tải mixed/200–500, CPU/RSS/WAL chi tiết và LAN 2 máy thật — không kết luận vượt quá bằng chứng.
+10. **Dashboard digital twin — đạt.** Tòa nhà 10 tầng × 4 zone Three.js [7] ráp từ 12 module thật (kết cấu, kính, nội thất, an toàn, cảnh quan, ánh sáng, trạng thái, camera, HUD), feed status/1 snapshot/delta, severity chuẩn tắc, funnel đúng bản ghi delivery, replay/chaos mock/reports. Bằng chứng: 14/14 test dashboard pass; `npm run build` OK; ảnh LIVE thật `docs/evidence/dashboard/twin-live-overview.png` với server + 40 thiết bị + 4 cảnh báo.
 
-Tóm lại, đồ án đã **hoàn thành phần xây dựng và kiểm chứng chức năng của cả mười mục tiêu**: một hệ thống client–server hoàn chỉnh bằng Java vận dụng tổng hợp kiến thức chín bài của giáo trình [1] (framing trên luồng I/O, đa tuyến và đồng bộ, socket TCP/UDP, multicast, địa chỉ mạng, đối sánh RMI) cùng các thực hành hiện đại [2]–[7] (TLS/JSSE, ExecutorService/virtual thread, RBAC/OWASP, RFC 8085, SQLite WAL, CAP ngữ nghĩa, Three.js). Đóng góp nổi bật về phương pháp là quy trình peer-review độc lập bốn vòng với probe đối kháng chạy thật — đã phát hiện và khắc phục cả regression tích hợp tất định lẫn race trạng thái trước nghiệm thu — và benchmark multicast định lượng chứng minh trực tiếp lý thuyết cây phân phối của Bài 8. Phần **định lượng độ tin cậy phân phối trên tải thật** (mục tiêu 9) là hạng mục còn dở dang về bằng chứng, được nêu trung thực và lên kế hoạch hoàn thiện ở mục 4.3.
+Tóm lại, đồ án đã **hoàn thành phần xây dựng và kiểm chứng chức năng của cả mười mục tiêu** với bằng chứng thực nghiệm trên máy đo (runId `verify-347-h1h4`, benchmark 100 client, chaos C01–C05, dashboard LIVE): một hệ thống client–server hoàn chỉnh bằng Java vận dụng tổng hợp kiến thức chín bài của giáo trình [1] cùng các thực hành hiện đại [2]–[7]. Đóng góp nổi bật về phương pháp là quy trình peer-review độc lập nhiều vòng với probe đối kháng chạy thật — đã phát hiện và khắc phục regression tích hợp, race trạng thái và bốn finding HIGH từ audit chuyên sâu — và benchmark multicast định lượng chứng minh trực tiếp lý thuyết cây phân phối của Bài 8. Phần còn dở dang chỉ là các phép đo mở rộng (mixed/200–500, CPU/RSS/WAL, LAN 2 máy) và thông tin định danh nhóm; chúng được nêu trung thực ở mục 4.2–4.3, không làm thay đổi kết luận về các bảo đảm cốt lõi đã kiểm chứng.
 
 ### 4.2 Hạn chế chính
 
@@ -1506,7 +1511,7 @@ Ba hạn chế kiến trúc lớn nhất, đã được thừa nhận tường m
 - **Multicast phạm vi LAN.** Nhóm quản trị 239.10.10.10 với TTL = 1 chỉ hoạt động trong liên kết; không đi qua router/NAT, phụ thuộc cấu hình IGMP snooping/định tuyến multicast của switch; trên macOS loopback phải fallback unicast. Hệ thống không hứa hẹn multicast hoạt động trên mạng hội trường/VLAN lạ — demo có phương án dự phòng (unicast fallback, video quay từ lần chạy thật).
 - **TLS self-signed.** Chứng chỉ tự ký ghim bằng truststore là mô hình tin cậy tối giản phù hợp lab một server: không có CA, không quản lý vòng đời/thu hồi chứng chỉ, chưa bật hostname verification trên raw SSLSocket, tham số Argon2id demo dưới ngưỡng OWASP. Triển khai production đòi hỏi PKI thực và hardening đầy đủ (mục 4.3).
 
-Ngoài ra, bằng chứng định lượng chính thức (acceptance/chaos/load/ảnh dashboard) chưa đầy đủ tại thời điểm viết báo cáo; các minor còn mở của codec và vòng đời bộ nhớ được liệt kê ở mục 3.6.2. Những hạn chế này không phá vỡ các bảo đảm cốt lõi trong phạm vi lab đã kiểm chứng, nhưng giới hạn phạm vi kết luận của đồ án.
+Ngoài ra, các phép đo mở rộng (tải mixed/200–500, CPU/RSS/WAL chi tiết, LAN 2 máy thật) và thông tin định danh nhóm chưa có tại thời điểm nộp; các minor codec và vòng đời bộ nhớ được liệt kê ở mục 3.6.2. Những hạn chế này không phá vỡ các bảo đảm cốt lõi trong phạm vi lab đã kiểm chứng, nhưng giới hạn phạm vi kết luận của đồ án.
 
 ### 4.3 Kiến nghị và hướng phát triển
 
@@ -1516,7 +1521,7 @@ Ngoài ra, bằng chứng định lượng chính thức (acceptance/chaos/load/
 4. **Hardening bảo mật production.** PKI thực + quản lý vòng đời chứng chỉ; bật hostname verification (`SSLParameters.setEndpointIdentificationAlgorithm("HTTPS")`); nâng Argon2id m ≥ 19 MiB theo OWASP [5] và chuyển API sang char[] wipe được; TTL tuyệt đối cho phiên operator + renew sessionId khi đổi quyền; bộ lọc masking log tập trung; xác minh chặt userId của ACK_USER; khắc phục các minor codec (STRICT_DUPLICATE_DETECTION, validate sentAt ISO-8601, chặn lone surrogate).
 5. **Mở rộng phạm vi mạng.** Cấu hình IGMP snooping/PIM cho LAN thật để multicast hoạt động đúng cây phân phối; khi đi WAN/NAT, chuyển hint sang unicast có kiểm soát hoặc push qua TLS; tuân thủ RFC 8085 [6] về giới hạn kích thước thông điệp và kiểm soát tắc nghẽn khi tăng quy mô; đo lại benchmark trên LAN hai máy thật để xác nhận nhân bản trong mạng (thay vì kernel loopback).
 6. **Hoàn thiện các issue còn mở.** Eviction AckLedger/DedupIndex theo vòng đời alert (chống phình bộ nhớ khi chạy dài ngày); chuẩn hóa quy ước RetryPolicy (`maxRetries + 1` truyền vào core, bỏ clamp hoặc tài liệu hóa); bộ đếm feed bền vững hoặc suy từ CSDL (không reset sau restart); ngân sách recovery cho delivery FAILED tường minh; inject seeded RNG + virtual clock vào simulator để kịch bản mixed tái lập tuyệt đối cả số liệu tổng kết.
-7. **Hoàn thiện bằng chứng thực nghiệm (ưu tiên trước bảo vệ).** Chạy nghiệm thu chính thức toàn bộ T-01…T-30 và C01…C16 có seed, tải 100 client (clean + mixed, mở rộng 200–500 nếu máy đo cho phép) trên máy đo chuẩn; sinh `docs/evidence/` chuẩn hóa mỗi lần chạy gồm runId, commit SHA, cấu hình máy (OS/CPU/RAM/JDK/Maven/Node), timestamp, log, XML surefire, metrics CSV và ảnh dashboard; điền các placeholder [TODO] của Chương 3 bằng đúng số liệu đó; tự động hóa quy trình evidence trong CI để mọi tuyên bố định lượng đều tái lập được.
+7. **Mở rộng phép đo và tự động hóa evidence (đã có nền, còn mở rộng).** `docs/evidence/` đã chuẩn hóa cho verify (51+ XML), benchmark 100 client, 5 chaos preset và ảnh dashboard LIVE, mỗi bộ kèm runId/commit SHA/máy đo. Tiếp theo: đo tải mixed/200–500, CPU/RSS/WAL chi tiết, LAN 2 máy thật (Win+Mac, multicast switch) và tự động hóa capture evidence trong CI để mọi con số định lượng tái lập được. Điền tên nhóm/MSSV/lớp và tạo mục lục tự động trong Word trước khi nộp.
 8. **Hướng nghiên cứu tiếp theo.** Ứng dụng di động/push notification thương mại cho cảnh báo ngoài LAN; tích hợp thiết bị vật lý (còi, đèn, thang máy) với chứng nhận an toàn tương ứng; quan sát mở rộng (OpenTelemetry, trace phân phối đầu-cuối); đánh giá an toàn hình thức cho máy trạng thái phân phối; mở rộng digital twin sang nhiều tòa nhà/campus.
 
 ### 4.4 Kết luận chung

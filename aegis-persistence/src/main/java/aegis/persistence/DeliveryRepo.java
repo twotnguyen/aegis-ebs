@@ -100,14 +100,43 @@ public final class DeliveryRepo {
     }
   }
 
-  /** Marks RETRY_SCHEDULED and increments attempt_count atomically. */
+  /**
+   * Marks RETRY_SCHEDULED and increments attempt_count atomically, guarded to the
+   * pre-ack states (PENDING/SENT/RETRY_SCHEDULED). A retry scheduled by the
+   * offline/dispatch path can never regress a concurrent ACK (RECEIVED or higher)
+   * back to RETRY_SCHEDULED nor inflate its attempt_count (H1, ACK-only-advances).
+   *
+   * @return {@code true} if the row was updated; {@code false} if unknown or
+   *     already acked/terminal (benign no-op).
+   */
   public boolean scheduleRetry(String id, Instant nextRetryAt) throws SQLException {
     try (Connection c = db.open();
          PreparedStatement ps = c.prepareStatement(
              "UPDATE deliveries SET state='RETRY_SCHEDULED', next_retry_at=?, "
-                 + "attempt_count=attempt_count+1 WHERE id=?")) {
+                 + "attempt_count=attempt_count+1 WHERE id=? "
+                 + "AND state IN ('PENDING','SENT','RETRY_SCHEDULED')")) {
       ps.setString(1, Sql.ts(nextRetryAt));
       ps.setString(2, id);
+      return ps.executeUpdate() == 1;
+    }
+  }
+
+  /**
+   * Marks FAILED (terminal for the retry budget) guarded to the pre-ack states
+   * (PENDING/SENT/RETRY_SCHEDULED): a delivery the device already acknowledged
+   * (RECEIVED/ACKNOWLEDGED) or that is already terminal must never be regressed to
+   * FAILED by a late retry-budget check (H2, ACK-only-advances). attempt_count is
+   * left untouched so the durable retry budget cannot shrink.
+   *
+   * @return {@code true} if the row was failed; {@code false} if unknown or
+   *     already acked/terminal (benign no-op — caller must not count a failure).
+   */
+  public boolean markFailed(String id) throws SQLException {
+    try (Connection c = db.open();
+         PreparedStatement ps = c.prepareStatement(
+             "UPDATE deliveries SET state='FAILED', next_retry_at=NULL WHERE id=? "
+                 + "AND state IN ('PENDING','SENT','RETRY_SCHEDULED')")) {
+      ps.setString(1, id);
       return ps.executeUpdate() == 1;
     }
   }

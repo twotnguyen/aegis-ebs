@@ -13,7 +13,7 @@
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="user.country" value="VN"/>
     <property name="sun.boot.library.path" value="/opt/homebrew/Cellar/openjdk/27.0.1.1/libexec/openjdk.jdk/Contents/Home/lib"/>
-    <property name="sun.java.command" value="/Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/aegis-protocol/target/surefire/surefirebooter-20261121213514744_3.jar /Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/aegis-protocol/target/surefire 2026-11-21T21-35-14_700-jvmRun1 surefire-20261121213514744_1tmp surefire_0-20261121213514744_2tmp"/>
+    <property name="sun.java.command" value="/Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/aegis-protocol/target/surefire/surefirebooter-20261121220100836_3.jar /Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/aegis-protocol/target/surefire 2026-11-21T22-01-00_796-jvmRun1 surefire-20261121220100836_1tmp surefire_0-20261121220100836_2tmp"/>
     <property name="http.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
     <property name="jdk.debug" value="release"/>
     <property name="surefire.test.class.path" value="/Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/aegis-protocol/target/test-classes:/Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/aegis-protocol/target/classes:/Users/twot/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.17.2/jackson-databind-2.17.2.jar:/Users/twot/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.17.2/jackson-annotations-2.17.2.jar:/Users/twot/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.17.2/jackson-core-2.17.2.jar:/Users/twot/.m2/repository/org/junit/jupiter/junit-jupiter/5.10.3/junit-jupiter-5.10.3.jar:/Users/twot/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.10.3/junit-jupiter-api-5.10.3.jar:/Users/twot/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/Users/twot/.m2/repository/org/junit/platform/junit-platform-commons/1.10.3/junit-platform-commons-1.10.3.jar:/Users/twot/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/twot/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.10.3/junit-jupiter-params-5.10.3.jar:/Users/twot/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.10.3/junit-jupiter-engine-5.10.3.jar:/Users/twot/.m2/repository/org/junit/platform/junit-platform-engine/1.10.3/junit-platform-engine-1.10.3.jar:"/>
@@ -30,7 +30,7 @@
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
     <property name="apple.awt.application.name" value="ForkedBooter"/>
-    <property name="surefire.real.class.path" value="/Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/aegis-protocol/target/surefire/surefirebooter-20261121213514744_3.jar"/>
+    <property name="surefire.real.class.path" value="/Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/aegis-protocol/target/surefire/surefirebooter-20261121220100836_3.jar"/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
     <property name="ftp.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
     <property name="java.runtime.version" value="27.0.1.1"/>
@@ -61,16 +61,16 @@
     <property name="java.class.version" value="71.0"/>
   </properties>
   <testcase name="twoCoalescedFramesInOneBurst" classname="aegis.protocol.FrameCodecStreamTest" time="0.001"/>
-  <testcase name="negativeLengthRejected" classname="aegis.protocol.FrameCodecStreamTest" time="0.001"/>
-  <testcase name="truncatedHeaderThrowsIo" classname="aegis.protocol.FrameCodecStreamTest" time="0.0"/>
-  <testcase name="zeroLengthRejected" classname="aegis.protocol.FrameCodecStreamTest" time="0.001"/>
+  <testcase name="negativeLengthRejected" classname="aegis.protocol.FrameCodecStreamTest" time="0.0"/>
+  <testcase name="truncatedHeaderThrowsIo" classname="aegis.protocol.FrameCodecStreamTest" time="0.001"/>
+  <testcase name="zeroLengthRejected" classname="aegis.protocol.FrameCodecStreamTest" time="0.0"/>
   <testcase name="fiveCoalescedFramesReadSequentially" classname="aegis.protocol.FrameCodecStreamTest" time="0.001"/>
-  <testcase name="writeFrameEmitsBigEndianLengthPrefix" classname="aegis.protocol.FrameCodecStreamTest" time="0.0"/>
+  <testcase name="writeFrameEmitsBigEndianLengthPrefix" classname="aegis.protocol.FrameCodecStreamTest" time="0.001"/>
   <testcase name="oversizeDeclaredLengthRejectedBeforeBodyReadOrAllocation" classname="aegis.protocol.FrameCodecStreamTest" time="0.0"/>
-  <testcase name="singleByteReadsAcrossWholeFrame" classname="aegis.protocol.FrameCodecStreamTest" time="0.001"/>
+  <testcase name="singleByteReadsAcrossWholeFrame" classname="aegis.protocol.FrameCodecStreamTest" time="0.0"/>
   <testcase name="headerArrivesInFourOneByteChunks" classname="aegis.protocol.FrameCodecStreamTest" time="0.001"/>
   <testcase name="writeFrameThenReadFrameRoundTrip" classname="aegis.protocol.FrameCodecStreamTest" time="0.0"/>
-  <testcase name="truncatedBodyThrowsIo" classname="aegis.protocol.FrameCodecStreamTest" time="0.001"/>
+  <testcase name="truncatedBodyThrowsIo" classname="aegis.protocol.FrameCodecStreamTest" time="0.0"/>
   <testcase name="bodyArrivesInSmallChunks" classname="aegis.protocol.FrameCodecStreamTest" time="0.001"/>
-  <testcase name="emptyStreamThrowsEof" classname="aegis.protocol.FrameCodecStreamTest" time="0.0"/>
+  <testcase name="emptyStreamThrowsEof" classname="aegis.protocol.FrameCodecStreamTest" time="0.001"/>
 </testsuite>

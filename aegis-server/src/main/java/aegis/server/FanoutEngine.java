@@ -326,10 +326,18 @@ public final class FanoutEngine implements DeliveryEnqueuer {
   }
 
   private void markFailed(Tracked t, Delivery d) {
+    boolean failed;
     try {
-      deliveries.updateState(d.id(), DeliveryState.FAILED, null, d.attemptCount());
+      failed = deliveries.markFailed(d.id());
     } catch (SQLException e) {
       LOG.warn("mark FAILED failed delivery={}: {}", d.id(), e.toString());
+      return;
+    }
+    if (!failed) {
+      // A concurrent ACK (RECEIVED/ACKNOWLEDGED) or an already-terminal state won
+      // the race between checkDelivery's read and this write: the delivery did NOT
+      // fail. Never regress it to FAILED nor count/audit a failure (H2).
+      untrack(d.id());
       return;
     }
     if (failedCounted.add(d.id())) {

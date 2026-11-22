@@ -1,0 +1,21 @@
+{
+  "runId": "fresh-install-warm-20261121",
+  "command": "/usr/bin/time -p bash -c './scripts/dev.sh >/dev/null && ./scripts/initdb.sh >/dev/null'",
+  "result": {
+    "realSeconds": 1.74,
+    "userSeconds": 4.45,
+    "systemSeconds": 0.32,
+    "foreignKeyViolations": 0,
+    "tables": 26
+  },
+  "machine": {
+    "os": "macOS 15.7.3",
+    "cpu": "Apple M3 Pro",
+    "cores": 12,
+    "ramGB": 18,
+    "java": "24.0.1"
+  },
+  "condition": "WARM CACHE — Maven target/ và node_modules đã có sẵn trong repo; đây KHÔNG phải phép đo clone sạch (cold install).",
+  "interpretation": "Cho thấy scripts/dev.sh + initdb.sh chạy nhanh khi dependency đã nạp; NFR-015 (<30 phút) chưa được chứng minh bằng cold clone trên máy sạch. Không suy diễn thêm.",
+  "raw": "docs/evidence/fresh-install-time.txt"
+}

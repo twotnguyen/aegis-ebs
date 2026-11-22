@@ -1,0 +1,761 @@
+{
+ "meta": {
+  "runId": "3fe99b11-5f59-433c-beb0-71191d501ab9",
+  "commit": "17ea5340e05a082380d45648a26f0646ef913343",
+  "worktreeDirty": true,
+  "startedAt": "2026-11-22T11:29:28.330Z",
+  "machine": {
+   "os": "15.7.3",
+   "cpu": "Apple M3 Pro",
+   "cores": "12",
+   "memBytes": "19327352832",
+   "arch": "arm64",
+   "java": "java version \"24.0.1\" 2025-04-15",
+   "python": "3.14.2",
+   "hostname": "Macbook-Tinh"
+  }
+ },
+ "config": {
+  "fleet": 50,
+  "scenario": "mixed",
+  "seed": 42,
+  "durationSeconds": 15,
+  "staggerMs": 5,
+  "tlsPort": 29443,
+  "wsPort": 29444,
+  "retryPolicy": "maxRetries=3 base=3000ms (3s/6s/12s)"
+ },
+ "publish": {
+  "at": "2026-11-22T11:29:33.914Z",
+  "payload": {
+   "alertId": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "revision": 1,
+   "deliveryCount": 50,
+   "duplicate": false,
+   "ok": true
+  },
+  "fleetAuthWaitSeconds": 1.67,
+  "authenticatedAtPublish": 50
+ },
+ "simExitCode": 0,
+ "simSummary": {
+  "agentsStarted": 50,
+  "agentsFinished": 50,
+  "connectSuccess": 63,
+  "connectFailures": 4,
+  "reconnects": 13,
+  "alertsReceived": 70,
+  "duplicatePushes": 20,
+  "cancelsReceived": 0,
+  "acksSent": 78,
+  "acksDropped": 8,
+  "acksDelayed": 62,
+  "duplicateAcks": 16,
+  "disconnects": 13,
+  "syncRequests": 13,
+  "heartbeats": 50,
+  "connectionErrors": 0,
+  "authRejections": 0,
+  "config": {
+   "fleet": 50,
+   "seed": 42,
+   "scenario": "mixed",
+   "target": "localhost:29443",
+   "durationSeconds": 15,
+   "faults": "FaultProfile[dropRate=0.15, delayBaseMs=300, delayJitterMs=1200, duplicateRate=0.3, duplicateCount=2, disconnectRate=0.2]"
+  }
+ },
+ "settledStates": {
+  "RECEIVED": 50
+ },
+ "dbStats": {
+  "deliveriesTotal": 50,
+  "deliveriesByState": {
+   "RECEIVED": 50
+  },
+  "attemptCountSum": 62,
+  "retriesFromAttempts": 12,
+  "acksByKind": {
+   "RECEIVED": 50
+  },
+  "ackReceivedRate": 1.0,
+  "latencyMsFromDb": {
+   "samples": 50,
+   "p50": 1285.536,
+   "p95": 3505.643,
+   "p99": 5007.619,
+   "max": 5007.619
+  },
+  "alerts": [
+   {
+    "id": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+    "category": "FIRE_DRILL",
+    "priority": "CRITICAL",
+    "state": "ACTIVE",
+    "current_revision": 1,
+    "created_at": "2026-11-22T11:29:33.916051000Z"
+   }
+  ],
+  "metricsSamples": [],
+  "auditCounts": [
+   {
+    "action": "ACK_RECEIVED",
+    "outcome": "DUPLICATE",
+    "n": 28
+   },
+   {
+    "action": "ACK_RECEIVED",
+    "outcome": "OK",
+    "n": 50
+   },
+   {
+    "action": "ALERT_FULLY_ACKED",
+    "outcome": "OK",
+    "n": 1
+   },
+   {
+    "action": "AUTH_DEVICE_SUCCESS",
+    "outcome": "OK",
+    "n": 67
+   },
+   {
+    "action": "AUTH_OPERATOR_SUCCESS",
+    "outcome": "OK",
+    "n": 1
+   },
+   {
+    "action": "PUBLISH",
+    "outcome": "OK",
+    "n": 1
+   },
+   {
+    "action": "RETRY",
+    "outcome": "SENT",
+    "n": 12
+   },
+   {
+    "action": "SYNC",
+    "outcome": "OK",
+    "n": 13
+   }
+  ]
+ },
+ "attemptHistogram": {
+  "1": 45,
+  "2": 2,
+  "4": 2,
+  "5": 1
+ },
+ "auditCounts": [
+  {
+   "action": "ACK_RECEIVED",
+   "outcome": "DUPLICATE",
+   "n": 28
+  },
+  {
+   "action": "ACK_RECEIVED",
+   "outcome": "OK",
+   "n": 50
+  },
+  {
+   "action": "ALERT_FULLY_ACKED",
+   "outcome": "OK",
+   "n": 1
+  },
+  {
+   "action": "AUTH_DEVICE_SUCCESS",
+   "outcome": "OK",
+   "n": 67
+  },
+  {
+   "action": "AUTH_OPERATOR_SUCCESS",
+   "outcome": "OK",
+   "n": 1
+  },
+  {
+   "action": "PUBLISH",
+   "outcome": "OK",
+   "n": 1
+  },
+  {
+   "action": "RETRY",
+   "outcome": "SENT",
+   "n": 12
+  },
+  {
+   "action": "SYNC",
+   "outcome": "OK",
+   "n": 13
+  }
+ ],
+ "auditSample": [
+  {
+   "id": "20a216fa-16a1-40ac-bed4-fee2ff728a78",
+   "occurred_at": "2026-11-22T11:29:34.672932000Z",
+   "actor_id": "SIM-DEV-0010",
+   "action": "ACK_RECEIVED",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "DUPLICATE",
+   "correlation_id": "8476cc46-8cd4-43c9-bf1d-7bdc63952139",
+   "payload_json": "{\"deliveryId\":\"9f24656c-fa08-4021-a057-ccec02bd1b5b\",\"revision\":1}"
+  },
+  {
+   "id": "7e9a8a73-b062-41fa-b87c-2316a590a581",
+   "occurred_at": "2026-11-22T11:29:34.857694000Z",
+   "actor_id": "SIM-DEV-0001",
+   "action": "ACK_RECEIVED",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "DUPLICATE",
+   "correlation_id": "339e570d-8e9c-460d-a48a-c54de73f8a26",
+   "payload_json": "{\"deliveryId\":\"1ef69dd7-db4f-4ef9-8bf6-9beefab02b36\",\"revision\":1}"
+  },
+  {
+   "id": "b3ca1f09-5cb1-4c30-8e5c-3a4c09bb5c1f",
+   "occurred_at": "2026-11-22T11:29:34.882774000Z",
+   "actor_id": "SIM-DEV-0034",
+   "action": "ACK_RECEIVED",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "DUPLICATE",
+   "correlation_id": "3376d4ab-41d1-4e4a-a951-2b61b43fe802",
+   "payload_json": "{\"deliveryId\":\"9e3ead60-b1fb-49c6-81c1-827989dc75e3\",\"revision\":1}"
+  },
+  {
+   "id": "4e2eb3fb-e12a-4f78-b271-f50dd5b33b7c",
+   "occurred_at": "2026-11-22T11:29:34.944912000Z",
+   "actor_id": "SIM-DEV-0006",
+   "action": "ACK_RECEIVED",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "DUPLICATE",
+   "correlation_id": "501a366b-3bc6-4486-9b48-871e6bfd53c3",
+   "payload_json": "{\"deliveryId\":\"2f94928e-bebc-4d3c-abba-7a853ec41e0a\",\"revision\":1}"
+  },
+  {
+   "id": "e795e73f-1ef8-4efa-855d-3766beb11cf5",
+   "occurred_at": "2026-11-22T11:29:34.955156000Z",
+   "actor_id": "SIM-DEV-0024",
+   "action": "ACK_RECEIVED",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "DUPLICATE",
+   "correlation_id": "dc2dbfb4-be9f-47fc-8938-08be34fb49ae",
+   "payload_json": "{\"deliveryId\":\"f0168eaf-4f4d-494f-9e87-ba08527368fe\",\"revision\":1}"
+  },
+  {
+   "id": "58a25625-501c-4d95-b7bb-958df3ab0d57",
+   "occurred_at": "2026-11-22T11:29:34.979671000Z",
+   "actor_id": null,
+   "action": "RETRY",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "SENT",
+   "correlation_id": "aacd76bd-d65c-48e5-9cbf-a75d4dd2b0f2",
+   "payload_json": "{\"attempt\":2,\"messageId\":\"177c9653-c49a-46c4-95b9-1b979a4d8799\"}"
+  },
+  {
+   "id": "11c9871a-92af-4b38-a7ef-e8ddef9aae44",
+   "occurred_at": "2026-11-22T11:29:35.003949000Z",
+   "actor_id": null,
+   "action": "RETRY",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "SENT",
+   "correlation_id": "cc4f6b5a-8e33-45b3-ab89-3d4fa7a27f24",
+   "payload_json": "{\"attempt\":2,\"messageId\":\"690e0644-5607-41e0-9b08-22080fd7de24\"}"
+  },
+  {
+   "id": "5a3e0863-e655-42f6-bc91-7b600765ed82",
+   "occurred_at": "2026-11-22T11:29:35.043246000Z",
+   "actor_id": null,
+   "action": "RETRY",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "SENT",
+   "correlation_id": "8de14cc0-b3c5-4597-ba52-8f87d40d19df",
+   "payload_json": "{\"attempt\":2,\"messageId\":\"a9615d67-9d52-454c-a39b-ccf6f6452094\"}"
+  },
+  {
+   "id": "5f3b6d8b-419a-47ef-9e8c-7192bf721cda",
+   "occurred_at": "2026-11-22T11:29:35.140083000Z",
+   "actor_id": "SIM-DEV-0004",
+   "action": "SYNC",
+   "scope": null,
+   "outcome": "OK",
+   "correlation_id": "sim-9d5a7fff-61f0-4527-ad9f-75f646755618",
+   "payload_json": null
+  },
+  {
+   "id": "dc063c5b-d957-4afa-b6df-708078b2f485",
+   "occurred_at": "2026-11-22T11:29:35.372471000Z",
+   "actor_id": "SIM-DEV-0014",
+   "action": "ACK_RECEIVED",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "DUPLICATE",
+   "correlation_id": "bafdf02d-dd83-4b8f-8d2b-1170556df146",
+   "payload_json": "{\"deliveryId\":\"865416cc-7e25-4413-85cd-3b6b2f446507\",\"revision\":1}"
+  },
+  {
+   "id": "4b22ec91-6dcb-4e40-83f2-7497ea325c68",
+   "occurred_at": "2026-11-22T11:29:35.402538000Z",
+   "actor_id": "SIM-DEV-0034",
+   "action": "SYNC",
+   "scope": null,
+   "outcome": "OK",
+   "correlation_id": "sim-64627503-820a-4d56-853f-d0734dfce5a7",
+   "payload_json": null
+  },
+  {
+   "id": "fae0dae5-2d0c-450f-93e4-6ee2917f00a4",
+   "occurred_at": "2026-11-22T11:29:35.402952000Z",
+   "actor_id": "SIM-DEV-0031",
+   "action": "SYNC",
+   "scope": null,
+   "outcome": "OK",
+   "correlation_id": "sim-4bc80ba5-a8e5-48b4-ad41-ea47398c06d9",
+   "payload_json": null
+  },
+  {
+   "id": "5cfdec7e-38d1-4af8-a332-b353deead884",
+   "occurred_at": "2026-11-22T11:29:35.498262000Z",
+   "actor_id": "SIM-DEV-0004",
+   "action": "ACK_RECEIVED",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "DUPLICATE",
+   "correlation_id": "b1682d5a-e076-467b-b467-d6fb4c483684",
+   "payload_json": "{\"deliveryId\":\"14659f15-eca2-4d6a-ad4a-0b91d8d50153\",\"revision\":1}"
+  },
+  {
+   "id": "66c8f47a-3be9-446f-8a55-44829372f71d",
+   "occurred_at": "2026-11-22T11:29:35.517207000Z",
+   "actor_id": "SIM-DEV-0004",
+   "action": "ACK_RECEIVED",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "DUPLICATE",
+   "correlation_id": "b1682d5a-e076-467b-b467-d6fb4c483684",
+   "payload_json": "{\"deliveryId\":\"14659f15-eca2-4d6a-ad4a-0b91d8d50153\",\"revision\":1}"
+  },
+  {
+   "id": "d7daab36-ebbe-4bb7-8724-a15698a497f6",
+   "occurred_at": "2026-11-22T11:29:35.658925000Z",
+   "actor_id": "SIM-DEV-0026",
+   "action": "ACK_RECEIVED",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "DUPLICATE",
+   "correlation_id": "59ea6046-a0c4-4a60-b677-61d7952b4dd2",
+   "payload_json": "{\"deliveryId\":\"425f1242-0746-4df1-87fb-053cfd63c3bb\",\"revision\":1}"
+  },
+  {
+   "id": "3c36133a-932b-46a9-a3d2-575050b9b999",
+   "occurred_at": "2026-11-22T11:29:35.676002000Z",
+   "actor_id": "SIM-DEV-0042",
+   "action": "ACK_RECEIVED",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "DUPLICATE",
+   "correlation_id": "677121f0-aeef-42ef-b0e4-19d52d828e1f",
+   "payload_json": "{\"deliveryId\":\"d67ac62e-57b4-4f34-ab7d-c658c848c346\",\"revision\":1}"
+  },
+  {
+   "id": "ed29c61f-30b2-4c24-ad6b-5cc660444260",
+   "occurred_at": "2026-11-22T11:29:35.704045000Z",
+   "actor_id": "SIM-DEV-0033",
+   "action": "ACK_RECEIVED",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "DUPLICATE",
+   "correlation_id": "ea93f216-d2a8-4443-aebe-00fc420f4513",
+   "payload_json": "{\"deliveryId\":\"beab412f-3ef0-4875-becf-8b0fbb08aedb\",\"revision\":1}"
+  },
+  {
+   "id": "601fcea8-eaff-4d63-8f2b-bd35ff8eff1e",
+   "occurred_at": "2026-11-22T11:29:35.723770000Z",
+   "actor_id": "SIM-DEV-0021",
+   "action": "ACK_RECEIVED",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "DUPLICATE",
+   "correlation_id": "90f38c2b-1425-4afb-90f1-6de008b6de32",
+   "payload_json": "{\"deliveryId\":\"1462bb18-d898-4a49-bda9-142e2e66b830\",\"revision\":1}"
+  },
+  {
+   "id": "985bae44-359e-47af-ad53-70129a66b4e2",
+   "occurred_at": "2026-11-22T11:29:35.743408000Z",
+   "actor_id": null,
+   "action": "RETRY",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "SENT",
+   "correlation_id": "cc4f6b5a-8e33-45b3-ab89-3d4fa7a27f24",
+   "payload_json": "{\"attempt\":3,\"messageId\":\"481f47e4-9b5a-4a6a-829e-5c68aa2f39ea\"}"
+  },
+  {
+   "id": "3596bd9d-7d7f-4640-aff4-51127749449a",
+   "occurred_at": "2026-11-22T11:29:35.747306000Z",
+   "actor_id": "SIM-DEV-0050",
+   "action": "ACK_RECEIVED",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "DUPLICATE",
+   "correlation_id": "a93c49bb-63fd-4be2-b864-570660e2b464",
+   "payload_json": "{\"deliveryId\":\"b3a1ec09-6e30-480d-984f-2a7ccf2c8f1c\",\"revision\":1}"
+  },
+  {
+   "id": "4238693e-95e1-406d-a7b9-5cc3f0b92d4d",
+   "occurred_at": "2026-11-22T11:29:35.754620000Z",
+   "actor_id": null,
+   "action": "RETRY",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "SENT",
+   "correlation_id": "aacd76bd-d65c-48e5-9cbf-a75d4dd2b0f2",
+   "payload_json": "{\"attempt\":3,\"messageId\":\"32035b6d-1d69-4c14-b1bb-9c43514f96f6\"}"
+  },
+  {
+   "id": "e98b95fa-0fa2-4b88-87dd-65959200942d",
+   "occurred_at": "2026-11-22T11:29:35.784337000Z",
+   "actor_id": null,
+   "action": "RETRY",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "SENT",
+   "correlation_id": "8de14cc0-b3c5-4597-ba52-8f87d40d19df",
+   "payload_json": "{\"attempt\":3,\"messageId\":\"2ea02865-36d6-4a80-8087-9a6ab7bc9fe7\"}"
+  },
+  {
+   "id": "740f37f2-d8bc-4709-814f-168ef2a34d2b",
+   "occurred_at": "2026-11-22T11:29:35.791078000Z",
+   "actor_id": "SIM-DEV-0008",
+   "action": "SYNC",
+   "scope": null,
+   "outcome": "OK",
+   "correlation_id": "sim-87fb6682-4033-4a13-9190-9a6967808b63",
+   "payload_json": null
+  },
+  {
+   "id": "02f411a4-6c1f-4972-a783-3f6851f1dd7d",
+   "occurred_at": "2026-11-22T11:29:35.826151000Z",
+   "actor_id": "SIM-DEV-0049",
+   "action": "SYNC",
+   "scope": null,
+   "outcome": "OK",
+   "correlation_id": "sim-7a40e076-cb61-4b87-935e-157ceb882efa",
+   "payload_json": null
+  },
+  {
+   "id": "fa20fc0c-aea7-413b-a9be-623c413395d4",
+   "occurred_at": "2026-11-22T11:29:35.845176000Z",
+   "actor_id": null,
+   "action": "RETRY",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "SENT",
+   "correlation_id": "8de14cc0-b3c5-4597-ba52-8f87d40d19df",
+   "payload_json": "{\"attempt\":4,\"messageId\":\"06c10ac7-f0d3-4da1-836a-8b867d139b29\"}"
+  },
+  {
+   "id": "5eda0e6b-9fac-45ef-a538-c98c841a7dba",
+   "occurred_at": "2026-11-22T11:29:35.887843000Z",
+   "actor_id": "SIM-DEV-0045",
+   "action": "SYNC",
+   "scope": null,
+   "outcome": "OK",
+   "correlation_id": "sim-a523eec4-c9f5-4023-abf0-88e9b46dfd70",
+   "payload_json": null
+  },
+  {
+   "id": "8b078b62-d78c-4bc7-8c99-49dfd28cf37c",
+   "occurred_at": "2026-11-22T11:29:35.907423000Z",
+   "actor_id": null,
+   "action": "RETRY",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "SENT",
+   "correlation_id": "aacd76bd-d65c-48e5-9cbf-a75d4dd2b0f2",
+   "payload_json": "{\"attempt\":4,\"messageId\":\"25b84e36-9207-4ff2-b6a1-84236304d11d\"}"
+  },
+  {
+   "id": "7337a23d-1114-4af3-a4ab-2a59f6199fb5",
+   "occurred_at": "2026-11-22T11:29:35.920677000Z",
+   "actor_id": "SIM-DEV-0017",
+   "action": "SYNC",
+   "scope": null,
+   "outcome": "OK",
+   "correlation_id": "sim-bce9b6cd-cf52-4d04-83d5-005852e53b47",
+   "payload_json": null
+  },
+  {
+   "id": "7e3b67e5-5546-4694-9289-7a62637f397f",
+   "occurred_at": "2026-11-22T11:29:35.929912000Z",
+   "actor_id": "SIM-DEV-0031",
+   "action": "SYNC",
+   "scope": null,
+   "outcome": "OK",
+   "correlation_id": "sim-ab3b876a-01df-4acc-ae03-c3d74fa05a6f",
+   "payload_json": null
+  },
+  {
+   "id": "111b4b2d-f357-46e1-b72b-02504138b29d",
+   "occurred_at": "2026-11-22T11:29:35.948399000Z",
+   "actor_id": "SIM-DEV-0004",
+   "action": "SYNC",
+   "scope": null,
+   "outcome": "OK",
+   "correlation_id": "sim-48da453c-9ad9-4326-9e13-2329485228db",
+   "payload_json": null
+  },
+  {
+   "id": "924fa013-85bf-42ef-a178-89e7cd5b9c82",
+   "occurred_at": "2026-11-22T11:29:35.967684000Z",
+   "actor_id": "SIM-DEV-0035",
+   "action": "SYNC",
+   "scope": null,
+   "outcome": "OK",
+   "correlation_id": "sim-b5be6292-890d-48ba-910f-71cd5d6ed88a",
+   "payload_json": null
+  },
+  {
+   "id": "fe092566-2f6d-4bac-8827-026219e748ad",
+   "occurred_at": "2026-11-22T11:29:36.190475000Z",
+   "actor_id": "SIM-DEV-0039",
+   "action": "SYNC",
+   "scope": null,
+   "outcome": "OK",
+   "correlation_id": "sim-6bbc70e2-75c6-474c-bf99-2244e4b12e72",
+   "payload_json": null
+  },
+  {
+   "id": "08717a5b-015b-42f5-9c06-5b840673b85c",
+   "occurred_at": "2026-11-22T11:29:36.417069000Z",
+   "actor_id": "SIM-DEV-0008",
+   "action": "ACK_RECEIVED",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "DUPLICATE",
+   "correlation_id": "426db380-c2df-44b1-8b7d-36221dcc52da",
+   "payload_json": "{\"deliveryId\":\"55dfd962-511e-431a-a947-8640f247b19f\",\"revision\":1}"
+  },
+  {
+   "id": "5fe73161-84a0-4423-9eb9-9ad8b0ac76f6",
+   "occurred_at": "2026-11-22T11:29:36.693871000Z",
+   "actor_id": null,
+   "action": "RETRY",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "SENT",
+   "correlation_id": "cc4f6b5a-8e33-45b3-ab89-3d4fa7a27f24",
+   "payload_json": "{\"attempt\":4,\"messageId\":\"b4366244-1aa5-4274-ae46-bb1f6de8f1a4\"}"
+  },
+  {
+   "id": "1dd45e93-487d-4c2d-b97f-04892dcacb76",
+   "occurred_at": "2026-11-22T11:29:36.712846000Z",
+   "actor_id": "SIM-DEV-0048",
+   "action": "SYNC",
+   "scope": null,
+   "outcome": "OK",
+   "correlation_id": "sim-eb9a687b-5738-4190-b15e-901e7c71b8cf",
+   "payload_json": null
+  },
+  {
+   "id": "f79049c7-494c-4d76-a2e0-ee88ce657b50",
+   "occurred_at": "2026-11-22T11:29:36.720979000Z",
+   "actor_id": null,
+   "action": "RETRY",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "SENT",
+   "correlation_id": "cc4f6b5a-8e33-45b3-ab89-3d4fa7a27f24",
+   "payload_json": "{\"attempt\":5,\"messageId\":\"6af9c8ae-61c8-4d0c-b4bf-77dce6997894\"}"
+  },
+  {
+   "id": "86bf2863-442d-4b35-8a95-744ab886af7d",
+   "occurred_at": "2026-11-22T11:29:37.095776000Z",
+   "actor_id": "SIM-DEV-0039",
+   "action": "ACK_RECEIVED",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "DUPLICATE",
+   "correlation_id": "6f335a13-bf48-4d4b-9cef-1c0afe38f257",
+   "payload_json": "{\"deliveryId\":\"3a74cfe5-6c99-4f21-9eed-c4edbf899440\",\"revision\":1}"
+  },
+  {
+   "id": "88119e34-a467-4103-b89c-e973fe8fbd3b",
+   "occurred_at": "2026-11-22T11:29:37.216051000Z",
+   "actor_id": "SIM-DEV-0031",
+   "action": "ACK_RECEIVED",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "DUPLICATE",
+   "correlation_id": "7a195d15-34ef-422c-be7c-31160d63d4b5",
+   "payload_json": "{\"deliveryId\":\"36bb1b8a-7116-474e-aedb-80b7d4988b97\",\"revision\":1}"
+  },
+  {
+   "id": "b7fcf40f-d82b-44fa-8283-2ee6c6678609",
+   "occurred_at": "2026-11-22T11:29:37.233534000Z",
+   "actor_id": "SIM-DEV-0017",
+   "action": "ACK_RECEIVED",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "DUPLICATE",
+   "correlation_id": "5e10bfac-bc9f-4d01-9e76-524a3f6c2be2",
+   "payload_json": "{\"deliveryId\":\"b12d5641-26e9-4bdc-9215-1aa44bbe83e8\",\"revision\":1}"
+  },
+  {
+   "id": "9fcaabff-8652-4212-a53b-a2758a01da32",
+   "occurred_at": "2026-11-22T11:29:37.239285000Z",
+   "actor_id": "SIM-DEV-0035",
+   "action": "ACK_RECEIVED",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "DUPLICATE",
+   "correlation_id": "b4299e9b-87ef-4886-8e48-0f31362599b1",
+   "payload_json": "{\"deliveryId\":\"d3129229-176c-43c9-978f-e813ab114469\",\"revision\":1}"
+  },
+  {
+   "id": "44e9c360-82d1-4db5-825e-71046d94291f",
+   "occurred_at": "2026-11-22T11:29:37.243350000Z",
+   "actor_id": "SIM-DEV-0035",
+   "action": "ACK_RECEIVED",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "DUPLICATE",
+   "correlation_id": "b4299e9b-87ef-4886-8e48-0f31362599b1",
+   "payload_json": "{\"deliveryId\":\"d3129229-176c-43c9-978f-e813ab114469\",\"revision\":1}"
+  },
+  {
+   "id": "006cefe1-5da2-43ce-8eff-af8ffc53cd18",
+   "occurred_at": "2026-11-22T11:29:37.550513000Z",
+   "actor_id": null,
+   "action": "RETRY",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "SENT",
+   "correlation_id": "2c22cf13-0286-4fc5-aed5-08d373509af4",
+   "payload_json": "{\"attempt\":2,\"messageId\":\"5ae68d8e-bfd8-4701-a87c-8eb15cd705c9\"}"
+  },
+  {
+   "id": "3178bf5c-a2cd-47e5-8ea7-613059751d7d",
+   "occurred_at": "2026-11-22T11:29:37.552245000Z",
+   "actor_id": "SIM-DEV-0049",
+   "action": "ACK_RECEIVED",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "DUPLICATE",
+   "correlation_id": "ca54a519-4407-4d9d-a85e-ad72f5b5ca83",
+   "payload_json": "{\"deliveryId\":\"8de14cc0-b3c5-4597-ba52-8f87d40d19df\",\"revision\":1}"
+  },
+  {
+   "id": "fcf566e8-98a4-4f4a-ba82-69379065a200",
+   "occurred_at": "2026-11-22T11:29:37.573918000Z",
+   "actor_id": null,
+   "action": "RETRY",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "SENT",
+   "correlation_id": "694782ba-2ead-4f42-89b7-7220848a199e",
+   "payload_json": "{\"attempt\":2,\"messageId\":\"a8c2df3a-153e-41af-aea2-52915eb7f933\"}"
+  },
+  {
+   "id": "bccfc729-655d-43b9-8846-64050fd35f4e",
+   "occurred_at": "2026-11-22T11:29:37.632605000Z",
+   "actor_id": "SIM-DEV-0045",
+   "action": "ACK_RECEIVED",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "DUPLICATE",
+   "correlation_id": "e93a9813-1850-43ed-8b5d-d058ebaa0ce4",
+   "payload_json": "{\"deliveryId\":\"aacd76bd-d65c-48e5-9cbf-a75d4dd2b0f2\",\"revision\":1}"
+  },
+  {
+   "id": "b2916101-337e-44a2-b9be-f783c0e9d003",
+   "occurred_at": "2026-11-22T11:29:37.817080000Z",
+   "actor_id": "SIM-DEV-0048",
+   "action": "ACK_RECEIVED",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "DUPLICATE",
+   "correlation_id": "a7caf8aa-1376-45a0-bbaf-764ca552b071",
+   "payload_json": "{\"deliveryId\":\"cc4f6b5a-8e33-45b3-ab89-3d4fa7a27f24\",\"revision\":1}"
+  },
+  {
+   "id": "c5466897-5008-49ae-a13a-33391f786253",
+   "occurred_at": "2026-11-22T11:29:37.940579000Z",
+   "actor_id": "SIM-DEV-0049",
+   "action": "ACK_RECEIVED",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "DUPLICATE",
+   "correlation_id": "06c10ac7-f0d3-4da1-836a-8b867d139b29",
+   "payload_json": "{\"deliveryId\":\"8de14cc0-b3c5-4597-ba52-8f87d40d19df\",\"revision\":1}"
+  },
+  {
+   "id": "290fcb3b-c9a4-4e39-99e1-9b93c547a93c",
+   "occurred_at": "2026-11-22T11:29:37.953519000Z",
+   "actor_id": "SIM-DEV-0049",
+   "action": "ACK_RECEIVED",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "DUPLICATE",
+   "correlation_id": "06c10ac7-f0d3-4da1-836a-8b867d139b29",
+   "payload_json": "{\"deliveryId\":\"8de14cc0-b3c5-4597-ba52-8f87d40d19df\",\"revision\":1}"
+  },
+  {
+   "id": "e8d63367-95c1-4234-8689-114aa4c35d66",
+   "occurred_at": "2026-11-22T11:29:38.178037000Z",
+   "actor_id": "SIM-DEV-0045",
+   "action": "ACK_RECEIVED",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "DUPLICATE",
+   "correlation_id": "25b84e36-9207-4ff2-b6a1-84236304d11d",
+   "payload_json": "{\"deliveryId\":\"aacd76bd-d65c-48e5-9cbf-a75d4dd2b0f2\",\"revision\":1}"
+  },
+  {
+   "id": "b171bcdb-df11-46cc-97da-2455a304b675",
+   "occurred_at": "2026-11-22T11:29:38.183005000Z",
+   "actor_id": "SIM-DEV-0045",
+   "action": "ACK_RECEIVED",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "DUPLICATE",
+   "correlation_id": "25b84e36-9207-4ff2-b6a1-84236304d11d",
+   "payload_json": "{\"deliveryId\":\"aacd76bd-d65c-48e5-9cbf-a75d4dd2b0f2\",\"revision\":1}"
+  },
+  {
+   "id": "64347e64-80ef-45ff-97ff-4eed6c9db260",
+   "occurred_at": "2026-11-22T11:29:38.213149000Z",
+   "actor_id": "SIM-DEV-0048",
+   "action": "SYNC",
+   "scope": null,
+   "outcome": "OK",
+   "correlation_id": "sim-675d13d5-8ea0-4376-b4df-520a1223fe29",
+   "payload_json": null
+  },
+  {
+   "id": "6d855b0b-3230-4484-8f89-d90d7ef9c79f",
+   "occurred_at": "2026-11-22T11:29:38.926190000Z",
+   "actor_id": null,
+   "action": "ALERT_FULLY_ACKED",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "OK",
+   "correlation_id": null,
+   "payload_json": null
+  },
+  {
+   "id": "2fab9ab7-49ec-4c4d-88e0-02cf3458924e",
+   "occurred_at": "2026-11-22T11:29:38.930733000Z",
+   "actor_id": "SIM-DEV-0046",
+   "action": "ACK_RECEIVED",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "DUPLICATE",
+   "correlation_id": "5ae68d8e-bfd8-4701-a87c-8eb15cd705c9",
+   "payload_json": "{\"deliveryId\":\"2c22cf13-0286-4fc5-aed5-08d373509af4\",\"revision\":1}"
+  },
+  {
+   "id": "6ef83de5-89d8-4c4c-a542-4c36a34ce2e8",
+   "occurred_at": "2026-11-22T11:29:39.689194000Z",
+   "actor_id": "SIM-DEV-0048",
+   "action": "ACK_RECEIVED",
+   "scope": "b71fa96e-daa0-40e1-986f-023acdeec9ec",
+   "outcome": "DUPLICATE",
+   "correlation_id": "45e9aed1-09ce-42d1-8ca5-31660a2eb96d",
+   "payload_json": "{\"deliveryId\":\"cc4f6b5a-8e33-45b3-ab89-3d4fa7a27f24\",\"revision\":1}"
+  }
+ ],
+ "auditTotalRows": 173,
+ "headline": {
+  "latencyMs": {
+   "samples": 50,
+   "p50": 1285.536,
+   "p95": 3505.643,
+   "p99": 5007.619,
+   "max": 5007.619
+  },
+  "ackReceivedRate": 1.0,
+  "ackReceivedRatePct": 100.0,
+  "retriesFromAttempts": 12,
+  "reconnects": 13,
+  "faultDisconnects": 13,
+  "duplicatePushes": 20,
+  "duplicateAcks": 16,
+  "acksDropped": 8,
+  "acksDelayed": 62,
+  "deliveriesByState": {
+   "RECEIVED": 50
+  }
+ },
+ "artifacts": {
+  "db": "/Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/docs/evidence/chaos/runs/mixed-3fe99b11/chaos.db",
+  "serverLog": "/Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/docs/evidence/chaos/runs/mixed-3fe99b11/server.log",
+  "simLog": "/Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/docs/evidence/chaos/runs/mixed-3fe99b11/sim.log",
+  "auditFull": "/Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/docs/evidence/chaos/runs/mixed-3fe99b11/audit.json"
+ }
+}

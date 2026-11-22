@@ -141,6 +141,16 @@ public final class MessageRouter {
   }
 
   private void authOperator(ClientSession session, Envelope env) throws SQLException {
+    if (session.isAuthenticated()) {
+      // H3: a session may authenticate exactly once. Re-authenticating an already
+      // bound session could swap its identity while the registry's byDeviceId /
+      // byOperator index still routes the old identity's traffic here. Force a
+      // LOGOUT + fresh connection to change identity instead.
+      audit.append(actor(session), "AUTH_OPERATOR_REJECTED", "already-authenticated", "DENIED", env.messageId());
+      reply(session, "AUTH_RESULT", env.messageId(),
+          Json.obj().put("ok", false).put("code", "ALREADY_AUTHENTICATED"));
+      return;
+    }
     String username = Json.text(env.payload(), "username");
     String password = Json.text(env.payload(), "password");
     Optional<User> user = auth.authenticateOperator(username, password);
@@ -163,6 +173,16 @@ public final class MessageRouter {
   }
 
   private void authDevice(ClientSession session, Envelope env) throws SQLException {
+    if (session.isAuthenticated()) {
+      // H3: authenticate exactly once per session. Re-binding a different device
+      // on a live session leaves the registry's stale byDeviceId entry routing the
+      // previous device's ALERT_PUSH here (cross-device leak, trivial with the
+      // shared demo credential). Require LOGOUT + reconnect to change device.
+      audit.append(actor(session), "AUTH_DEVICE_REJECTED", "already-authenticated", "DENIED", env.messageId());
+      reply(session, "AUTH_RESULT", env.messageId(),
+          Json.obj().put("ok", false).put("code", "ALREADY_AUTHENTICATED"));
+      return;
+    }
     String deviceCode = Json.text(env.payload(), "deviceCode");
     String credential = Json.text(env.payload(), "credential");
     Optional<Device> device = auth.authenticateDevice(deviceCode, credential);
