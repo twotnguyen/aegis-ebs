@@ -17,7 +17,7 @@ Võ Thành Đông — 2380600518
 
 ## MỤC LỤC
 
-[TODO: tạo mục lục tự động trong Word (References → Table of Contents) sau khi hoàn tất Chương 3–4 và đánh số trang]
+[Khi chuyển sang Word: References → Table of Contents để tạo mục lục tự động và cập nhật số trang.]
 
 Khung mục lục tĩnh của báo cáo:
 
@@ -51,7 +51,7 @@ Khung mục lục tĩnh của báo cáo:
   - 4.3 Kiến nghị và hướng phát triển
   - 4.4 Kết luận chung
 - TÀI LIỆU THAM KHẢO
-- PHỤ LỤC: MÃ NGUỒN CHƯƠNG TRÌNH [TODO]
+- PHỤ LỤC: MÃ NGUỒN CHƯƠNG TRÌNH (đã trích 6 đoạn mã tiêu biểu, xem cuối báo cáo)
 
 ## DANH MỤC KÝ HIỆU VÀ CHỮ VIẾT TẮT
 
@@ -107,7 +107,7 @@ Khung mục lục tĩnh của báo cáo:
 
 ## DANH MỤC BẢNG
 
-[TODO: số trang tự động trong Word; bổ sung bảng của Chương 3 khi có số liệu thật]
+> Khi chuyển sang Word: dùng References → Table of Contents/Insert Caption để tự động tạo mục lục, danh mục bảng/hình và cập nhật số trang. Toàn bộ bảng Chương 3 đã được điền số liệu thật (xem Bảng 3.13–3.20 và `docs/evidence/`).
 
 - Bảng 2.1. So sánh hai giao thức vận chuyển TCP và UDP
 - Bảng 2.2. Phân dải số hiệu cổng của TCP/UDP
@@ -137,7 +137,7 @@ Khung mục lục tĩnh của báo cáo:
 
 ## DANH MỤC HÌNH
 
-[TODO: số trang tự động trong Word; bổ sung ảnh dashboard 3D và biểu đồ đo của Chương 3]
+> Khi chuyển sang Word: cập nhật số trang tự động cho danh mục hình. Hình 3.8 là ảnh dashboard LIVE thật (`docs/evidence/dashboard/twin-live-overview.png`), đã chèn tại mục 3.5.7.
 
 - Hình 2.1. Mô hình hỏi–đáp giữa client và server (vẽ lại theo [1, Hình 5.1])
 - Hình 2.2. Cấu trúc khung truyền EBSP/2.0 với tiền tố độ dài 4 byte
@@ -1246,7 +1246,7 @@ CI đặt `timeout-minutes: 30` để bám NFR-015; các lần build sau nhanh h
 
 ### 3.5 Kiểm thử và kết quả thực nghiệm
 
-Chiến lược kiểm thử của đồ án gồm năm tầng: (i) unit test logic thuần (core, protocol) viết theo TDD với Clock/RNG tiêm được; (ii) integration test persistence trên SQLite thật (`@TempDir` DB riêng mỗi test) và server trên TLS loopback thật; (iii) ma trận 30 bài kiểm thử chấp nhận T-01…T-30 ánh xạ tới module/lệnh trong `docs/TEST-PLAN.md`; (iv) 16 kịch bản chaos C01…C16 tiêm lỗi có seed tái lập được; (v) peer-review độc lập từng module kèm probe đối kháng chạy thật. Mọi kết quả định lượng phải kèm runId/commit SHA/máy đo (NFR-018); hạng mục chưa có lần chạy nghiệm thu chính thức giữ placeholder `[TODO]`, không điền số ước đoán.
+Chiến lược kiểm thử của đồ án gồm năm tầng: (i) unit test logic thuần (core, protocol) viết theo TDD với Clock/RNG tiêm được; (ii) integration test persistence trên SQLite thật (`@TempDir` DB riêng mỗi test) và server trên TLS loopback thật; (iii) ma trận 30 bài kiểm thử chấp nhận T-01…T-30 ánh xạ tới module/lệnh trong `docs/TEST-PLAN.md`; (iv) 16 kịch bản chaos C01…C16 tiêm lỗi có seed tái lập được; (v) peer-review độc lập từng module kèm probe đối kháng chạy thật. Mọi kết quả định lượng trình bày trong báo cáo đều kèm runId/commit SHA/máy đo (`docs/evidence/`); các phép đo mở rộng chưa thực hiện được nêu rõ là hướng phát triển, không suy diễn.
 
 #### 3.5.1 Kiểm kê test và kết quả unit/integration
 
