@@ -25,10 +25,11 @@ FPS = 24
 
 SLIDES: list[dict[str, Any]] = [
     dict(t=0, title="AEGIS-EBS — Emergency Broadcast System",
-         lines=["Trung tâm chỉ huy truyền thông khẩn cấp cho tòa nhà thông minh",
-                "Mô phỏng huấn luyện — SIMULATION / TRAINING",
-                "CMP180 · Lập trình mạng · HUTECH"],
-         voice="Chào bạn. Đây là AEGIS EBS, hệ thống truyền thông khẩn cấp mô phỏng cho tòa nhà thông minh, đồ án môn Lập trình mạng CMP180. Toàn bộ nội dung là mô phỏng huấn luyện, không thay thế hệ thống báo cháy thật."),
+         lines=["Nguyễn Ngọc Tình – 2380614851 · Bùi Thanh Long Ẩn – 2380600103",
+                "Nguyễn Hoàng Tùng – 2380602485 · Võ Thành Đông – 2380600518",
+                "Trung tâm chỉ huy truyền thông khẩn cấp cho tòa nhà thông minh",
+                "SIMULATION / TRAINING — CMP180 · Lập trình mạng · HUTECH"],
+         voice="Chào bạn. Đây là AEGIS EBS, hệ thống truyền thông khẩn cấp mô phỏng cho tòa nhà thông minh, đồ án môn Lập trình mạng CMP180 của bốn thành viên: Nguyễn Ngọc Tình, Bùi Thanh Long Ẩn, Nguyễn Hoàng Tùng và Võ Thành Đông. Toàn bộ nội dung là mô phỏng huấn luyện."),
     dict(t=45, title="Kiến trúc bốn mặt phẳng",
          lines=["Command · Delivery · Persistence/Observability · Discovery/Experiment",
                 "Kênh chính: TCP/TLS có xác thực", "UDP discovery + multicast hint chỉ là advisory",

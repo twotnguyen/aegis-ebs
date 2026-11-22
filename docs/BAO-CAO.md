@@ -1,13 +1,19 @@
 # BÁO CÁO ĐỒ ÁN HỌC PHẦN — CMP180 Lập trình mạng máy tính
 ## HỆ THỐNG THÔNG BÁO KHẨN CẤP CHO TÒA NHÀ VĂN PHÒNG (AEGIS — EMERGENCY BROADCAST SYSTEM)
-Giảng viên hướng dẫn: ThS. Nguyễn Văn Cẩn · Nhóm: [TODO] · Thành viên/MSSV: [TODO] · Lớp: [TODO] · Năm học 2025–2026
+Giảng viên hướng dẫn: ThS. Nguyễn Văn Cẩn · Nhóm: [chưa đặt] · Thành viên/MSSV: Nguyễn Ngọc Tình – 2380614851; Bùi Thanh Long Ẩn – 2380600103; Nguyễn Hoàng Tùng – 2380602485; Võ Thành Đông – 2380600518 · Lớp: [chưa cung cấp] · Năm học 2025–2026
 > SIMULATION/TRAINING — không thay thế hệ thống báo cháy/sơ tán chứng nhận.
 
 ## LỜI CAM ĐOAN
 
 Nhóm chúng tôi xin cam đoan đồ án “Hệ thống thông báo khẩn cấp cho tòa nhà văn phòng (AEGIS — Emergency Broadcast System)” là công trình do chính nhóm thực hiện dưới sự hướng dẫn của ThS. Nguyễn Văn Cẩn. Phần cơ sở lý thuyết được tổng hợp từ giáo trình học phần CMP180 [1] và các tài liệu tham khảo được trích dẫn đầy đủ; mã nguồn hệ thống do nhóm tự xây dựng và kiểm thử. Số liệu thực nghiệm trình bày ở Chương 3 được đo đạc trực tiếp trên hệ thống thật, ghi nhận trung thực kèm điều kiện đo (runId, phiên bản mã nguồn, cấu hình máy); tuyệt đối không sao chép hoặc bịa đặt số liệu. Mọi kịch bản vận hành đều được gắn nhãn SIMULATION/TRAINING và không nhằm thay thế các hệ thống báo cháy, sơ tán đã được chứng nhận. Nhóm xin chịu hoàn toàn trách nhiệm về nội dung của đồ án.
 
-[TODO: ký tên nhóm trưởng và các thành viên; ghi rõ họ tên, MSSV]
+Nguyễn Ngọc Tình — 2380614851
+
+Bùi Thanh Long Ẩn — 2380600103
+
+Nguyễn Hoàng Tùng — 2380602485
+
+Võ Thành Đông — 2380600518
 
 ## MỤC LỤC
 

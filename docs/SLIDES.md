@@ -46,7 +46,7 @@
 
 ### Slide 1 — Nhan đề & disclaimer (0:00–0:20)
 - **Tiêu đề:** AEGIS — Emergency Broadcast System cho tòa nhà văn phòng · CMP180 Capstone.
-- Nhóm / thành viên / MSSV / lớp / GVHD: ThS. Nguyễn Văn Cẩn · Năm học 2025–2026. `[TODO điền]`
+- Nhóm / thành viên / MSSV: Nguyễn Ngọc Tình (2380614851) · Bùi Thanh Long Ẩn (2380600103) · Nguyễn Hoàng Tùng (2380602485) · Võ Thành Đông (2380600518). Lớp / GVHD: [chưa cung cấp] · ThS. Nguyễn Văn Cẩn · Năm học 2025–2026.
 - **Dòng bắt buộc:** `SIMULATION / TRAINING — không thay thế hệ thống báo cháy/sơ tán chứng nhận.`
 - **Demo:** chiếu dashboard 3D 10 tầng, kết nối xanh, nhãn TLS/version (system reveal).
 - **Ghi chú:** mở đầu dứt khoát, nêu ngay giới hạn mô phỏng để định khung trung thực.
