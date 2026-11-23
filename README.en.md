@@ -76,6 +76,18 @@ bash scripts/demo-web.sh
 - **Fleet Start (20)** → **Publish FIRE_DRILL F05** (red zone + ACKs on the LIVE dashboard) → **Retry demo** (1 silent device, `FAILED` after 3s/6s/12s) → **Cancel**.
 - Press `Ctrl+C` to stop. The manual setup commands below are only needed for a real studio/chaos setup; see `docs/USER-GUIDE.md` section 0 for details.
 
+### Three-role demo model
+
+The demo is presented through three distinct roles (details: `docs/en/DEMO-3ROLES.md`):
+
+| Role | Screen | Action in the demo |
+|---|---|---|
+| **3D twin** | Three.js dashboard (`http://localhost:5173`) | Viewing screen: zones change color by severity, timeline/replay, delivery funnel. Observe only; it issues no commands. |
+| **Zone client** | JavaFX desktop (`DEV-A-F05-B-01`) | Receives `ALERT_PUSH` for zone `F05-B` only; stores a durable inbox then sends `ACK_RECEIVED`; a person presses **Acknowledge** to send `ACK_USER`. |
+| **Admin console** | Admin tab on the dashboard | Monitors fleet/status; approves or edits `PUBLISH` grants in the `role_grants` table; reads the `audit_events` log through the extended bridge. |
+
+Five-step flow: admin approves grant -> operator publishes `F05-B` -> JavaFX client popup + Acknowledge -> twin changes color -> admin reads audit. Tailscale works for TCP/TLS/dashboard over `100.x` addresses, **not** for Lesson 8 multicast (TTL=1, L3 overlay) - use a physical LAN or the unicast fallback.
+
 ### Prerequisites
 ```bash
 brew install maven          # Java 24+ (Temurin), Maven 3.10
@@ -183,6 +195,7 @@ Self-signed TLS + pinned truststore (no trust-all); server-side scoped RBAC; Arg
 | `docs/SLIDES.md` | 12-minute defense slide outline + Q&A |
 | `docs/BUILD.md` | Reproducible build, fresh install < 30 minutes |
 | `docs/DEMO-RUNBOOK.md` | 12-minute demo script |
+| `docs/en/DEMO-3ROLES.md` | Three-role demo model (3D twin / JavaFX zone client / admin console) + 5-step flow + Tailscale |
 | `Agents.md` | Multi-agent orchestration + peer-review process used to build the project |
 
 English parallel documentation: [`README.en.md`](README.en.md) and [`docs/en/README.md`](docs/en/README.md); language switching is described in [`docs/I18N.md`](docs/I18N.md).

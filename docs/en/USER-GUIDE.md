@@ -104,3 +104,13 @@ Every run includes a `summary.json` (runId, commit SHA, measurement machine, p50
 - **Bad certificate**: re-run `gen-server-cert.sh`; the client must use the matching truststore.
 - **Multicast not working (macOS lo0/Tailscale)**: network-lab falls back to unicast automatically; run the multicast demo on a real 2-machine LAN.
 - **JavaFX headless**: use the simulator + dashboard instead of the GUI client.
+
+## 10. Three-role demo model
+
+Three roles are shown together (details: `docs/en/DEMO-3ROLES.md`):
+
+- **3D twin** - Three.js dashboard: the viewing screen, zones change color by severity; timeline/replay, chaos, reports, delivery funnel. It issues no commands.
+- **Zone client** - JavaFX desktop (e.g. `DEV-A-F05-B-01`): receives alerts for its own zone, stores a durable inbox, sends `ACK_RECEIVED`; a person presses **Acknowledge** -> `ACK_USER`.
+- **Admin console** - Admin tab on the dashboard: monitors fleet/status; approves or edits `PUBLISH` grants in the `role_grants` table; reads `audit_events` through the extended bridge.
+
+Tailscale: works for TCP/TLS/dashboard over `100.x` addresses; **not** for Lesson 8 multicast (TTL=1, L3 overlay) - use a physical LAN or the unicast fallback (see section 9). For the five-step demo flow see `docs/en/DEMO-3ROLES.md`.

@@ -104,3 +104,13 @@ Mỗi run kèm `summary.json` (runId, commit SHA, máy đo, p50/p95/p99, ACK rat
 - **Cert lỗi**: chạy lại `gen-server-cert.sh`; client phải dùng đúng truststore.
 - **Multicast không chạy (macOS lo0/Tailscale)**: network-lab tự fallback unicast; demo multicast dùng LAN thật 2 máy.
 - **JavaFX headless**: dùng simulator + dashboard thay client GUI.
+
+## 10. Mô hình demo 3 vai trò
+
+Ba vai trò chiếu cùng lúc (chi tiết: `docs/DEMO-3ROLES.md`):
+
+- **3D twin** — dashboard Three.js: màn hình nhìn, zone đổi màu theo severity; timeline/replay, chaos, reports, delivery funnel. Không phát lệnh.
+- **Zone client** — JavaFX desktop (ví dụ `DEV-A-F05-B-01`): nhận alert đúng zone, lưu inbox bền vững, gửi `ACK_RECEIVED`; người bấm **Acknowledge** → `ACK_USER`.
+- **Admin console** — tab Admin trên dashboard: giám sát fleet/trạng thái; duyệt/chỉnh grant `PUBLISH` trong bảng `role_grants`; đọc `audit_events` qua bridge mở rộng.
+
+Tailscale: dùng được cho TCP/TLS/dashboard qua IP `100.x`; **không** dùng cho multicast Bài 8 (TTL=1, overlay L3) — dùng LAN vật lý hoặc fallback unicast (xem mục 9). Luồng demo 5 bước xem `docs/DEMO-3ROLES.md`.

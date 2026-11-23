@@ -1,7 +1,8 @@
 // ---------------------------------------------------------------------------
 // Aegis EBS — tabbed panels: Incident timeline/replay · Chaos control ·
 // Reports (p50/p95/p99 + CSV/JSON export) · Delivery funnel per alert ·
-// Operator bridge (REAL publish/cancel/fleet commands via HTTP bridge).
+// Operator bridge (REAL publish/cancel/fleet commands via HTTP bridge) ·
+// Admin bridge (system overview, RBAC grants, append-only audit log).
 // The 3D twin keeps rendering behind the panels; the "Twin" tab restores the
 // classic HUD-only view. All DOM lives in index.html; this module wires it.
 // ---------------------------------------------------------------------------
@@ -35,7 +36,7 @@ export function createPanels(deps) {
 
   // --- tabs -------------------------------------------------------------------
 
-  const TABS = ['twin', 'incidents', 'chaos', 'reports', 'funnel', 'operator'];
+  const TABS = ['twin', 'incidents', 'chaos', 'reports', 'funnel', 'operator', 'admin'];
 
   function setTab(name) {
     if (!TABS.includes(name)) return;
@@ -59,6 +60,7 @@ export function createPanels(deps) {
     else if (tab === 'reports') renderReports();
     else if (tab === 'funnel') renderFunnel();
     else if (tab === 'operator') renderOperator();
+    else if (tab === 'admin') refreshAdmin();
   }
   const refreshIfActive = (tab) => {
     if (activeTab === tab) refresh(tab);
@@ -761,11 +763,440 @@ export function createPanels(deps) {
     opRemember(await opFetch('/api/cancel', body), body);
   }));
 
+  // --- admin bridge (overview / RBAC grants / audit) -----------------------------
+  // Same localhost bridge and BRIDGE_BASE as the Operator tab. Only whitelisted
+  // fields are rendered; password_hash / credential_hash / secrets are never
+  // read into the DOM, even if the bridge returns them.
+
+  const ADMIN_ENDPOINTS = {
+    overview: '/api/admin/overview',
+    users: '/api/admin/users',
+    grants: '/api/admin/grants',
+    fleet: '/api/fleet/stats',
+    audit: '/api/admin/audit',
+    approve: '/api/admin/grants/approve',
+    revoke: '/api/admin/grants/revoke',
+  };
+  const ADMIN_SENSITIVE_RE = /(pass(word|hash)?|secret|credential|token|authorization)/i;
+  const adminState = {
+    loaded: false, busy: false,
+    overview: null, fleet: null, users: [], grants: [], audit: [],
+    status: { key: 'admin.idle', kind: '', vars: undefined },
+  };
+
+  function adminSetStatus(key, kind = '', vars) {
+    adminState.status = { key, kind, vars };
+    const el = $('admin-status');
+    if (!el) return;
+    el.textContent = t(key, vars);
+    el.className = `pill${kind ? ` admin-status-${kind}` : ''}`;
+  }
+
+  function adminButtonsDisabled(disabled) {
+    for (const id of ['admin-overview-refresh', 'admin-grants-refresh', 'admin-audit-refresh', 'admin-grant-submit']) {
+      const el = $(id);
+      if (el) el.disabled = disabled;
+    }
+  }
+
+  /** First non-empty value for any of `keys`, including one nested level. */
+  function adminPick(obj, keys) {
+    if (!obj || typeof obj !== 'object') return undefined;
+    for (const key of keys) {
+      if (obj[key] !== undefined && obj[key] !== null) return obj[key];
+    }
+    for (const value of Object.values(obj)) {
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        const found = adminPick(value, keys);
+        if (found !== undefined) return found;
+      }
+    }
+    return undefined;
+  }
+
+  function adminRows(data, keys) {
+    if (Array.isArray(data)) return data;
+    if (!data || typeof data !== 'object') return [];
+    for (const key of keys) if (Array.isArray(data[key])) return data[key];
+    for (const value of Object.values(data)) {
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        for (const key of keys) if (Array.isArray(value[key])) return value[key];
+      }
+    }
+    return [];
+  }
+
+  function adminNum(value) {
+    if (Array.isArray(value)) return String(value.length);
+    return value == null || value === '' ? '–' : String(value);
+  }
+
+  function adminText(value) {
+    if (value == null || value === '') return '–';
+    if (Array.isArray(value)) return value.map(adminText).join(', ');
+    if (typeof value === 'object') {
+      return Object.entries(value)
+        .filter(([key]) => !ADMIN_SENSITIVE_RE.test(key))
+        .map(([, item]) => adminText(item))
+        .join(' / ');
+    }
+    return String(value);
+  }
+
+  function adminBool(value) {
+    const v = String(value).toLowerCase();
+    if (value === true || value === 1 || v === 'true' || v === '1') return t('admin.yes');
+    if (value === false || value === 0 || v === 'false' || v === '0') return t('admin.no');
+    return adminText(value);
+  }
+
+  function adminEmptyRow(tbody, cols, message) {
+    const tr = document.createElement('tr');
+    const td = document.createElement('td');
+    td.colSpan = cols;
+    td.className = 'hint';
+    td.textContent = message;
+    tr.append(td);
+    tbody.replaceChildren(tr);
+  }
+
+  function adminOverview(data) {
+    const counts = data && !Array.isArray(data) ? (data.counts ?? data.counters ?? data) : {};
+    return {
+      users: adminNum(adminPick(counts, ['users', 'userCount', 'totalUsers'])),
+      grants: adminNum(adminPick(counts, ['grants', 'grantCount', 'totalGrants', 'roleGrants'])),
+      audit: adminNum(adminPick(counts, ['audit', 'auditCount', 'auditEvents', 'totalAudit'])),
+      alerts: adminNum(adminPick(counts, ['alerts', 'alertCount', 'totalAlerts', 'activeAlerts'])),
+      fleet: adminPick(data, ['fleet', 'fleetStats', 'fleet_stats', 'devices']),
+    };
+  }
+
+  function adminFleetLine(fleet) {
+    if (!fleet) return t('admin.overview.fleetNone');
+    const count = adminPick(fleet, ['deviceCount', 'deviceTotal', 'count', 'total', 'fleetSize', 'devices']);
+    const online = adminPick(fleet, ['online', 'onlineCount', 'connected']);
+    const silent = adminPick(fleet, ['silent', 'silentCount', 'silentDevices']);
+    return t('admin.overview.fleet', { count: adminNum(count) }) +
+      (online != null ? t('admin.overview.fleetOnline', { count: adminNum(online) }) : '') +
+      (silent != null ? t('admin.overview.fleetSilent', { count: adminNum(silent) }) : '');
+  }
+
+  function adminRenderUsers() {
+    const tbody = $('admin-users-table').querySelector('tbody');
+    const rows = adminState.users;
+    tbody.replaceChildren(
+      ...rows.map((u) => {
+        const tr = document.createElement('tr');
+        for (const value of [
+          adminText(adminPick(u, ['username', 'name'])),
+          adminText(adminPick(u, ['role', 'authority'])),
+          adminBool(u.enabled),
+          adminText(adminPick(u, ['created_at', 'createdAt'])),
+        ]) {
+          const td = document.createElement('td');
+          td.textContent = value;
+          tr.append(td);
+        }
+        return tr;
+      }),
+    );
+    if (!rows.length) adminEmptyRow(tbody, 4, t('admin.grants.noUsers'));
+  }
+
+  function adminRenderGrants() {
+    const tbody = $('admin-grants-table').querySelector('tbody');
+    const usersById = new Map(adminState.users.map((u) => [u.id ?? u.user_id, u.username]));
+    const rows = adminState.grants;
+    // Seed the form with real IDs from the current database instead of fake
+    // placeholders (B01 / 1) that would fail server-side grant validation.
+    if (rows.length) {
+      const buildingInput = $('admin-grant-building');
+      const floorInput = $('admin-grant-floor');
+      const rawBuilding = adminPick(rows[0], ['building_id', 'buildingId']);
+      const rawFloor = adminPick(rows[0], ['floor_id', 'floorId']);
+      if (!buildingInput.value.trim() && rawBuilding != null && rawBuilding !== '') {
+        buildingInput.value = adminText(rawBuilding);
+      }
+      // A building-wide grant has no floor_id; adminText(null) would be "–".
+      if (!floorInput.value.trim() && rawFloor != null && rawFloor !== '') {
+        floorInput.value = adminText(rawFloor);
+      }
+    }
+    tbody.replaceChildren(
+      ...rows.map((g) => {
+        const tr = document.createElement('tr');
+        const username = adminText(adminPick(g, ['username', 'userName']) ?? usersById.get(g.user_id ?? g.userId));
+        const buildingId = adminPick(g, ['building_id', 'buildingId']) ?? $('admin-grant-building').value;
+        const floorId = adminPick(g, ['floor_id', 'floorId']) ?? $('admin-grant-floor').value;
+        const scope = adminPick(g, ['scope']) ?? 'PUBLISH';
+        for (const value of [username, adminText(buildingId), adminText(floorId), adminText(scope), adminText(adminPick(g, ['granted_at', 'grantedAt']))]) {
+          const td = document.createElement('td');
+          td.textContent = value;
+          tr.append(td);
+        }
+        const actions = document.createElement('td');
+        const approve = document.createElement('button');
+        approve.type = 'button';
+        approve.className = 'admin-row-btn';
+        approve.textContent = t('admin.grants.approve');
+        approve.dataset.adminAction = 'approve';
+        approve.dataset.username = username === '–' ? '' : username;
+        const ownerId = adminPick(g, ['user_id', 'userId']);
+        approve.dataset.userId = ownerId == null ? '' : adminText(ownerId);
+        approve.dataset.grantId = g.id == null ? '' : adminText(g.id);
+        approve.dataset.buildingId = adminText(buildingId);
+        approve.dataset.floorId = adminText(floorId);
+        approve.dataset.scope = adminText(scope);
+        const revoke = approve.cloneNode(false);
+        revoke.textContent = t('admin.grants.revoke');
+        revoke.dataset.adminAction = 'revoke';
+        actions.append(approve, revoke);
+        tr.append(actions);
+        return tr;
+      }),
+    );
+    if (!rows.length) adminEmptyRow(tbody, 6, t('admin.grants.noGrants'));
+  }
+
+  function adminAuditLimit() {
+    const raw = Number($('admin-audit-limit').value);
+    return Number.isFinite(raw) ? Math.max(1, Math.min(500, Math.trunc(raw))) : 50;
+  }
+
+  function adminRenderAudit() {
+    const tbody = $('admin-audit-table').querySelector('tbody');
+    const action = $('admin-audit-action').value;
+    const outcome = $('admin-audit-outcome').value;
+    const rows = adminState.audit.filter((row) => {
+      const a = String(adminPick(row, ['action']) ?? '').toUpperCase();
+      const o = String(adminPick(row, ['outcome', 'result']) ?? '').toUpperCase();
+      return (action === 'ALL' || a === action) && (outcome === 'ALL' || o === outcome);
+    }).slice(0, adminAuditLimit());
+    tbody.replaceChildren(
+      ...rows.map((row) => {
+        const tr = document.createElement('tr');
+        const result = String(adminPick(row, ['outcome', 'result']) ?? '').toUpperCase();
+        if (/DENIED|FAILED|FAIL|ERROR|REJECT/.test(result)) tr.className = 'admin-audit-bad';
+        for (const value of [
+          adminText(adminPick(row, ['occurred_at', 'occurredAt', 'ts'])),
+          adminText(adminPick(row, ['actor', 'actor_id', 'actorId'])),
+          adminText(adminPick(row, ['action'])),
+          adminText(adminPick(row, ['scope'])),
+          adminText(adminPick(row, ['outcome', 'result'])),
+        ]) {
+          const td = document.createElement('td');
+          td.textContent = value;
+          tr.append(td);
+        }
+        return tr;
+      }),
+    );
+    if (!rows.length) adminEmptyRow(tbody, 5, t('admin.audit.empty'));
+    $('admin-audit-count').textContent = t('admin.audit.count', { count: rows.length });
+  }
+
+  function renderAdmin() {
+    const bridge = $('admin-bridge');
+    if (bridge) bridge.textContent = t('admin.bridge', { bridge: BRIDGE_BASE });
+    adminSetStatus(adminState.status.key, adminState.status.kind, adminState.status.vars);
+    const ov = adminOverview(adminState.overview);
+    $('admin-count-users').textContent = ov.users;
+    $('admin-count-grants').textContent = ov.grants;
+    $('admin-count-audit').textContent = ov.audit;
+    $('admin-count-alerts').textContent = ov.alerts;
+    $('admin-overview-fleet').textContent = adminFleetLine(adminState.fleet ?? ov.fleet);
+    $('admin-grants-count').textContent = t('admin.grants.count', {
+      users: adminState.users.length, grants: adminState.grants.length,
+    });
+    adminRenderUsers();
+    adminRenderGrants();
+    adminRenderAudit();
+  }
+
+  function refreshAdmin() {
+    renderAdmin();
+    if (!adminState.loaded && !adminState.busy) adminLoadAll();
+  }
+
+  async function adminFetch(path, body) {
+    try {
+      return await opFetch(path, body); // same BRIDGE_BASE + timeout + ok:false handling
+    } catch (err) {
+      const offline = err instanceof TypeError || err?.name === 'NetworkError';
+      if (offline) {
+        const wrapped = new Error(t('admin.bridgeOffline', { bridge: BRIDGE_BASE }));
+        wrapped.i18nKey = 'admin.bridgeOffline';
+        wrapped.i18nVars = { bridge: BRIDGE_BASE };
+        throw wrapped;
+      }
+      const message = err?.message ?? String(err);
+      const wrapped = new Error(t('admin.errorCall', { path, message }));
+      wrapped.i18nKey = 'admin.errorCall';
+      wrapped.i18nVars = { path, message };
+      throw wrapped;
+    }
+  }
+
+  function adminErrorState(err, path) {
+    if (err?.i18nKey) return { key: err.i18nKey, vars: err.i18nVars };
+    return { key: 'admin.errorCall', vars: { path, message: err?.message ?? String(err) } };
+  }
+
+  async function adminLoadOverview() {
+    const [overview, fleet] = await Promise.all([
+      adminFetch(ADMIN_ENDPOINTS.overview),
+      adminFetch(ADMIN_ENDPOINTS.fleet).catch(() => null), // fleet stats are optional
+    ]);
+    adminState.overview = overview;
+    adminState.fleet = fleet;
+    renderAdmin();
+  }
+
+  async function adminLoadGrants() {
+    const [usersData, grantsData] = await Promise.all([
+      adminFetch(ADMIN_ENDPOINTS.users),
+      adminFetch(ADMIN_ENDPOINTS.grants),
+    ]);
+    adminState.users = adminRows(usersData, ['users', 'operators', 'accounts']);
+    adminState.grants = adminRows(grantsData, ['grants', 'roleGrants', 'role_grants']);
+    renderAdmin();
+  }
+
+  async function adminLoadAudit() {
+    const params = new URLSearchParams();
+    if ($('admin-audit-action').value !== 'ALL') params.set('action', $('admin-audit-action').value);
+    if ($('admin-audit-outcome').value !== 'ALL') params.set('outcome', $('admin-audit-outcome').value);
+    params.set('limit', String(adminAuditLimit()));
+    const data = await adminFetch(`${ADMIN_ENDPOINTS.audit}?${params.toString()}`);
+    adminState.audit = adminRows(data, ['audit', 'auditEvents', 'events', 'rows']);
+    renderAdmin();
+  }
+
+  async function adminFetchAll() {
+    const results = await Promise.allSettled([adminLoadOverview(), adminLoadGrants(), adminLoadAudit()]);
+    const failed = results.find((r) => r.status === 'rejected');
+    if (failed) throw failed.reason;
+  }
+
+  async function adminLoadAll() {
+    if (adminState.busy) return;
+    adminState.busy = true;
+    adminButtonsDisabled(true);
+    adminSetStatus('admin.loading');
+    try {
+      await adminFetchAll();
+      adminState.loaded = true;
+      adminSetStatus('admin.ok', 'ok');
+    } catch (err) {
+      adminState.loaded = false;
+      const info = adminErrorState(err, 'admin');
+      adminSetStatus(info.key, 'error', info.vars);
+    } finally {
+      adminState.busy = false;
+      adminButtonsDisabled(false);
+      renderAdmin();
+    }
+  }
+
+  async function adminSingle(loader, path) {
+    if (adminState.busy) return;
+    adminState.busy = true;
+    adminButtonsDisabled(true);
+    adminSetStatus('admin.loading');
+    try {
+      await loader();
+      adminSetStatus('admin.ok', 'ok');
+    } catch (err) {
+      const info = adminErrorState(err, path);
+      adminSetStatus(info.key, 'error', info.vars);
+    } finally {
+      adminState.busy = false;
+      adminButtonsDisabled(false);
+      renderAdmin();
+    }
+  }
+
+  /** Bridge contract: `username` is the GRANT TARGET, `operator` is the caller
+   *  (audit only). No password is sent — the admin surface is local-only. */
+  function adminGrantBody(extra) {
+    return { operator: opAuth().username, ...extra };
+  }
+
+  async function adminGrant(action, body) {
+    if (adminState.busy) return;
+    adminState.busy = true;
+    adminButtonsDisabled(true);
+    adminSetStatus('admin.sending', 'busy');
+    const path = action === 'approve' ? ADMIN_ENDPOINTS.approve : ADMIN_ENDPOINTS.revoke;
+    try {
+      const data = await adminFetch(path, body);
+      try {
+        await adminFetchAll(); // refresh snapshots; keep stale data if this fails
+        adminState.loaded = true;
+      } catch { /* grant succeeded — the per-panel refresh is best-effort */ }
+      const detail = data?.message ?? data?.note ?? '';
+      adminSetStatus(action === 'approve' ? 'admin.grant.approved' : 'admin.grant.revoked', 'ok', {
+        data: detail ? ` · ${adminText(detail)}` : '',
+      });
+    } catch (err) {
+      const info = adminErrorState(err, path);
+      adminSetStatus(info.key, 'error', info.vars);
+    } finally {
+      adminState.busy = false;
+      adminButtonsDisabled(false);
+      renderAdmin();
+    }
+  }
+
+  $('admin-overview-refresh').addEventListener('click', () => adminLoadAll());
+  $('admin-grants-refresh').addEventListener('click', () => adminLoadAll());
+  $('admin-audit-refresh').addEventListener('click', () => adminLoadAll());
+  for (const id of ['admin-audit-action', 'admin-audit-outcome', 'admin-audit-limit']) {
+    $(id).addEventListener('change', () => adminSingle(adminLoadAudit, 'audit'));
+  }
+
+  $('admin-grant-form').addEventListener('submit', (ev) => {
+    ev.preventDefault();
+    const targetUsername = $('admin-grant-username').value.trim();
+    const buildingId = $('admin-grant-building').value.trim();
+    const floorId = $('admin-grant-floor').value.trim();
+    if (!targetUsername || !buildingId) {
+      adminSetStatus('admin.grants.missing', 'error');
+      renderAdmin();
+      return;
+    }
+    const payload = {
+      username: targetUsername, buildingId, scope: 'PUBLISH',
+    };
+    if (floorId) payload.floorId = floorId;
+    adminGrant('approve', adminGrantBody(payload));
+  });
+
+  $('admin-grants-table').querySelector('tbody').addEventListener('click', (ev) => {
+    const btn = ev.target.closest?.('button[data-admin-action]');
+    if (!btn || adminState.busy) return;
+    const action = btn.dataset.adminAction;
+    const body = adminGrantBody(action === 'approve' ? { username: btn.dataset.username } : {});
+    if (action === 'revoke') {
+      body.grantId = btn.dataset.grantId || undefined;
+    } else {
+      Object.assign(body, {
+        buildingId: btn.dataset.buildingId,
+        floorId: btn.dataset.floorId,
+        scope: btn.dataset.scope || 'PUBLISH',
+      });
+    }
+    adminGrant(action, body);
+  });
+
   // --- init ------------------------------------------------------------------------
 
   opSetStatus('operator.idle');
   subscribe(() => {
     if (opState.statusKey) opSetStatus(opState.statusKey, opState.statusKind ?? '');
+    if (adminState.status.key) {
+      adminSetStatus(adminState.status.key, adminState.status.kind, adminState.status.vars);
+    }
   });
 
   setTab('twin');

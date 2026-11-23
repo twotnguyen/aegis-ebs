@@ -76,6 +76,18 @@ bash scripts/demo-web.sh
 - **Fleet Start (20)** → **Publish FIRE_DRILL F05** (zone đỏ + ACK trên dashboard LIVE) → **Retry demo** (1 device im lặng, `FAILED` sau 3s/6s/12s) → **Cancel**.
 - `Ctrl+C` để dừng. Các lệnh thiết lập thủ công bên dưới chỉ cần khi muốn studio/chaos thật; chi tiết xem `docs/USER-GUIDE.md` mục 0.
 
+### Mô hình demo 3 vai trò
+
+Demo được chiếu bằng ba vai trò phân biệt (chi tiết: `docs/DEMO-3ROLES.md`):
+
+| Vai trò | Màn hình | Hành động trong demo |
+|---|---|---|
+| **3D twin** | Dashboard Three.js (`http://localhost:5173`) | Màn hình nhìn: zone đổi màu theo severity, timeline/replay, delivery funnel. Chỉ quan sát, không phát lệnh. |
+| **Zone client** | JavaFX desktop (`DEV-A-F05-B-01`) | Nhận `ALERT_PUSH` đúng zone `F05-B`; lưu durable inbox rồi gửi `ACK_RECEIVED`; người bấm **Acknowledge** gửi `ACK_USER`. |
+| **Admin console** | Tab Admin trên dashboard | Giám sát fleet/trạng thái; duyệt hoặc chỉnh grant `PUBLISH` trong bảng `role_grants`; đọc log `audit_events` qua bridge mở rộng. |
+
+Luồng 5 bước: admin duyệt grant → operator publish `F05-B` → client JavaFX popup + Acknowledge → twin đổi màu → admin đọc audit. Tailscale dùng được cho TCP/TLS/dashboard qua IP `100.x`, **không** dùng cho multicast Bài 8 (TTL=1, overlay L3) — dùng LAN vật lý hoặc fallback unicast.
+
 ### Prerequisites
 ```bash
 brew install maven          # Java 24+ (Temurin), Maven 3.10
@@ -183,6 +195,7 @@ TLS self-signed + pinned truststore (không trust-all); RBAC scope kiểm ở se
 | `docs/SLIDES.md` | Dàn ý slide bảo vệ 12 phút + Q&A |
 | `docs/BUILD.md` | Build tái lập, fresh-install <30 phút |
 | `docs/DEMO-RUNBOOK.md` | Kịch bản demo 12 phút |
+| `docs/DEMO-3ROLES.md` | Mô hình demo 3 vai trò (3D twin / zone client JavaFX / admin console) + luồng 5 bước + Tailscale |
 | `Agents.md` | Quy trình điều phối đa agent + peer-review đã dùng để xây dự án |
 
 ## 9. Học thuật

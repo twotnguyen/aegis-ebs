@@ -21,6 +21,7 @@
           <button class="tab" data-tab="reports" title="Latency reports &amp; export (key 4)" data-i18n="tab.reports" data-i18n-title="tab.reports.title">Reports</button>
           <button class="tab" data-tab="funnel" title="Per-alert delivery funnel (key 5)" data-i18n="tab.funnel" data-i18n-title="tab.funnel.title">Funnel</button>
           <button class="tab" data-tab="operator" title="Real publish/cancel via bridge (key 6)" data-i18n="tab.operator" data-i18n-title="tab.operator.title">Operator</button>
+          <button class="tab" data-tab="admin" title="Admin: overview, grants, audit (key 7)" data-i18n="tab.admin" data-i18n-title="tab.admin.title">Admin</button>
         </nav>
         <div class="top-badges">
           <button id="lang-toggle" type="button" aria-label="Switch interface language" data-i18n-aria-label="lang.toggleAria" title="VI / EN">
@@ -237,6 +238,95 @@
             <div id="op-log" class="op-log"><div class="hint op-log-empty" data-i18n="operator.logEmpty">Chưa có lệnh bridge. Bấm “Ping health + stats” để kiểm tra kết nối.</div></div>
           </div>
         </section>
+
+        <!-- Admin: system overview + RBAC grants + append-only audit log -->
+        <section id="view-admin" class="view" hidden>
+          <div class="panel">
+            <h2><span data-i18n="admin.overview.title">System overview</span> <span id="admin-status" class="pill" data-i18n="admin.idle">idle</span> <span id="admin-bridge" class="pill">bridge: –</span></h2>
+            <p class="hint" data-i18n="admin.overview.note">Đọc số liệu từ bridge.quản trị; không lưu mật khẩu hay secret trong bảng điều khiển.</p>
+            <div class="row">
+              <button id="admin-overview-refresh" data-i18n="admin.refresh">Refresh</button>
+            </div>
+            <div class="admin-counts">
+              <div class="admin-count"><span class="admin-count-label" data-i18n="admin.overview.users">Users</span><span id="admin-count-users" class="admin-count-value">–</span></div>
+              <div class="admin-count"><span class="admin-count-label" data-i18n="admin.overview.grants">Grants</span><span id="admin-count-grants" class="admin-count-value">–</span></div>
+              <div class="admin-count"><span class="admin-count-label" data-i18n="admin.overview.audit">Audit</span><span id="admin-count-audit" class="admin-count-value">–</span></div>
+              <div class="admin-count"><span class="admin-count-label" data-i18n="admin.overview.alerts">Alerts</span><span id="admin-count-alerts" class="admin-count-value">–</span></div>
+            </div>
+            <div id="admin-overview-fleet" class="hint" data-i18n="admin.overview.fleetNone">fleet: –</div>
+          </div>
+
+          <div class="panel">
+            <h2><span data-i18n="admin.grants.title">Operators &amp; grants</span> <span id="admin-grants-count" class="pill" data-i18n="admin.grants.countInitial">0 users · 0 grants</span></h2>
+            <p class="hint" data-i18n="admin.grants.note">Cấp/thu hồi quyền PUBLISH theo buildingId + floorId. Chỉ hiển thị tên người dùng, không hiển thị băm mật khẩu.</p>
+            <h3 data-i18n="admin.grants.formTitle">New grant</h3>
+            <form id="admin-grant-form" class="op-grid admin-grid">
+              <label><span data-i18n="admin.grants.targetUser">Target username</span><input id="admin-grant-username" type="text" autocomplete="off" /></label>
+              <label><span data-i18n="admin.grants.buildingId">Building ID</span><input id="admin-grant-building" type="text" autocomplete="off" /></label>
+              <label><span data-i18n="admin.grants.floorId">Floor ID</span><input id="admin-grant-floor" type="text" autocomplete="off" /></label>
+              <label><span data-i18n="admin.grants.scope">Scope</span><span id="admin-grant-scope" class="pill">PUBLISH</span></label>
+              <label class="op-wide"><button id="admin-grant-submit" type="submit" data-i18n="admin.grants.approve">Approve grant</button></label>
+            </form>
+            <div class="row">
+              <button id="admin-grants-refresh" data-i18n="admin.refresh">Refresh</button>
+            </div>
+            <h3 data-i18n="admin.grants.usersTitle">Users</h3>
+            <div class="admin-table-wrap">
+              <table class="tbl" id="admin-users-table">
+                <thead><tr><th data-i18n="admin.grants.col.username">username</th><th data-i18n="admin.grants.col.role">role</th><th data-i18n="admin.grants.col.enabled">enabled</th><th data-i18n="admin.grants.col.created">created_at</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <h3 data-i18n="admin.grants.grantsTitle">Grants</h3>
+            <div class="admin-table-wrap">
+              <table class="tbl" id="admin-grants-table">
+                <thead><tr><th data-i18n="admin.grants.col.username">username</th><th data-i18n="admin.grants.col.building">buildingId</th><th data-i18n="admin.grants.col.floor">floorId</th><th data-i18n="admin.grants.col.scope">scope</th><th data-i18n="admin.grants.col.granted">granted_at</th><th data-i18n="admin.grants.col.actions">actions</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h2><span data-i18n="admin.audit.title">Audit log</span> <span id="admin-audit-count" class="pill" data-i18n="admin.audit.countInitial">0 rows</span></h2>
+            <p class="hint" data-i18n="admin.audit.note">Nhật ký append-only: actor / action / scope / outcome (bỏ qua correlationId và payload_json).</p>
+            <div class="row admin-filters">
+              <label><span data-i18n="admin.audit.action">Action</span>
+                <select id="admin-audit-action">
+                  <option value="ALL" data-i18n="admin.audit.all">All</option>
+                  <option value="PUBLISH">PUBLISH</option>
+                  <option value="CANCEL">CANCEL</option>
+                  <option value="ACCESS_DENIED">ACCESS_DENIED</option>
+                  <option value="OPERATOR_GRANT_APPROVED">OPERATOR_GRANT_APPROVED</option>
+                  <option value="OPERATOR_GRANT_REVOKED">OPERATOR_GRANT_REVOKED</option>
+                  <option value="ROLE_GRANT_CREATED">ROLE_GRANT_CREATED</option>
+                  <option value="AUTH_OPERATOR_SUCCESS">AUTH_OPERATOR_SUCCESS</option>
+                  <option value="AUTH_DEVICE_SUCCESS">AUTH_DEVICE_SUCCESS</option>
+                  <option value="ACK_RECEIVED">ACK_RECEIVED</option>
+                </select>
+              </label>
+              <label><span data-i18n="admin.audit.outcome">Outcome</span>
+                <select id="admin-audit-outcome">
+                  <option value="ALL" data-i18n="admin.audit.all">All</option>
+                  <option value="OK">OK</option>
+                  <option value="DENIED">DENIED</option>
+                  <option value="FAILED">FAILED</option>
+                  <option value="FAIL">FAIL</option>
+                  <option value="DUPLICATE">DUPLICATE</option>
+                  <option value="SENT">SENT</option>
+                  <option value="SUSPECT">SUSPECT</option>
+                </select>
+              </label>
+              <label><span data-i18n="admin.audit.limit">Limit</span><input id="admin-audit-limit" type="number" min="1" max="500" step="1" value="50" /></label>
+              <button id="admin-audit-refresh" data-i18n="admin.refresh">Refresh</button>
+            </div>
+            <div class="admin-table-wrap">
+              <table class="tbl" id="admin-audit-table">
+                <thead><tr><th data-i18n="admin.audit.col.time">occurred_at</th><th data-i18n="admin.audit.col.actor">actor</th><th data-i18n="admin.audit.col.action">action</th><th data-i18n="admin.audit.col.scope">scope</th><th data-i18n="admin.audit.col.outcome">outcome</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
       </div>
 
       <div id="tooltip" hidden></div>
@@ -245,7 +335,7 @@
         <span class="dot">·</span>
         <span id="last-update" data-i18n="footer.lastUpdateInitial">last update: –</span>
         <span class="dot">·</span>
-        <span data-i18n="footer.hint">drag to orbit · scroll to zoom · hover a zone for details · keys 1–6 switch views</span>
+        <span data-i18n="footer.hint">drag to orbit · scroll to zoom · hover a zone for details · keys 1–7 switch views</span>
       </footer>
     </div>
     <noscript data-i18n="noscript">This dashboard requires JavaScript (WebGL).</noscript>

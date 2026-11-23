@@ -1,33 +1,49 @@
 #!/usr/bin/env python3
-"""Local-only HTTP bridge for the web-only AEGIS-EBS demo.
+"""Local-only HTTP bridge for the web-only AEGIS-EBS demo + Admin Console.
 
 The browser (http://localhost:5173) talks to this process on 127.0.0.1:9445;
 this process drives the real EBSP/2.0 TLS gateway through
-target/e2e-dev/ebsp.py (Device / Operator actors). No Java or dashboard source
-is touched, no credential is logged or persisted, and nothing binds beyond
-loopback. SIMULATION/TRAINING ONLY.
+target/e2e-dev/ebsp.py (Device / Operator actors). The /api/admin/* surface
+reads and approves role grants in AEGIS_DB (SQLite). No Java or dashboard
+source is touched, no credential is logged or persisted, and nothing binds
+beyond loopback unless WEB_BRIDGE_HOST / WEB_BRIDGE_ORIGINS are set explicitly
+(e.g. a Tailscale hostname). SIMULATION/TRAINING ONLY.
 """
 import json
 import os
 import re
 import socket
+import sqlite3
 import sys
 import threading
 import time
+import uuid
+from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from typing import Union
+from urllib.parse import parse_qs
 
 REPO = os.environ.get("AEGIS_REPO") or os.path.abspath(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 sys.path.insert(0, os.path.join(REPO, "target", "e2e-dev"))
 import ebsp  # noqa: E402  # pyright: ignore[reportMissingImports]
 
-BIND_HOST = "127.0.0.1"
+# Loopback is the safe default. Widening the bind (Tailscale) or the CORS
+# allowlist is always an explicit opt-in via environment variables.
+BIND_HOST = os.environ.get("WEB_BRIDGE_HOST", "127.0.0.1")
 BIND_PORT = int(os.environ.get("WEB_BRIDGE_PORT", "9445"))
 TLS_PORT = int(os.environ.get("AEGIS_TLS_PORT", "9443"))
-ALLOWED_ORIGINS = (
+_ALLOWED_DEFAULT = (
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 )
+_extra_origins = tuple(
+    item.strip()
+    for item in os.environ.get("WEB_BRIDGE_ORIGINS", "").split(",")
+    if item.strip()
+)
+ALLOWED_ORIGINS = tuple(dict.fromkeys(_ALLOWED_DEFAULT + _extra_origins))
+AEGIS_DB = os.environ.get("AEGIS_DB") or os.path.join(REPO, "aegis.db")
 DEVICE_SECRET = "device-demo-secret"
 FLOORS = range(1, 11)
 ZONES = ("A", "B", "C", "D")
@@ -130,8 +146,12 @@ def safe_error(exc, secrets=()):
     for secret in secrets:
         if isinstance(secret, str) and len(secret) >= 3:
             text = text.replace(secret, "***")
-    text = re.sub(r"(?i)(password|credential|secret)\s*[=:]\s*[\w-]+",
-                  r"\1=***", text)
+    # Cover `password=...`, `password_hash: ...`, JSON fields and common
+    # credential/token names before the message ever reaches a client.
+    text = re.sub(r"(?i)(password(?:_hash|Hash)?|credential|secret|token|api[_-]?key)"
+                  r"\s*[=:]\s*[\w.-]+", r"\1=***", text)
+    text = re.sub(r'(?i)("(?:password(?:_hash|Hash)?|credential|secret|token|api[_-]?key)"'
+                  r'\s*:\s*)"(?:[^"\\]|\\.)*"', r'\1"***"', text)
     return text.replace("\n", " ")[:500]
 
 
@@ -222,6 +242,240 @@ def fleet_stats():
 
 
 # ---------------------------------------------------------------------------
+# Admin Console (SQLite) — parameterized access, no secret ever in a response
+# ---------------------------------------------------------------------------
+
+_ADMIN_GRANT_SELECT = """
+SELECT rg.id AS id, u.username AS username, u.role AS role,
+       rg.building_id AS building_id, rg.floor_id AS floor_id,
+       rg.scope AS scope, rg.granted_at AS granted_at
+FROM role_grants rg
+JOIN users u ON u.id = rg.user_id
+LEFT JOIN buildings b ON b.id = rg.building_id
+LEFT JOIN floors f ON f.id = rg.floor_id
+"""
+ADMIN_GRANT_SELECT = _ADMIN_GRANT_SELECT + " ORDER BY rg.granted_at DESC, rg.id"
+ADMIN_GRANT_BY_ID = _ADMIN_GRANT_SELECT + " WHERE rg.id = ?"
+
+_SCRUB_RE = re.compile(
+    r'(?i)("(?:password(?:_hash|Hash)?|credential|secret|token|api[_-]?key)"'
+    r'\s*:\s*)"(?:[^"\\]|\\.)*"')
+
+
+def _now_ts():
+    """Fixed-width UTC timestamp (9 fractional digits, like Java Sql.TS)."""
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f") + "000Z"
+
+
+def _connect():
+    path = AEGIS_DB
+    if not path or not os.path.isfile(path):
+        raise BadRequest("AEGIS database is not available")
+    conn = sqlite3.connect(path, timeout=5.0)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys=ON")
+    conn.execute("PRAGMA busy_timeout=5000")
+    return conn
+
+
+def _table_exists(conn, name):
+    return conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (name,)
+    ).fetchone() is not None
+
+
+def _rows(conn, sql, params=()):
+    return [dict(row) for row in conn.execute(sql, params).fetchall()]
+
+
+def _scrub_json(text):
+    """Redact credential-looking fields in stored audit payloads."""
+    if not isinstance(text, str):
+        return text
+    return _SCRUB_RE.sub(r'\1"***"', text)
+
+
+def _text_field(body, key, required=True):
+    value = body.get(key)
+    if value is None or (isinstance(value, str) and not value.strip()):
+        if required:
+            raise BadRequest("%s is required" % key)
+        return None
+    if not isinstance(value, str):
+        raise BadRequest("%s must be a string" % key)
+    return value.strip()
+
+
+def _grant_payload(grant, **extra):
+    payload = {
+        "grantId": grant["id"],
+        "username": grant["username"],
+        "role": grant["role"],
+        "buildingId": grant["building_id"],
+        "floorId": grant["floor_id"],
+        "scope": grant["scope"],
+        "grantedAt": grant["granted_at"],
+    }
+    payload.update(extra)
+    return json.dumps(payload, ensure_ascii=False, sort_keys=True)
+
+
+def _audit_insert(conn, action, grant, operator, correlation_id):
+    audit_id = str(uuid.uuid4())
+    conn.execute(
+        "INSERT INTO audit_events "
+        "(id, occurred_at, actor_id, action, scope, outcome, correlation_id, payload_json) "
+        "VALUES (?,?,?,?,?,?,?,?)",
+        (audit_id, _now_ts(), operator, action, grant["building_id"], "OK",
+         correlation_id, _grant_payload(grant, operator=operator)))
+    return audit_id
+
+
+def admin_overview():
+    counts = {}
+    conn = _connect()
+    try:
+        for key, table in (("users", "users"),
+                           ("roleGrants", "role_grants"),
+                           ("auditEvents", "audit_events")):
+            counts[key] = (conn.execute("SELECT COUNT(*) FROM " + table).fetchone()[0]
+                           if _table_exists(conn, table) else 0)
+        counts["activeAlerts"] = (
+            conn.execute("SELECT COUNT(*) FROM alerts WHERE state='ACTIVE'").fetchone()[0]
+            if _table_exists(conn, "alerts") else 0)
+    finally:
+        conn.close()
+    result = {"ok": True, "counts": dict(counts)}
+    result.update(counts)          # convenience top-level aliases
+    return result
+
+
+def admin_users():
+    conn = _connect()
+    try:
+        rows = (_rows(conn, "SELECT id, username, role, enabled, created_at "
+                            "FROM users ORDER BY username")
+                if _table_exists(conn, "users") else [])
+    finally:
+        conn.close()
+    return {"ok": True, "users": rows}
+
+
+def admin_grants():
+    conn = _connect()
+    try:
+        rows = (_rows(conn, ADMIN_GRANT_SELECT)
+                if _table_exists(conn, "role_grants") else [])
+    finally:
+        conn.close()
+    return {"ok": True, "grants": rows}
+
+
+def admin_audit(limit: Union[int, str, None] = 100, action=None, outcome=None):
+    if limit is None:
+        limit = 100
+    if isinstance(limit, bool):
+        raise BadRequest("limit must be an integer")
+    try:
+        limit = int(limit)
+    except (TypeError, ValueError):
+        raise BadRequest("limit must be an integer")
+    if limit < 1 or limit > 500:
+        raise BadRequest("limit must be between 1 and 500")
+    clauses, params = [], []
+    for column, value in (("action", action), ("outcome", outcome)):
+        if value:
+            if not isinstance(value, str):
+                raise BadRequest("%s must be a string" % column)
+            clauses.append(column + " = ?")
+            params.append(value)
+    sql = ("SELECT id, occurred_at, actor_id, action, scope, outcome, "
+           "correlation_id, payload_json FROM audit_events")
+    if clauses:
+        sql += " WHERE " + " AND ".join(clauses)
+    sql += " ORDER BY occurred_at DESC LIMIT ?"
+    params.append(limit)
+    conn = _connect()
+    try:
+        rows = (_rows(conn, sql, tuple(params))
+                if _table_exists(conn, "audit_events") else [])
+    finally:
+        conn.close()
+    for row in rows:
+        row["payload_json"] = _scrub_json(row.get("payload_json"))
+    return {"ok": True, "events": rows, "limit": limit,
+            "action": action, "outcome": outcome}
+
+
+def _resolve_admin_operator(conn, body):
+    """Admin mutations require a real enabled SYSTEM_ADMIN, never a free string."""
+    operator = _text_field(body, "operator")
+    row = conn.execute(
+        "SELECT id, role, enabled FROM users WHERE username = ?",
+        (operator,)).fetchone()
+    if (row is None or row["role"] != "SYSTEM_ADMIN" or not row["enabled"]):
+        raise BadRequest("operator must be an enabled SYSTEM_ADMIN")
+    return row["id"]
+
+
+def admin_grant_approve(body):
+    username = _text_field(body, "username")
+    building_id = _text_field(body, "buildingId")
+    floor_id = _text_field(body, "floorId", required=False)
+    scope = _text_field(body, "scope", required=False) or "PUBLISH"
+    conn = _connect()
+    try:
+        with conn:
+            actor_id = _resolve_admin_operator(conn, body)
+            user = conn.execute("SELECT id, role FROM users WHERE username = ?",
+                                (username,)).fetchone()
+            if user is None:
+                raise BadRequest("unknown username")
+            if (not _table_exists(conn, "buildings") or
+                    conn.execute("SELECT 1 FROM buildings WHERE id = ?",
+                                 (building_id,)).fetchone() is None):
+                raise BadRequest("unknown buildingId")
+            if floor_id is not None:
+                floor = conn.execute("SELECT building_id FROM floors WHERE id = ?",
+                                     (floor_id,)).fetchone()
+                if floor is None or floor["building_id"] != building_id:
+                    raise BadRequest("floorId does not belong to buildingId")
+            grant_id = str(uuid.uuid4())
+            granted_at = _now_ts()
+            conn.execute(
+                "INSERT INTO role_grants "
+                "(id, user_id, building_id, floor_id, scope, granted_at) "
+                "VALUES (?,?,?,?,?,?)",
+                (grant_id, user["id"], building_id, floor_id, scope, granted_at))
+            grant = {"id": grant_id, "username": username, "role": user["role"],
+                     "building_id": building_id, "floor_id": floor_id,
+                     "scope": scope, "granted_at": granted_at}
+            audit_id = _audit_insert(conn, "OPERATOR_GRANT_APPROVED", grant,
+                                     actor_id, grant_id)
+    finally:
+        conn.close()
+    return {"ok": True, "grant": grant, "auditId": audit_id}
+
+
+def admin_grant_revoke(body):
+    grant_id = _text_field(body, "grantId")
+    conn = _connect()
+    try:
+        with conn:
+            actor_id = _resolve_admin_operator(conn, body)
+            row = conn.execute(ADMIN_GRANT_BY_ID, (grant_id,)).fetchone()
+            if row is None:
+                raise BadRequest("unknown grantId")
+            grant = dict(row)
+            conn.execute("DELETE FROM role_grants WHERE id = ?", (grant_id,))
+            audit_id = _audit_insert(conn, "OPERATOR_GRANT_REVOKED", grant,
+                                     actor_id, grant_id)
+    finally:
+        conn.close()
+    return {"ok": True, "revoked": grant_id, "grant": grant, "auditId": audit_id}
+
+
+# ---------------------------------------------------------------------------
 # HTTP surface
 # ---------------------------------------------------------------------------
 
@@ -269,8 +523,10 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
-        path = self.path.split("?", 1)[0]
-        self._reply(path, lambda: self._get(path))
+        parts = self.path.split("?", 1)
+        path = parts[0]
+        query = parts[1] if len(parts) > 1 else ""
+        self._reply(path, lambda: self._get(path, query))
 
     def do_POST(self):
         path = self.path.split("?", 1)[0]
@@ -292,7 +548,7 @@ class Handler(BaseHTTPRequestHandler):
             raise BadRequest("JSON body must be an object")
         return body
 
-    def _get(self, path):
+    def _get(self, path, query=""):
         if path == "/api/health":
             tls_open = port_open(TLS_PORT)
             with _lock:
@@ -305,6 +561,25 @@ class Handler(BaseHTTPRequestHandler):
             return 200, result
         if path == "/api/fleet/stats":
             return 200, fleet_stats()
+
+        if path == "/api/admin/overview":
+            return 200, admin_overview()
+        if path == "/api/admin/users":
+            return 200, admin_users()
+        if path == "/api/admin/grants":
+            return 200, admin_grants()
+        if path == "/api/admin/audit":
+            params = parse_qs(query or "", keep_blank_values=True)
+
+            def one(name):
+                values = params.get(name) or []
+                return values[-1] if values else None
+
+            raw_limit = one("limit")
+            return 200, admin_audit(
+                limit=100 if raw_limit is None else raw_limit,
+                action=one("action"), outcome=one("outcome"))
+
         return 404, {"ok": False, "error": "unknown endpoint"}
 
     def _post(self, path, body):
@@ -316,6 +591,11 @@ class Handler(BaseHTTPRequestHandler):
 
         if path == "/api/fleet/stop":
             return 200, {"ok": True, "stopped": stop_fleet()}
+
+        if path == "/api/admin/grants/approve":
+            return 200, admin_grant_approve(body)
+        if path == "/api/admin/grants/revoke":
+            return 200, admin_grant_revoke(body)
 
         if path in ("/api/publish", "/api/cancel"):
             username, password = body.get("username"), body.get("password")

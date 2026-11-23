@@ -1,0 +1,46 @@
+{
+  "runId": "admin-3roles-20261123",
+  "baseHead": "938ba97",
+  "mode": "LIVE — server + bridge + dashboard + JavaFX zone client",
+  "roles": {
+    "twin": "3D web view only (72x50m, 12 modules, context stripped)",
+    "zoneClient": "aegis-client JavaFX, DEV-A-F05-A-01, ACK_RECEIVED durable",
+    "admin": "web tab Admin: overview, grants approve/revoke, audit log"
+  },
+  "verified": {
+    "bridge": {
+      "endpoints": ["GET /api/admin/overview", "GET /api/admin/users", "GET /api/admin/grants", "GET /api/admin/audit", "POST /api/admin/grants/approve", "POST /api/admin/grants/revoke"],
+      "unitTests": "11/11 PASS (scripts/test-admin-bridge.py)",
+      "pyCompile": "OK"
+    },
+    "dashboard": {
+      "build": "PASS",
+      "tests": "20/20 PASS",
+      "i18nKeys": 299,
+      "staticAttributes": 169,
+      "tabs": 7
+    },
+    "adminFlow": {
+      "before": { "grants": 2, "auditEvents": 1363 },
+      "approve": { "status": "ĐÃ CẤP QUYỀN", "grants": 3, "auditEvents": 1364, "grantId": "0c72e981-3a8b-4755-b650-30994e9abf4d" },
+      "revoke": { "status": "ĐÃ THU HỒI QUYỀN", "grants": 2, "auditEvents": 1365, "grantId": "0c72e981-3a8b-4755-b650-30994e9abf4d" },
+      "auditActions": ["OPERATOR_GRANT_APPROVED", "OPERATOR_GRANT_REVOKED"],
+      "actor": "admin"
+    },
+    "zoneClient": {
+      "deviceCode": "DEV-A-F05-A-01",
+      "jfxProcess": "alive with correct --host/--port/--device-id/--truststore args",
+      "alertId": "617a19b8-438b-423c-8054-e23ea99a6961",
+      "deliveryCount": 12,
+      "inboxAckReceivedAt": "2026-11-23T14:27:32.775743Z",
+      "serverAudit": ["AUTH_DEVICE_SUCCESS", "PUBLISH"]
+    }
+  },
+  "fixesDuringVerification": [
+    "Admin form used fake defaults B01/1 -> seeds buildingId/floorId from first real grant; floorId optional for building-wide grant",
+    "adminText(null) produced '–' and broke approve -> raw null guard before setting form value"
+  ],
+  "evidence": ["docs/evidence/dashboard/admin-console-live.png"],
+  "reviewer": "deleg_ff1a2f5d verdict PASS; MED actor spoof fixed (operator must be enabled SYSTEM_ADMIN, audit actor_id = real user id); LOW broken EN I18N link and stale 240->299 key counts fixed",
+  "note": "SIMULATION/TRAINING. Bridge Admin writes role_grants/audit_events directly for demo speed; every mutation requires an enabled SYSTEM_ADMIN operator and writes its real user id. Production must route through a fully authenticated server-side API. No password_hash or secret rendered/logged."
+}
