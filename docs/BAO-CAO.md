@@ -1,6 +1,7 @@
 # BÁO CÁO ĐỒ ÁN HỌC PHẦN — CMP180 Lập trình mạng máy tính
 ## HỆ THỐNG THÔNG BÁO KHẨN CẤP CHO TÒA NHÀ VĂN PHÒNG (AEGIS — EMERGENCY BROADCAST SYSTEM)
 Giảng viên hướng dẫn: ThS. Nguyễn Văn Cẩn · Nhóm: AEGIS-EBS · Thành viên/MSSV: Nguyễn Ngọc Tình – 2380614851; Bùi Thanh Long Ẩn – 2380600103; Nguyễn Hoàng Tùng – 2380602485; Võ Thành Đông – 2380600518 · Lớp/Khóa: SE 2023–2027 · Năm học 2025–2026
+> 🌐 [English summary](en/BAO-CAO-SUMMARY.md) — condensed, not a full translation; bản tiếng Việt này là tài liệu chính thức.
 > SIMULATION/TRAINING — không thay thế hệ thống báo cháy/sơ tán chứng nhận.
 
 ## LỜI CAM ĐOAN
@@ -1157,7 +1158,7 @@ Kết quả mong đợi `BUILD SUCCESS`; số liệu test chính xác đọc t�
 cd aegis-dashboard
 npm ci            # cài đúng package-lock.json
 npm run build     # production vào dist/ (cảnh báo chunk > 500 kB của Three.js là benign)
-npm test          # node --test test/logic.test.js (14 test)
+npm test          # node --test test/logic.test.js test/i18n.test.js (20 test: 14 logic + 6 i18n)
 cd ..
 ```
 
@@ -1452,7 +1453,7 @@ Các chức năng dashboard đã được kiểm chứng bằng 14 test logic (m
 
 | Hạng mục | Nguồn hiện có | Trạng thái |
 |---|---|---|
-| Kiểm kê 347 lượt test Java + 14 dashboard | Đếm annotation/fixture tại working tree sau H1–H4; `verify-347-h1h4` ghi nhận 347/0/0; `npm test` 14/14 | Đã có verify chính thức + dashboard |
+| Kiểm kê 347 lượt test Java + 20 dashboard | Đếm annotation/fixture tại working tree sau H1–H4; `verify-347-h1h4` ghi nhận 347/0/0; `npm test` 20/20 (14 logic + 6 i18n) | Đã có verify chính thức + dashboard |
 | Front-end 3D LIVE | `docs/evidence/dashboard/twin-live-overview.{png,json}` — server thật + 40 device + 4 alert, build OK | Có overview LIVE |
 | Video demo 12 phút | `docs/evidence/video/aegis-ebs-demo.mp4` (720,05 s, H.264/AAC, voiceover tiếng Việt từ evidence thật; metadata + khung kiểm chứng trong cùng thư mục) | Có (video thuyết trình từ evidence, không phải quay live) |
 | Peer-review độc lập 4 nhóm module | `docs/reviews/*.md` (21/11/2026) + commit khắc phục `df0241b`, `4d1bd69`, `f68f9e2` | Đã có |
@@ -1506,7 +1507,7 @@ Các chức năng dashboard đã được kiểm chứng bằng 14 test logic (m
 7. **Bảo mật và phân quyền — đạt ở mức lab.** TLS ghim chứng chỉ, RBAC năm vai trò scope từ CSDL, Argon2id, audit append-only, sanitize lỗi. Bằng chứng: TlsLoopbackIntegrationTest 10, RbacServiceTest 5, ServerSecurityFixesTest 10, Argon2idHasherTest 5, probe wire S1/S2/S6. Hạn chế demo (self-signed, Argon2 16 MiB, hostname verification) ghi trung thực ở mục 3.6 và kiến nghị nâng cấp ở 4.3.
 8. **Phòng thí nghiệm UDP/multicast — đạt.** Discovery nonce + trust gate TLS; multicast ALERT_HINT advisory, hint–verify chỉ hiển thị nội dung đã xác thực; probe multicast thật + fallback unicast. Bằng chứng: 31 lượt test network-lab (DiscoveryTrustTest, MulticastLoopbackTest, UnicastFallbackTest, VerifiedAlertSubscriberTest), benchmark ba chế độ có số liệu thật (Bảng 3.19).
 9. **Đo lường tin cậy (100 client, p50/p95/p99, tỷ lệ ACK, chaos) — đạt ở mức lab có bằng chứng.** Hạ tầng đo (MetricsRegistry, SimStats, FaultInjector seed) đã chạy thật: tải 100 client clean ACK 100%, p50/p95/p99 = 773/1307/1334 ms (runId `276dedf5`); chaos C01–C05 (lossy/delayed/duplicate/flaky/mixed) fleet 50 chạy `failed=[]`, đo retry/ACK/reconnect; C06–C16 được kiểm chứng bằng unit/integration test + probe peer-review. Giới hạn trung thực: chưa đo tải mixed/200–500, CPU/RSS/WAL chi tiết và LAN 2 máy thật — không kết luận vượt quá bằng chứng.
-10. **Dashboard digital twin — đạt.** Tòa nhà 10 tầng × 4 zone Three.js [7] ráp từ 12 module thật (kết cấu, kính, nội thất, an toàn, cảnh quan, ánh sáng, trạng thái, camera, HUD), feed status/1 snapshot/delta, severity chuẩn tắc, funnel đúng bản ghi delivery, replay/chaos mock/reports. Bằng chứng: 14/14 test dashboard pass; `npm run build` OK; ảnh LIVE thật `docs/evidence/dashboard/twin-live-overview.png` với server + 40 thiết bị + 4 cảnh báo. Bản cải tiến footprints 72×50 m (3.600 m², gấp 2,73 lần bản 44×30 m) làm rõ 4 zone/tầng; đồng thời gỡ toàn bộ high-rise/skyline/đường ngoài/parking/low-rise context, giảm context instances 2.738→275 và triangles 55.060→5.730 (≈90%). Camera dùng frustum-fit 8 góc nên overview/front/side luôn lấy trọn tháp. Bằng chứng LIVE mới: `docs/evidence/dashboard/twin-enlarged-live.png` + `twin-enlarged-meta.json` (241.336 triangles, 230 InstancedMesh/14.491 instance, `moduleErrors=[]`, fleet 20). Không đo FPS vì tab browser bị throttle — không suy diễn số khung hình.
+10. **Dashboard digital twin — đạt.** Tòa nhà 10 tầng × 4 zone Three.js [7] ráp từ 12 module thật (kết cấu, kính, nội thất, an toàn, cảnh quan, ánh sáng, trạng thái, camera, HUD), feed status/1 snapshot/delta, severity chuẩn tắc, funnel đúng bản ghi delivery, replay/chaos mock/reports. Bằng chứng: 20/20 test dashboard pass (14 logic + 6 i18n); `npm run build` OK; ảnh LIVE thật `docs/evidence/dashboard/twin-live-overview.png` với server + 40 thiết bị + 4 cảnh báo. Bản cải tiến footprints 72×50 m (3.600 m², gấp 2,73 lần bản 44×30 m) làm rõ 4 zone/tầng; đồng thời gỡ toàn bộ high-rise/skyline/đường ngoài/parking/low-rise context, giảm context instances 2.738→275 và triangles 55.060→5.730 (≈90%). Camera dùng frustum-fit 8 góc nên overview/front/side luôn lấy trọn tháp. Bằng chứng LIVE mới: `docs/evidence/dashboard/twin-enlarged-live.png` + `twin-enlarged-meta.json` (241.336 triangles, 230 InstancedMesh/14.491 instance, `moduleErrors=[]`, fleet 20). Không đo FPS vì tab browser bị throttle — không suy diễn số khung hình.
 
 Tóm lại, đồ án đã **hoàn thành phần xây dựng và kiểm chứng chức năng của cả mười mục tiêu** với bằng chứng thực nghiệm trên máy đo (runId `verify-347-h1h4`, benchmark 100 client, chaos C01–C05, dashboard LIVE): một hệ thống client–server hoàn chỉnh bằng Java vận dụng tổng hợp kiến thức chín bài của giáo trình [1] cùng các thực hành hiện đại [2]–[7]. Đóng góp nổi bật về phương pháp là quy trình peer-review độc lập nhiều vòng với probe đối kháng chạy thật — đã phát hiện và khắc phục regression tích hợp, race trạng thái và bốn finding HIGH từ audit chuyên sâu — và benchmark multicast định lượng chứng minh trực tiếp lý thuyết cây phân phối của Bài 8. Phần còn dở dang chỉ là các phép đo mở rộng (mixed/200–500, CPU/RSS/WAL, LAN 2 máy) và thông tin định danh nhóm; chúng được nêu trung thực ở mục 4.2–4.3, không làm thay đổi kết luận về các bảo đảm cốt lõi đã kiểm chứng.
 

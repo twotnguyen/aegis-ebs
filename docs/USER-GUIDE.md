@@ -1,5 +1,7 @@
 # HƯỚNG DẪN VẬN HÀNH — AEGIS-EBS
 
+> 🌐 [English version](en/USER-GUIDE.md) · [Danh mục song ngữ](I18N.md)
+
 > SIMULATION/TRAINING ONLY. Mọi lệnh chạy từ gốc repo `aegis-ebs/`.
 
 > **Khuyến nghị cho bảo vệ: web-only.** Dùng luồng một lệnh ở mục 0. Các mục 1–9 giữ nguyên cho người muốn studio/chaos thật (client JavaFX, simulator, fault injection, benchmark).

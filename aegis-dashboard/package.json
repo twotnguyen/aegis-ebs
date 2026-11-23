@@ -8,7 +8,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node --test test/logic.test.js"
+    "test": "node --test test/logic.test.js test/i18n.test.js"
   },
   "dependencies": {
     "three": "^0.187.0"

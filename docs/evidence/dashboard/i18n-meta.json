@@ -1,0 +1,36 @@
+{
+  "runId": "i18n-vi-en-20261123",
+  "baseHead": "4af087f",
+  "mode": "LIVE — dashboard AEGIS + fleet 20 device, browser 1440x900",
+  "ui": {
+    "toggleId": "lang-toggle",
+    "defaultLang": "vi",
+    "persistKey": "aegis.lang",
+    "dictionaryKeysPerLanguage": 240,
+    "staticAttributes": 122,
+    "filesTouched": 10,
+    "reviewer": "deleg_1c5b0486 verdict PASS; 3 MED + 3 LOW findings đã sửa (test docs 14→20, op idle, Operator logs qua t(), event fallback/mock summary, placeholders tĩnh)",
+    "browser": {
+      "default": { "htmlLang": "vi", "metricsHeading": "CHỈ SỐ", "connectedLabel": "Đã kết nối" },
+      "afterToggle": { "htmlLang": "en", "storage": "en", "metricsHeading": "METRICS", "connectedLabel": "Connected" },
+      "afterReload": { "htmlLang": "en", "storage": "en" },
+      "moduleErrors": []
+    }
+  },
+  "docs": {
+    "englishFiles": 19,
+    "wordCountApprox": 40988,
+    "vietnameseLeakScan": "0 matches [À-ỹà-ỹ] across 19 English files",
+    "cjkScan": "0 matches [一-鿿]",
+    "reportPolicy": "docs/en/BAO-CAO-SUMMARY.md is explicitly a condensed English summary, not a full translation; docs/BAO-CAO.md remains authoritative"
+  },
+  "verification": {
+    "npmBuild": "PASS (Vite built in 241ms)",
+    "npmTest": "20/20 PASS (14 logic + 6 i18n)",
+    "screenshots": [
+      "docs/evidence/dashboard/i18n-vi.png",
+      "docs/evidence/dashboard/i18n-en.png"
+    ],
+    "note": "Protocol/wire names, message types, zone codes, API field names, brand and numeric data deliberately stay in English."
+  }
+}

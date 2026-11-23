@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Aegis EBS — Digital Twin Dashboard</title>
+    <title data-i18n="title">Aegis EBS — Digital Twin Dashboard</title>
   </head>
   <body data-tab="twin">
     <div id="app">
@@ -11,45 +11,48 @@
 
       <header id="hud-top">
         <div class="brand">
-          <h1>AEGIS&nbsp;EBS</h1>
-          <span class="sub">Digital Twin · AEGIS Tower B01 · 10 floors · 4 zones/floor</span>
+          <h1 data-i18n="brand">AEGIS&nbsp;EBS</h1>
+          <span class="sub" data-i18n="header.subtitle">Digital Twin · AEGIS Tower B01 · 10 floors · 4 zones/floor</span>
         </div>
-        <nav id="tabs" aria-label="Dashboard views">
-          <button class="tab active" data-tab="twin" title="3D digital twin (key 1)">Twin</button>
-          <button class="tab" data-tab="incidents" title="Incident timeline & replay (key 2)">Incidents</button>
-          <button class="tab" data-tab="chaos" title="Chaos control panel (key 3)">Chaos</button>
-          <button class="tab" data-tab="reports" title="Latency reports & export (key 4)">Reports</button>
-          <button class="tab" data-tab="funnel" title="Per-alert delivery funnel (key 5)">Funnel</button>
-          <button class="tab" data-tab="operator" title="Real publish/cancel via bridge (key 6)">Operator</button>
+        <nav id="tabs" aria-label="Dashboard views" data-i18n-aria-label="nav.aria">
+          <button class="tab active" data-tab="twin" title="3D digital twin (key 1)" data-i18n="tab.twin" data-i18n-title="tab.twin.title">Twin</button>
+          <button class="tab" data-tab="incidents" title="Incident timeline &amp; replay (key 2)" data-i18n="tab.incidents" data-i18n-title="tab.incidents.title">Incidents</button>
+          <button class="tab" data-tab="chaos" title="Chaos control panel (key 3)" data-i18n="tab.chaos" data-i18n-title="tab.chaos.title">Chaos</button>
+          <button class="tab" data-tab="reports" title="Latency reports &amp; export (key 4)" data-i18n="tab.reports" data-i18n-title="tab.reports.title">Reports</button>
+          <button class="tab" data-tab="funnel" title="Per-alert delivery funnel (key 5)" data-i18n="tab.funnel" data-i18n-title="tab.funnel.title">Funnel</button>
+          <button class="tab" data-tab="operator" title="Real publish/cancel via bridge (key 6)" data-i18n="tab.operator" data-i18n-title="tab.operator.title">Operator</button>
         </nav>
         <div class="top-badges">
-          <span id="replay-badge" class="badge badge-replay" hidden>REPLAY</span>
-          <div id="conn-badge" class="badge badge-connecting">CONNECTING…</div>
+          <button id="lang-toggle" type="button" aria-label="Switch interface language" data-i18n-aria-label="lang.toggleAria" title="VI / EN">
+            <span id="lang-vi">VI</span><span class="lang-sep">|</span><span id="lang-en">EN</span>
+          </button>
+          <span id="replay-badge" class="badge badge-replay" hidden data-i18n="badge.replay">REPLAY</span>
+          <div id="conn-badge" class="badge badge-connecting" data-i18n="badge.connecting">CONNECTING…</div>
         </div>
       </header>
 
       <aside id="hud-side">
         <section class="panel">
-          <h2>Metrics</h2>
+          <h2 data-i18n="metrics.title">Metrics</h2>
           <dl id="metrics">
-            <div><dt>Connected</dt><dd id="m-connected">–</dd></div>
-            <div><dt>p50 (ms)</dt><dd id="m-p50">–</dd></div>
-            <div><dt>p95 (ms)</dt><dd id="m-p95">–</dd></div>
-            <div><dt>p99 (ms)</dt><dd id="m-p99">–</dd></div>
-            <div><dt>Retries</dt><dd id="m-retry">–</dd></div>
+            <div><dt data-i18n="metrics.connected">Connected</dt><dd id="m-connected">–</dd></div>
+            <div><dt data-i18n="metrics.p50">p50 (ms)</dt><dd id="m-p50">–</dd></div>
+            <div><dt data-i18n="metrics.p95">p95 (ms)</dt><dd id="m-p95">–</dd></div>
+            <div><dt data-i18n="metrics.p99">p99 (ms)</dt><dd id="m-p99">–</dd></div>
+            <div><dt data-i18n="metrics.retries">Retries</dt><dd id="m-retry">–</dd></div>
           </dl>
         </section>
         <section class="panel">
-          <h2>Active alerts <span id="alert-count" class="pill">0</span></h2>
+          <h2><span data-i18n="alerts.title">Active alerts</span> <span id="alert-count" class="pill">0</span></h2>
           <ul id="alerts" class="alerts"></ul>
         </section>
         <section class="panel">
-          <h2>Legend</h2>
+          <h2 data-i18n="legend.title">Legend</h2>
           <ul class="legend">
-            <li><i class="sw sw-online"></i>Online / acked</li>
-            <li><i class="sw sw-warning"></i>Warning</li>
-            <li><i class="sw sw-critical"></i>Critical</li>
-            <li><i class="sw sw-offline"></i>Offline</li>
+            <li><i class="sw sw-online"></i><span data-i18n="legend.online">Online / acked</span></li>
+            <li><i class="sw sw-warning"></i><span data-i18n="legend.warning">Warning</span></li>
+            <li><i class="sw sw-critical"></i><span data-i18n="legend.critical">Critical</span></li>
+            <li><i class="sw sw-offline"></i><span data-i18n="legend.offline">Offline</span></li>
           </ul>
         </section>
       </aside>
@@ -58,27 +61,27 @@
         <!-- Incident timeline / replay -->
         <section id="view-incidents" class="view" hidden>
           <div class="panel">
-            <h2>Incident timeline <span id="ev-count" class="pill">0</span> <span id="ev-source" class="pill">–</span></h2>
+            <h2><span data-i18n="incidents.title">Incident timeline</span> <span id="ev-count" class="pill">0</span> <span id="ev-source" class="pill">–</span></h2>
             <div class="row">
-              <button id="ev-demo">Load demo incident</button>
-              <button id="ev-clear">Clear</button>
-              <button id="ev-export-json">Export JSON</button>
-              <button id="ev-export-csv">Export CSV</button>
+              <button id="ev-demo" data-i18n="incidents.loadDemo">Load demo incident</button>
+              <button id="ev-clear" data-i18n="incidents.clear">Clear</button>
+              <button id="ev-export-json" data-i18n="incidents.exportJson">Export JSON</button>
+              <button id="ev-export-csv" data-i18n="incidents.exportCsv">Export CSV</button>
             </div>
             <div class="row replay-controls">
-              <button id="rp-reset" title="Back to start">⏮</button>
-              <button id="rp-back" title="Step back">⏪</button>
-              <button id="rp-play" title="Play / pause">▶</button>
-              <button id="rp-fwd" title="Step forward">⏩</button>
-              <select id="rp-speed" title="Replay speed">
+              <button id="rp-reset" title="Back to start" data-i18n-title="replay.back">⏮</button>
+              <button id="rp-back" title="Step back" data-i18n-title="replay.stepBack">⏪</button>
+              <button id="rp-play" title="Play / pause" data-i18n-title="replay.playPause">▶</button>
+              <button id="rp-fwd" title="Step forward" data-i18n-title="replay.stepForward">⏩</button>
+              <select id="rp-speed" title="Replay speed" data-i18n-title="replay.speed">
                 <option value="1">1×</option>
                 <option value="2">2×</option>
                 <option value="4">4×</option>
               </select>
-              <input type="range" id="rp-scrub" min="0" max="0" value="0" step="1" aria-label="Replay position" />
+              <input type="range" id="rp-scrub" min="0" max="0" value="0" step="1" aria-label="Replay position" data-i18n-aria-label="replay.positionAria" />
               <span id="rp-pos" class="pill">0 / 0</span>
             </div>
-            <div id="rp-detail" class="rp-detail"><span class="hint">Press ▶ to replay the timeline on the 3D twin, or click an event row.</span></div>
+            <div id="rp-detail" class="rp-detail"><span class="hint" data-i18n="incidents.replayHint">Press ▶ to replay the timeline on the 3D twin, or click an event row.</span></div>
             <ol id="ev-list" class="ev-list"></ol>
             <div id="ev-note" class="hint"></div>
           </div>
@@ -87,50 +90,50 @@
         <!-- Chaos control -->
         <section id="view-chaos" class="view" hidden>
           <div class="panel">
-            <h2>Chaos control <span class="pill">mock commands</span></h2>
+            <h2><span data-i18n="chaos.title">Chaos control</span> <span class="pill" data-i18n="chaos.mockCommands">mock commands</span></h2>
             <p id="ch-note" class="hint"></p>
             <div class="chaos-card" id="ch-drop">
               <div class="chaos-info">
-                <strong>C01 · Drop ACK</strong>
-                <div class="hint">Suppress ACKs → unacked grows → deliveries FAIL after 3 retries.</div>
+                <strong data-i18n="chaos.c01">C01 · Drop ACK</strong>
+                <div class="hint" data-i18n="chaos.c01.hint">Suppress ACKs → unacked grows → deliveries FAIL after 3 retries.</div>
               </div>
-              <span class="chaos-state" id="ch-drop-state">IDLE</span>
-              <button id="ch-drop-btn">Enable</button>
+              <span class="chaos-state" id="ch-drop-state" data-i18n="common.idle">IDLE</span>
+              <button id="ch-drop-btn" data-i18n="common.enable">Enable</button>
             </div>
             <div class="chaos-card" id="ch-delay">
               <div class="chaos-info">
-                <strong>C02 · Delay ACK</strong>
-                <div class="hint">Inflate end-to-end latency percentiles (p50/p95/p99).</div>
-                <label class="slider-label">extra delay
+                <strong data-i18n="chaos.c02">C02 · Delay ACK</strong>
+                <div class="hint" data-i18n="chaos.c02.hint">Inflate end-to-end latency percentiles (p50/p95/p99).</div>
+                <label class="slider-label"><span data-i18n="chaos.extraDelay">extra delay</span>
                   <input type="range" id="ch-delay-ms" min="100" max="2000" step="50" value="500" />
                   <span id="ch-delay-ms-val">500 ms</span>
                 </label>
               </div>
-              <span class="chaos-state" id="ch-delay-state">IDLE</span>
-              <button id="ch-delay-btn">Enable</button>
+              <span class="chaos-state" id="ch-delay-state" data-i18n="common.idle">IDLE</span>
+              <button id="ch-delay-btn" data-i18n="common.enable">Enable</button>
             </div>
             <div class="chaos-card" id="ch-disc">
               <div class="chaos-info">
-                <strong>C04 · Disconnect</strong>
-                <div class="hint">Drop a share of connected devices on every mock tick.</div>
-                <label class="slider-label">share
+                <strong data-i18n="chaos.c04">C04 · Disconnect</strong>
+                <div class="hint" data-i18n="chaos.c04.hint">Drop a share of connected devices on every mock tick.</div>
+                <label class="slider-label"><span data-i18n="chaos.share">share</span>
                   <input type="range" id="ch-disc-pct" min="5" max="50" step="5" value="20" />
                   <span id="ch-disc-pct-val">20%</span>
                 </label>
               </div>
-              <span class="chaos-state" id="ch-disc-state">IDLE</span>
-              <button id="ch-disc-btn">Enable</button>
+              <span class="chaos-state" id="ch-disc-state" data-i18n="common.idle">IDLE</span>
+              <button id="ch-disc-btn" data-i18n="common.enable">Enable</button>
             </div>
             <div class="row">
-              <button id="ch-alloff">All off</button>
-              <button id="ch-live">Return to live feed</button>
-              <span id="ch-feed" class="pill">feed: –</span>
+              <button id="ch-alloff" data-i18n="chaos.allOff">All off</button>
+              <button id="ch-live" data-i18n="chaos.returnLive">Return to live feed</button>
+              <span id="ch-feed" class="pill" data-i18n="chaos.feedPill">feed: –</span>
             </div>
           </div>
           <div class="panel">
-            <h2>Command log</h2>
+            <h2 data-i18n="chaos.logTitle">Command log</h2>
             <table class="tbl" id="ch-log">
-              <thead><tr><th>ts</th><th>id</th><th>command</th><th>params</th><th>status</th></tr></thead>
+              <thead><tr><th data-i18n="chaos.col.ts">ts</th><th data-i18n="chaos.col.id">id</th><th data-i18n="chaos.col.command">command</th><th data-i18n="chaos.col.params">params</th><th data-i18n="chaos.col.status">status</th></tr></thead>
               <tbody></tbody>
             </table>
           </div>
@@ -139,17 +142,17 @@
         <!-- Reports -->
         <section id="view-reports" class="view" hidden>
           <div class="panel">
-            <h2>Delivery latency report <span id="rp-samples" class="pill">0 samples</span></h2>
-            <div id="rp-window" class="hint">window: –</div>
+            <h2><span data-i18n="reports.title">Delivery latency report</span> <span id="rp-samples" class="pill" data-i18n="reports.samplesInitial">0 samples</span></h2>
+            <div id="rp-window" class="hint" data-i18n="reports.windowInitial">window: –</div>
             <table class="tbl" id="rp-stats">
-              <thead><tr><th>metric</th><th>current</th><th>min</th><th>avg</th><th>max</th></tr></thead>
+              <thead><tr><th data-i18n="reports.col.metric">metric</th><th data-i18n="reports.col.current">current</th><th data-i18n="reports.col.min">min</th><th data-i18n="reports.col.avg">avg</th><th data-i18n="reports.col.max">max</th></tr></thead>
               <tbody></tbody>
             </table>
             <div id="rp-sparks"></div>
             <div class="row">
-              <button id="rp-csv">Export metrics CSV</button>
-              <button id="rp-json">Export metrics JSON</button>
-              <button id="rp-clear">Reset window</button>
+              <button id="rp-csv" data-i18n="reports.exportCsv">Export metrics CSV</button>
+              <button id="rp-json" data-i18n="reports.exportJson">Export metrics JSON</button>
+              <button id="rp-clear" data-i18n="reports.resetWindow">Reset window</button>
             </div>
           </div>
         </section>
@@ -157,20 +160,20 @@
         <!-- Delivery funnel -->
         <section id="view-funnel" class="view" hidden>
           <div class="panel">
-            <h2>Delivery funnel <span id="fn-count" class="pill">0 alerts</span></h2>
-            <p class="hint">Per alert, derived from zone counters since the alert opened: targeted = provisioned devices in zone; received/acknowledged/failed = increments (clamped to targeted). See src/funnel.js.</p>
-            <select id="fn-select" aria-label="Select alert"></select>
+            <h2><span data-i18n="funnel.title">Delivery funnel</span> <span id="fn-count" class="pill" data-i18n="funnel.countInitial">0 alerts</span></h2>
+            <p class="hint" data-i18n-html="funnel.hint">Per alert, derived from zone counters since the alert opened: targeted = provisioned devices in zone; received/acknowledged/failed = increments (clamped to targeted). See <code>src/funnel.js</code>.</p>
+            <select id="fn-select" aria-label="Select alert" data-i18n-aria-label="funnel.selectAria"></select>
             <div id="fn-bars"></div>
             <div id="fn-detail" class="hint"></div>
             <div class="row">
-              <button id="fn-csv">Export CSV</button>
-              <button id="fn-json">Export JSON</button>
+              <button id="fn-csv" data-i18n="common.exportCsv">Export CSV</button>
+              <button id="fn-json" data-i18n="common.exportJson">Export JSON</button>
             </div>
           </div>
           <div class="panel">
-            <h2>All alerts</h2>
+            <h2 data-i18n="funnel.allAlerts">All alerts</h2>
             <table class="tbl" id="fn-table">
-              <thead><tr><th>alert</th><th>zone</th><th>state</th><th>targeted</th><th>received</th><th>acked</th><th>failed</th><th>ack %</th></tr></thead>
+              <thead><tr><th data-i18n="funnel.col.alert">alert</th><th data-i18n="funnel.col.zone">zone</th><th data-i18n="funnel.col.state">state</th><th data-i18n="funnel.col.targeted">targeted</th><th data-i18n="funnel.col.received">received</th><th data-i18n="funnel.col.acked">acked</th><th data-i18n="funnel.col.failed">failed</th><th data-i18n="funnel.col.ackPct">ack %</th></tr></thead>
               <tbody></tbody>
             </table>
           </div>
@@ -179,12 +182,12 @@
         <!-- Operator bridge: REAL commands (EBSP/TLS), not the mock feed -->
         <section id="view-operator" class="view" hidden>
           <div class="panel">
-            <h2>Operator bridge <span id="op-bridge" class="pill">bridge: –</span> <span id="op-fleet-stats" class="pill">fleet: –</span> <span id="op-status" class="pill">idle</span></h2>
-            <p class="hint op-note">Lệnh thật qua EBSP/TLS — KHÔNG phải mock; tab Chaos vẫn là mock.</p>
+            <h2><span data-i18n="operator.title">Operator bridge</span> <span id="op-bridge" class="pill">bridge: –</span> <span id="op-fleet-stats" class="pill">fleet: –</span> <span id="op-status" class="pill">idle</span></h2>
+            <p class="hint op-note" data-i18n="operator.note">Lệnh thật qua EBSP/TLS — KHÔNG phải mock; tab Chaos vẫn là mock.</p>
             <div class="op-grid">
-              <label>User <input id="op-user" type="text" value="admin" autocomplete="off" /></label>
-              <label>Password <input id="op-pass" type="password" value="admin-demo-secret" autocomplete="off" /></label>
-              <label>Floor
+              <label><span data-i18n="operator.user">User</span> <input id="op-user" type="text" value="admin" autocomplete="off" /></label>
+              <label><span data-i18n="operator.password">Password</span> <input id="op-pass" type="password" value="admin-demo-secret" autocomplete="off" /></label>
+              <label><span data-i18n="operator.floor">Floor</span>
                 <select id="op-floor">
                   <option value="ALL">ALL</option>
                   <option value="1">1</option><option value="2">2</option><option value="3">3</option>
@@ -193,59 +196,59 @@
                   <option value="10">10</option>
                 </select>
               </label>
-              <label>Zone
+              <label><span data-i18n="operator.zone">Zone</span>
                 <select id="op-zone">
                   <option value="ALL">ALL</option><option value="A">A</option>
                   <option value="B">B</option><option value="C">C</option><option value="D">D</option>
                 </select>
               </label>
-              <label>Priority
+              <label><span data-i18n="operator.priority">Priority</span>
                 <select id="op-priority">
                   <option value="CRITICAL">CRITICAL</option><option value="EMERGENCY">EMERGENCY</option>
                   <option value="WARNING">WARNING</option><option value="INFO">INFO</option>
                 </select>
               </label>
-              <label>Category
+              <label><span data-i18n="operator.category">Category</span>
                 <select id="op-category">
                   <option value="FIRE_DRILL">FIRE_DRILL</option><option value="HAZMAT">HAZMAT</option>
                   <option value="SECURITY">SECURITY</option><option value="ANNOUNCEMENT">ANNOUNCEMENT</option>
                 </select>
               </label>
-              <label class="op-wide">Title <input id="op-title" type="text" value="FIRE DRILL — OPERATOR DEMO" /></label>
-              <label class="op-wide">Instruction <input id="op-instruction" type="text" value="Evacuate via stairwell B. This is a simulation." /></label>
-              <label class="op-check"><input id="op-silent" type="checkbox" /> silent — 1 device KHÔNG auto-ACK (retry → FAILED)</label>
-              <label>Count <input id="op-count" type="number" min="1" max="500" step="1" value="20" /></label>
-              <label class="op-wide">Alert ID (publish gần nhất / để trống để cancel) <input id="op-alert-id" type="text" placeholder="tự động điền sau publish" autocomplete="off" /></label>
+              <label class="op-wide"><span data-i18n="operator.titleField">Title</span> <input id="op-title" type="text" value="FIRE DRILL — OPERATOR DEMO" /></label>
+              <label class="op-wide"><span data-i18n="operator.instruction">Instruction</span> <input id="op-instruction" type="text" value="Evacuate via stairwell B. This is a simulation." /></label>
+              <label class="op-check"><input id="op-silent" type="checkbox" /> <span data-i18n="operator.silent">silent — 1 device KHÔNG auto-ACK (retry → FAILED)</span></label>
+              <label><span data-i18n="operator.count">Count</span> <input id="op-count" type="number" min="1" max="500" step="1" value="20" /></label>
+              <label class="op-wide"><span data-i18n="operator.alertId">Alert ID (publish gần nhất / để trống để cancel)</span> <input id="op-alert-id" type="text" placeholder="tự động điền sau publish" data-i18n-placeholder="operator.alertIdPlaceholder" autocomplete="off" /></label>
             </div>
             <div class="row">
-              <button id="op-ping">Ping health + stats</button>
-              <button id="op-fleet-start">Fleet start</button>
-              <button id="op-fleet-stop">Fleet stop</button>
+              <button id="op-ping" data-i18n="operator.ping">Ping health + stats</button>
+              <button id="op-fleet-start" data-i18n="operator.fleetStart">Fleet start</button>
+              <button id="op-fleet-stop" data-i18n="operator.fleetStop">Fleet stop</button>
             </div>
             <div class="row">
-              <button id="op-publish">Publish</button>
-              <button id="op-retry-demo">Retry demo (F01-A + silent)</button>
-              <button id="op-cancel">Cancel alert</button>
+              <button id="op-publish" data-i18n="operator.publish">Publish</button>
+              <button id="op-retry-demo" data-i18n="operator.retryDemo">Retry demo (F01-A + silent)</button>
+              <button id="op-cancel" data-i18n="operator.cancel">Cancel alert</button>
             </div>
-            <p class="hint">Fleet start dùng <code>count</code> từ ô Count và <code>silentFloor=1</code> (1 device im lặng). Override bridge: <code>?bridge=http://host:port</code>.</p>
+            <p class="hint" data-i18n-html="operator.hint">Fleet start dùng <code>count</code> từ ô Count và <code>silentFloor=1</code> (1 device im lặng). Override bridge: <code>?bridge=http://host:port</code>.</p>
           </div>
           <div class="panel">
-            <h2>Bridge log <span class="pill">time · alertId · deliveryCount</span></h2>
-            <div id="op-log" class="op-log"><div class="hint op-log-empty">Chưa có lệnh bridge. Bấm “Ping health + stats” để kiểm tra kết nối.</div></div>
+            <h2><span data-i18n="operator.logTitle">Bridge log</span> <span class="pill" data-i18n="operator.logPill">time · alertId · deliveryCount</span></h2>
+            <div id="op-log" class="op-log"><div class="hint op-log-empty" data-i18n="operator.logEmpty">Chưa có lệnh bridge. Bấm “Ping health + stats” để kiểm tra kết nối.</div></div>
           </div>
         </section>
       </div>
 
       <div id="tooltip" hidden></div>
       <footer id="hud-foot">
-        <span id="feed-mode">feed: –</span>
+        <span id="feed-mode" data-i18n="footer.feed">feed: –</span>
         <span class="dot">·</span>
-        <span id="last-update">last update: –</span>
+        <span id="last-update" data-i18n="footer.lastUpdateInitial">last update: –</span>
         <span class="dot">·</span>
-        <span>drag to orbit · scroll to zoom · hover a zone for details · keys 1–6 switch views</span>
+        <span data-i18n="footer.hint">drag to orbit · scroll to zoom · hover a zone for details · keys 1–6 switch views</span>
       </footer>
     </div>
-    <noscript>This dashboard requires JavaScript (WebGL).</noscript>
+    <noscript data-i18n="noscript">This dashboard requires JavaScript (WebGL).</noscript>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

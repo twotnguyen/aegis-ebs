@@ -31,6 +31,7 @@
 // ---------------------------------------------------------------------------
 
 import { BUILDING, STATUS_COLORS, zoneCode } from './config.js';
+import { t, subscribe } from '../i18n.js';
 
 const ROOT_ID = 'at3-hud';
 const STYLE_ID = 'at3-hud-style';
@@ -38,10 +39,10 @@ const SEVS = ['online', 'warning', 'critical', 'offline'];
 const SEV_RANK = { online: 0, offline: 1, warning: 2, critical: 3 };
 const RANK_SEV = ['online', 'offline', 'warning', 'critical'];
 const VIEWS = [
-  { id: 'overview', label: 'Overview', glyph: '▦' },
-  { id: 'cutaway', label: 'Cutaway', glyph: '◧' },
-  { id: 'explode', label: 'Explode', glyph: '✳' },
-  { id: 'night', label: 'Night', glyph: '☾' },
+  { id: 'overview', key: 'view.overview', glyph: '▦' },
+  { id: 'cutaway', key: 'view.cutaway', glyph: '◧' },
+  { id: 'explode', key: 'view.explode', glyph: '✳' },
+  { id: 'night', key: 'view.night', glyph: '☾' },
 ];
 
 const hex = (n) => `#${(Number(n) >>> 0).toString(16).padStart(6, '0')}`;
@@ -216,51 +217,56 @@ export function build(ctx = {}) {
 
   let disposed = false;
   let cameraApi = null;
+  let lastStatus = null;
+  const sevLabels = {};
+  const ttLabels = {};
+  const viewLabels = new Map();
 
   // --- title bar ---------------------------------------------------------------
   const title = el('section', 'at3-card at3-title');
   const titleRow = el('div', 'at3-title-row');
   const logoWrap = el('span');
   logoWrap.innerHTML = LOGO_SVG; // static markup, no user data
-  const titleText = el('h1', 'at3-title-text', `${BUILDING.name.toUpperCase()} — DIGITAL TWIN`);
+  const titleText = el('h1', 'at3-title-text', '');
   const badge = el('span', 'at3-badge');
-  badge.append(el('span', 'at3-badge-dot'), document.createTextNode('SIMULATION'));
+  const badgeText = document.createTextNode('');
+  badge.append(el('span', 'at3-badge-dot'), badgeText);
   titleRow.append(logoWrap.firstChild, titleText, badge);
-  const sub = el('div', 'at3-sub',
-    `${BUILDING.floors} floors · ${BUILDING.zonesPerFloor} zones/floor · ${BUILDING.floors * BUILDING.zonesPerFloor} sectors`);
+  const sub = el('div', 'at3-sub', '');
   title.append(titleRow, sub);
   root.appendChild(title);
 
   // --- floor selector (ALL + F10..F01, worst-severity dot per floor) ------------
   const floorsCard = el('section', 'at3-card at3-floors');
-  floorsCard.append(el('h2', 'at3-card-head', 'Floor'));
+  const floorsHead = el('h2', 'at3-card-head', '');
+  floorsCard.append(floorsHead);
   const floorList = el('div', 'at3-floor-list');
   floorList.setAttribute('role', 'group');
-  floorList.setAttribute('aria-label', 'Floor selector');
   const floorBtns = new Map(); // 'all' | 0-based index -> { btn, dot }
 
-  function makeFloorBtn(key, label) {
+  function makeFloorBtn(key) {
     const btn = el('button', 'at3-floor-btn');
     btn.type = 'button';
     btn.dataset.floor = String(key);
     btn.setAttribute('aria-pressed', String(key === 'all'));
-    btn.title = key === 'all' ? 'Show all floors' : `Floor ${Number(key) + 1}`;
     const dot = el('span', 'at3-floor-dot');
-    btn.append(el('span', 'at3-floor-label', label), dot);
+    const label = el('span', 'at3-floor-label', '');
+    btn.append(label, dot);
     btn.addEventListener('click', () => selectFloor(key === 'all' ? null : Number(key)));
     floorList.appendChild(btn);
-    floorBtns.set(key, { btn, dot });
+    floorBtns.set(key, { btn, dot, label });
   }
-  makeFloorBtn('all', 'ALL');
-  for (let i = BUILDING.floors - 1; i >= 0; i--) makeFloorBtn(i, floorLabel(i));
+  makeFloorBtn('all');
+  for (let i = BUILDING.floors - 1; i >= 0; i--) makeFloorBtn(i);
   floorsCard.appendChild(floorList);
   root.appendChild(floorsCard);
 
   // --- legend (live zone counts per severity) -----------------------------------
   const legend = el('section', 'at3-card at3-legend');
-  const legendHead = el('h2', 'at3-card-head', 'Zone status');
+  const legendHead = el('h2', 'at3-card-head');
+  const legendLabel = el('span', null, '');
   const legendTotal = el('span', 'at3-pill', '0');
-  legendHead.appendChild(legendTotal);
+  legendHead.append(legendLabel, legendTotal);
   const legendGrid = el('div', 'at3-legend-grid');
   const countEls = {};
   for (const s of SEVS) {
@@ -271,7 +277,9 @@ export function build(ctx = {}) {
     sw.style.boxShadow = `0 0 7px ${c}66`;
     const count = el('span', 'at3-legend-count', '0');
     countEls[s] = count;
-    item.append(sw, el('span', null, s[0].toUpperCase() + s.slice(1)), count);
+    const label = el('span', null, '');
+    sevLabels[s] = label;
+    item.append(sw, label, count);
     legendGrid.appendChild(item);
   }
   legend.append(legendHead, legendGrid);
@@ -279,18 +287,18 @@ export function build(ctx = {}) {
 
   // --- view toggles ---------------------------------------------------------------
   const viewsBar = el('nav', 'at3-card at3-views');
-  viewsBar.setAttribute('aria-label', 'Twin view mode');
   const viewBtns = new Map();
   for (const v of VIEWS) {
     const btn = el('button', 'at3-view-btn');
     btn.type = 'button';
     btn.dataset.view = v.id;
     btn.setAttribute('aria-pressed', String(v.id === 'overview'));
-    btn.title = `${v.label} view`;
-    btn.append(el('span', 'at3-view-glyph', v.glyph), el('span', null, v.label));
+    const label = el('span', null, '');
+    btn.append(el('span', 'at3-view-glyph', v.glyph), label);
     btn.addEventListener('click', () => selectView(v.id));
     viewsBar.appendChild(btn);
     viewBtns.set(v.id, btn);
+    viewLabels.set(v.id, { btn, label, key: v.key });
   }
   root.appendChild(viewsBar);
 
@@ -308,13 +316,15 @@ export function build(ctx = {}) {
   ttBar.appendChild(ttFill);
   const ttRows = el('div', 'at3-tt-rows');
   const ttVals = {};
-  for (const [key, label] of [
-    ['devices', 'Devices'], ['online', 'Online'], ['received', 'Received'],
-    ['acknowledged', 'Acknowledged'], ['failed', 'Failed'], ['unacked', 'Unacked'],
+  for (const [key, labelKey] of [
+    ['devices', 'tooltip.devices'], ['online', 'tooltip.online'], ['received', 'tooltip.received'],
+    ['acknowledged', 'tooltip.acknowledged'], ['failed', 'tooltip.failed'], ['unacked', 'tooltip.unacked'],
   ]) {
     const v = el('span', 'at3-tt-v', '–');
+    const k = el('span', 'at3-tt-k', '');
     ttVals[key] = v;
-    ttRows.append(el('span', 'at3-tt-k', label), v);
+    ttLabels[key] = { node: k, key: labelKey };
+    ttRows.append(k, v);
   }
   tt.append(ttHead, ttBar, ttRows);
   root.appendChild(tt);
@@ -357,6 +367,7 @@ export function build(ctx = {}) {
   // --- public API ---------------------------------------------------------------------
   function setStatus(status) {
     if (disposed || !Array.isArray(status?.floors)) return;
+    lastStatus = status;
     const counts = { online: 0, warning: 0, critical: 0, offline: 0 };
     const worst = new Map(); // 0-based floor index -> rank
     status.floors.forEach((f, fi) => {
@@ -376,12 +387,12 @@ export function build(ctx = {}) {
         const ranks = [...worst.values()];
         const r = ranks.length ? Math.max(...ranks) : SEV_RANK.offline;
         paintDot(dot, RANK_SEV[r]);
-        btn.title = `All floors — worst: ${RANK_SEV[r]}`;
+        btn.title = t('hud.allWorst', { sev: t(`sev.${RANK_SEV[r]}`) });
         continue;
       }
       const s = RANK_SEV[worst.get(key) ?? SEV_RANK.offline];
       paintDot(dot, s);
-      btn.title = `Floor ${key + 1} — worst: ${s}`;
+      btn.title = t('hud.floorWorst', { n: Number(key) + 1, sev: t(`sev.${s}`) });
     }
   }
 
@@ -440,6 +451,36 @@ export function build(ctx = {}) {
     tt.hidden = true;
   }
 
+  /** Re-translate every dynamic HUD label (called on VI/EN switch). */
+  function refreshTexts() {
+    if (disposed) return;
+    titleText.textContent = t('hud.title', { name: BUILDING.name.toUpperCase() });
+    badgeText.textContent = t('hud.simulation');
+    sub.textContent = t('hud.subtitle', {
+      floors: BUILDING.floors,
+      zones: BUILDING.zonesPerFloor,
+      sectors: BUILDING.floors * BUILDING.zonesPerFloor,
+    });
+    floorsHead.textContent = t('hud.floor');
+    floorList.setAttribute('aria-label', t('hud.floorSelector'));
+    for (const [key, { btn, label }] of floorBtns) {
+      label.textContent = key === 'all' ? t('hud.all') : floorLabel(Number(key));
+      btn.title = key === 'all' ? t('hud.showAllFloors') : t('hud.floorN', { n: Number(key) + 1 });
+    }
+    legendLabel.textContent = t('hud.zoneStatus');
+    for (const s of SEVS) sevLabels[s].textContent = t(`sev.${s}`);
+    viewsBar.setAttribute('aria-label', t('hud.viewMode'));
+    for (const { btn, label, key } of viewLabels.values()) {
+      const text = t(key);
+      label.textContent = text;
+      btn.title = t('hud.viewTitle', { view: text });
+    }
+    for (const { node, key } of Object.values(ttLabels)) node.textContent = t(key);
+    if (lastStatus) setStatus(lastStatus);
+  }
+  refreshTexts();
+  const unsubscribeI18n = subscribe(() => refreshTexts());
+
   function bindCamera(api) {
     cameraApi = api ?? null;
   }
@@ -491,6 +532,7 @@ export function build(ctx = {}) {
     hideTooltip();
     mo.disconnect();
     ro?.disconnect();
+    unsubscribeI18n();
     window.removeEventListener('resize', layout);
     root.remove();
     style.remove();

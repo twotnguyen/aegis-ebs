@@ -13,6 +13,7 @@
 // ---------------------------------------------------------------------------
 
 import { BUILDING_ID } from './data.js';
+import { t } from './i18n.js';
 
 export const EVENT_KINDS = [
   'INCIDENT_OPENED',
@@ -233,10 +234,10 @@ export function makeMockIncident({
 } = {}) {
   const rng = mulberry32(seed);
   const events = [];
-  let t = startTs;
+  let cursor = startTs;
   const c = { online: 12, received: 20, acknowledged: 20, failed: 0 };
   const push = (eventKind, payload, actorId = 'system', gapMs = 6000) => {
-    t += gapMs + Math.floor(rng() * 4000);
+    cursor += gapMs + Math.floor(rng() * 4000);
     events.push(
       makeEvent({
         incidentId,
@@ -244,13 +245,13 @@ export function makeMockIncident({
         actorId,
         correlationId: `demo-${incidentId}`,
         payload: { zoneCode, floorNumber, ...payload },
-        ts: new Date(t).toISOString(),
+        ts: new Date(cursor).toISOString(),
         buildingId,
       }),
     );
   };
 
-  push('INCIDENT_OPENED', { kind: 'FIRE_DRILL', state: 'OPEN', summary: 'FIRE_DRILL tầng 5 — zone B + lân cận', counters: { ...c } }, 'operator-1', 0);
+  push('INCIDENT_OPENED', { kind: 'FIRE_DRILL', state: 'OPEN', summary: t('event.mock.summary'), counters: { ...c } }, 'operator-1', 0);
   push('ALERT_PUBLISHED', { alertId, severity: 'critical', message: 'FIRE_DRILL · evacuate floor 5', counters: { ...c } }, 'operator-1');
   c.received += 12;
   push('DELIVERY_SENT', { count: 12, targeted: 12, counters: { ...c } });
@@ -301,31 +302,31 @@ export function summarizeEvent(e) {
   const z = p.zoneCode ? ` · ${p.zoneCode}` : '';
   switch (e?.eventKind) {
     case 'INCIDENT_OPENED':
-      return `${p.kind ?? 'incident'} opened${p.summary ? ` — ${p.summary}` : ''}`;
+      return t('event.opened', { kind: p.kind ?? t('event.fallback.kind'), summary: p.summary ? ` — ${p.summary}` : '' });
     case 'INCIDENT_TRANSITION':
-      return `state → ${p.state}${p.reason ? ` (${p.reason})` : ''}`;
+      return t('event.state', { state: p.state ?? t('event.fallback.state'), reason: p.reason ? ` (${p.reason})` : '' });
     case 'ALERT_PUBLISHED':
-      return `${p.alertId ?? 'alert'} published (${p.severity ?? '?'})${p.message ? ` — ${p.message}` : ''}`;
+      return t('event.published', { id: p.alertId ?? t('event.fallback.alertId'), severity: p.severity ?? t('event.fallback.severity'), message: p.message ? ` — ${p.message}` : '' });
     case 'ALERT_UPDATED':
-      return `${p.alertId ?? 'alert'} updated → ${p.severity ?? '?'}`;
+      return t('event.updated', { id: p.alertId ?? t('event.fallback.alertId'), severity: p.severity ?? t('event.fallback.severity') });
     case 'ALERT_CANCELLED':
-      return `${p.alertId ?? 'alert'} cancelled (tombstone honored)`;
+      return t('event.cancelled', { id: p.alertId ?? t('event.fallback.alertId') });
     case 'DELIVERY_SENT':
-      return `+${p.count} delivery sent${z}`;
+      return t('event.deliverySent', { count: p.count, zone: z });
     case 'ACK_RECEIVED':
-      return `+${p.count} ACK_RECEIVED${z}`;
+      return t('event.ackReceived', { count: p.count, zone: z });
     case 'ACK_USER':
-      return `+${p.count} ACK_USER${z}`;
+      return t('event.ackUser', { count: p.count, zone: z });
     case 'RETRY_SCHEDULED':
-      return `${p.count} retries scheduled${z}`;
+      return t('event.retriesScheduled', { count: p.count, zone: z });
     case 'DELIVERY_FAILED':
-      return `${p.count} delivery FAILED after 3 retries${z}`;
+      return t('event.deliveryFailed', { count: p.count, zone: z });
     case 'DEVICE_OFFLINE':
-      return `${p.count} device(s) offline${z}`;
+      return t('event.deviceOffline', { count: p.count, zone: z });
     case 'DEVICE_ONLINE':
-      return `${p.count} device(s) back online${z}`;
+      return t('event.deviceOnline', { count: p.count, zone: z });
     case 'CHAOS_COMMAND':
-      return `${p.command} ${p.enabled ? 'ENABLED' : 'DISABLED'}${p.ms ? ` (${p.ms} ms)` : ''}${p.pct ? ` (${p.pct}%)` : ''}`;
+      return `${p.command} ${p.enabled ? t('event.enabled') : t('event.disabled')}${p.ms ? ` (${p.ms} ms)` : ''}${p.pct ? ` (${p.pct}%)` : ''}`;
     default:
       return e?.eventKind ?? 'event';
   }

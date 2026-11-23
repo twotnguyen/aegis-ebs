@@ -8,6 +8,7 @@
 
 import { KIND_CATEGORY, summarizeEvent } from './events.js';
 import { downloadFile, exportMetricsCSV, exportMetricsJSON, sparklineSVG, toCSV } from './reports.js';
+import { t, subscribe } from './i18n.js';
 
 const $ = (id) => document.getElementById(id);
 const timeOf = (ts) => (ts ? new Date(ts).toLocaleTimeString('en-GB', { hour12: false }) : '–');
@@ -87,7 +88,7 @@ export function createPanels(deps) {
 
   function renderIncidents() {
     $('ev-count').textContent = String(store.size);
-    $('ev-source').textContent = feed.mode === 'live' ? 'live feed' : 'mock feed';
+    $('ev-source').textContent = t(feed.mode === 'live' ? 'feed.live' : 'feed.mock');
     const list = $('ev-list');
     const events = store.all;
     const shown = events.slice(-LIST_CAP);
@@ -116,11 +117,13 @@ export function createPanels(deps) {
     if (!shown.length) {
       const li = document.createElement('li');
       li.className = 'ev-empty';
-      li.textContent = 'No events yet — wait for the feed, load the demo incident, or enable chaos.';
+      li.textContent = t('incidents.empty');
       list.replaceChildren(li);
     }
     $('ev-note').textContent =
-      events.length > LIST_CAP ? `showing last ${LIST_CAP} of ${events.length} events` : `${events.length} events · click a row to inspect/replay`;
+      events.length > LIST_CAP
+        ? t('incidents.showingLast', { count: LIST_CAP, total: events.length })
+        : t('incidents.clickRow', { count: events.length });
     // follow the live tail unless the user is replaying/inspecting
     const lastSeq = events[events.length - 1]?.seq ?? 0;
     if (!replay.loaded && lastSeq !== lastRenderedSeq) list.scrollTop = list.scrollHeight;
@@ -168,7 +171,7 @@ export function createPanels(deps) {
     if (!event) {
       detail.replaceChildren(Object.assign(document.createElement('span'), {
         className: 'hint',
-        textContent: replay.loaded ? 'At start of timeline — press ▶ to replay.' : 'Press ▶ to replay the timeline on the 3D twin, or click an event row.',
+        textContent: t(replay.loaded ? 'replay.atStart' : 'incidents.replayHint'),
       }));
     } else {
       const head = document.createElement('div');
@@ -178,7 +181,7 @@ export function createPanels(deps) {
       kind.textContent = event.eventKind;
       const meta = document.createElement('span');
       meta.className = 'hint';
-      meta.textContent = `${event.incidentId} · ${timeOf(event.ts)} · actor ${event.actorId ?? 'system'}${event.correlationId ? ` · corr ${event.correlationId}` : ''}`;
+      meta.textContent = `${event.incidentId} · ${timeOf(event.ts)} · ${t('replay.actor')} ${event.actorId ?? 'system'}${event.correlationId ? ` · ${t('replay.corr')} ${event.correlationId}` : ''}`;
       head.append(kind, meta);
       const sum = document.createElement('div');
       sum.textContent = summarizeEvent(event);
@@ -255,20 +258,18 @@ export function createPanels(deps) {
     ];
     for (const [card, on, btn, stateEl] of cards) {
       $(card).classList.toggle('chaos-on', on);
-      $(btn).textContent = on ? 'Disable' : 'Enable';
-      $(stateEl).textContent = on ? 'ACTIVE' : 'IDLE';
+      $(btn).textContent = t(on ? 'common.disable' : 'common.enable');
+      $(stateEl).textContent = t(on ? 'common.active' : 'common.idle');
       $(stateEl).className = `chaos-state ${on ? 'on' : ''}`;
     }
     $('ch-delay-ms').value = String(st.delayMs);
     $('ch-delay-ms-val').textContent = `${st.delayMs} ms`;
     $('ch-disc-pct').value = String(st.disconnectPct);
     $('ch-disc-pct-val').textContent = `${st.disconnectPct}%`;
-    $('ch-feed').textContent = `feed: ${feed.mode}${feed.forcedMock ? ' (forced mock)' : ''}`;
+    $('ch-feed').textContent = `${t('chaos.feed')}: ${feed.mode}${feed.forcedMock ? ` (${t('chaos.forcedMock')})` : ''}`;
     $('ch-live').disabled = feed.mode !== 'mock';
     $('ch-note').textContent =
-      feed.mode === 'mock'
-        ? 'Commands execute on the local mock simulation (status/1 has no chaos opcode). Effects appear in the twin, metrics and timeline.'
-        : 'Feed is LIVE — chaos commands are mock-only. Enabling a scenario switches to the MOCK simulation; “Return to live” resumes probing the server.';
+      t(feed.mode === 'mock' ? 'chaos.note.mock' : 'chaos.note.live');
     const tbody = $('ch-log').querySelector('tbody');
     tbody.replaceChildren(
       ...chaos.log.map((r) => {
@@ -287,7 +288,7 @@ export function createPanels(deps) {
       const td = document.createElement('td');
       td.colSpan = 5;
       td.className = 'hint';
-      td.textContent = 'No commands yet.';
+      td.textContent = t('chaos.noCommands');
       tr.append(td);
       tbody.replaceChildren(tr);
     }
@@ -337,12 +338,12 @@ export function createPanels(deps) {
 
   function renderReports() {
     const s = history.stats();
-    $('rp-samples').textContent = `${s.samples} samples`;
+    $('rp-samples').textContent = t('reports.samples', { count: s.samples });
     $('rp-window').textContent = s.from
-      ? `window: ${timeOf(s.from)} → ${timeOf(s.to)} · sampled from every snapshot/delta`
-      : 'window: no samples yet';
+      ? t('reports.window', { from: timeOf(s.from), to: timeOf(s.to) })
+      : t('reports.noSamples');
     const tbody = $('rp-stats').querySelector('tbody');
-    const LABELS = { connected: 'connected', p50: 'p50 (ms)', p95: 'p95 (ms)', p99: 'p99 (ms)', retryCount: 'retryCount' };
+    const LABELS = { connected: t('metrics.connected'), p50: t('metrics.p50'), p95: t('metrics.p95'), p99: t('metrics.p99'), retryCount: t('metrics.retries') };
     tbody.replaceChildren(
       ...Object.keys(LABELS).map((key) => {
         const m = s.metrics[key];
@@ -388,35 +389,35 @@ export function createPanels(deps) {
   function renderFunnel() {
     const rows = funnel.all(getState());
     const activeCount = rows.filter((r) => r.active).length;
-    $('fn-count').textContent = `${activeCount} active / ${rows.length} tracked`;
+    $('fn-count').textContent = t('funnel.count', { active: activeCount, total: rows.length });
     const select = $('fn-select');
     if (!rows.some((r) => r.alertId === selectedAlertId)) selectedAlertId = rows[0]?.alertId ?? null;
     select.replaceChildren(
       ...rows.map((r) => {
         const opt = document.createElement('option');
         opt.value = r.alertId;
-        opt.textContent = `${r.active ? '●' : '○'} ${r.alertId} · ${r.zoneCode} · ${r.severity}${r.active ? '' : ' (closed)'}`;
+        opt.textContent = `${r.active ? '●' : '○'} ${r.alertId} · ${r.zoneCode} · ${r.severity}${r.active ? '' : ` (${t('funnel.closed')})`}`;
         opt.selected = r.alertId === selectedAlertId;
         return opt;
       }),
     );
     if (!rows.length) {
       const opt = document.createElement('option');
-      opt.textContent = 'No alerts tracked yet';
+      opt.textContent = t('funnel.noAlerts');
       select.replaceChildren(opt);
     }
     const f = rows.find((r) => r.alertId === selectedAlertId) ?? null;
     const bars = $('fn-bars');
     const detail = $('fn-detail');
     if (!f) {
-      bars.replaceChildren(Object.assign(document.createElement('p'), { className: 'hint', textContent: 'Funnels appear when alerts are active (or were active this session).' }));
+      bars.replaceChildren(Object.assign(document.createElement('p'), { className: 'hint', textContent: t('funnel.noFunnels') }));
       detail.textContent = '';
     } else {
       const stages = [
-        ['Targeted', f.targeted, 'fn-targeted'],
-        ['Received', f.received, 'fn-received'],
-        ['Acknowledged', f.acknowledged, 'fn-acked'],
-        ['Failed', f.failed, 'fn-failed'],
+        [t('funnel.stage.targeted'), f.targeted, 'fn-targeted'],
+        [t('funnel.stage.received'), f.received, 'fn-received'],
+        [t('funnel.stage.acknowledged'), f.acknowledged, 'fn-acked'],
+        [t('funnel.stage.failed'), f.failed, 'fn-failed'],
       ];
       bars.replaceChildren(
         ...stages.map(([label, value, cls]) => {
@@ -440,7 +441,12 @@ export function createPanels(deps) {
       );
       const chips = document.createElement('div');
       chips.className = 'fn-chips';
-      for (const text of [`pending ${f.pending}`, `unacked ${f.unacked}`, `ack rate ${pct(f.ackRate)}`, `fail rate ${pct(f.failRate)}`]) {
+      for (const text of [
+        t('funnel.chip.pending', { count: f.pending }),
+        t('funnel.chip.unacked', { count: f.unacked }),
+        t('funnel.chip.ackRate', { value: pct(f.ackRate) }),
+        t('funnel.chip.failRate', { value: pct(f.failRate) }),
+      ]) {
         const chip = document.createElement('span');
         chip.className = 'pill';
         chip.textContent = text;
@@ -448,17 +454,24 @@ export function createPanels(deps) {
       }
       bars.append(chips);
       detail.textContent =
-        `headline (zone totals): ${f.message}` +
-        (f.zoneTotals ? ` — recv ${f.zoneTotals.received} · ack ${f.zoneTotals.acknowledged} · failed ${f.zoneTotals.failed}` : '') +
-        ` · funnel counts deliveries since alert opened ${timeOf(f.openedTs)}` +
-        `${f.closedTs ? ` · closed ${timeOf(f.closedTs)}` : ''} · zone ${f.zoneCode} (floor ${f.floorNumber})`;
+        t('funnel.detail.headline', { message: f.message }) +
+        (f.zoneTotals
+          ? t('funnel.detail.zoneTotals', {
+              received: f.zoneTotals.received,
+              acknowledged: f.zoneTotals.acknowledged,
+              failed: f.zoneTotals.failed,
+            })
+          : '') +
+        t('funnel.detail.since', { time: timeOf(f.openedTs) }) +
+        (f.closedTs ? t('funnel.detail.closed', { time: timeOf(f.closedTs) }) : '') +
+        t('funnel.detail.zone', { code: f.zoneCode, floor: f.floorNumber });
     }
     const tbody = $('fn-table').querySelector('tbody');
     tbody.replaceChildren(
       ...rows.map((r) => {
         const tr = document.createElement('tr');
         tr.className = r.active ? `fn-row-${r.severity}` : 'fn-row-closed';
-        for (const text of [r.alertId, r.zoneCode, r.active ? 'active' : 'closed', r.targeted, r.received, r.acknowledged, r.failed, pct(r.ackRate)]) {
+        for (const text of [r.alertId, r.zoneCode, t(r.active ? 'funnel.active' : 'funnel.closed'), r.targeted, r.received, r.acknowledged, r.failed, pct(r.ackRate)]) {
           const td = document.createElement('td');
           td.textContent = String(text);
           tr.append(td);
@@ -475,7 +488,7 @@ export function createPanels(deps) {
       const td = document.createElement('td');
       td.colSpan = 8;
       td.className = 'hint';
-      td.textContent = 'No alerts tracked yet.';
+      td.textContent = t('funnel.noAlerts');
       tr.append(td);
       tbody.replaceChildren(tr);
     }
@@ -503,7 +516,7 @@ export function createPanels(deps) {
       `aegis-delivery-funnel-${buildingId}.json`,
       'application/json;charset=utf-8',
       JSON.stringify(
-        { feed: 'status/1', buildingId, exportedAt: new Date().toISOString(), note: 'derived from zone counters since alert opened (see src/funnel.js)', alerts: funnel.all(getState()) },
+        { feed: 'status/1', buildingId, exportedAt: new Date().toISOString(), note: t('funnel.exportNote'), alerts: funnel.all(getState()) },
         null,
         2,
       ),
@@ -526,14 +539,19 @@ export function createPanels(deps) {
     } catch { /* keep default */ }
     return (override || OP_DEFAULT_BRIDGE).replace(/\/+$/, '');
   })();
-  const opState = { busy: false, lastAlertId: null, stats: null };
+  const opState = {
+    busy: false, lastAlertId: null, stats: null,
+    statusKey: 'operator.idle', statusKind: '',
+  };
 
   const opStamp = () => new Date().toLocaleTimeString('en-GB', { hour12: false });
 
-  function opSetStatus(text, kind = '') {
+  function opSetStatus(key, kind = '') {
     const el = $('op-status');
     if (!el) return;
-    el.textContent = text;
+    opState.statusKey = key;
+    opState.statusKind = kind;
+    el.textContent = t(key);
     el.className = `pill${kind ? ` op-status-${kind}` : ''}`;
   }
 
@@ -592,9 +610,9 @@ export function createPanels(deps) {
         const detail = data?.error ?? data?.message ?? raw?.slice(0, 200) ?? '';
         throw new Error(`${path} → HTTP ${res.status}${detail ? ` · ${detail}` : ''}`);
       }
-      return data ?? { ok: true, note: 'empty response' };
+      return data ?? { ok: true, note: t('operator.emptyResponse') };
     } catch (err) {
-      if (err?.name === 'AbortError') throw new Error(`${path} → timeout sau 15s`);
+      if (err?.name === 'AbortError') throw new Error(t('operator.timeout', { path }));
       throw err;
     } finally {
       clearTimeout(timer);
@@ -630,7 +648,11 @@ export function createPanels(deps) {
     const dc = opDeliveryCount(data);
     const extra = opPick(data, ['state', 'deliveryState']);
     opLogLine(
-      `OK · alertId=${alertId ?? '–'} · deliveryCount=${dc ?? '–'}${extra ? ` · state=${extra}` : ''}`,
+      t('operator.logOk', {
+        id: alertId ?? '–',
+        dc: dc ?? '–',
+        state: extra ? t('operator.logState', { state: extra }) : '',
+      }),
       'ok',
     );
   }
@@ -639,27 +661,28 @@ export function createPanels(deps) {
     try {
       opState.stats = await opFetch('/api/fleet/stats');
       renderOperator();
-      opLogLine(`fleet stats · ${JSON.stringify(opState.stats)}`);
+      opLogLine(`${t('operator.fleetStats')} · ${JSON.stringify(opState.stats)}`);
     } catch (err) {
-      opLogLine(`fleet stats ERROR · ${err.message}`, 'error');
+      opLogLine(`${t('operator.fleetStats')} ${t('operator.errorShort')} · ${err.message}`, 'error');
     }
   }
 
   function renderOperator() {
     const bridge = $('op-bridge');
-    if (bridge) bridge.textContent = `bridge: ${BRIDGE_BASE}`;
+    if (bridge) bridge.textContent = t('operator.bridge', { bridge: BRIDGE_BASE });
     const stats = opState.stats;
     const field = $('op-fleet-stats');
     if (field) {
-      if (!stats) field.textContent = 'fleet: –';
+      if (!stats) field.textContent = t('operator.fleetNone');
       else {
         const count = opPick(stats, ['deviceCount', 'deviceTotal', 'count', 'total', 'fleetSize', 'devices']);
         const online = opPick(stats, ['online', 'onlineCount', 'connected']);
         const silent = opPick(stats, ['silent', 'silentCount', 'silentDevices']);
-        field.textContent = `fleet: ${Array.isArray(count) ? count.length : (count ?? '–')}` +
-          `${online != null ? ` · online ${online}` : ''}${silent != null ? ` · silent ${silent}` : ''}`;
+        field.textContent = t('operator.fleet', { count: Array.isArray(count) ? count.length : (count ?? '–') }) +
+          `${online != null ? t('operator.fleetOnline', { count: online }) : ''}${silent != null ? t('operator.fleetSilent', { count: silent }) : ''}`;
       }
     }
+    if (opState.statusKey) opSetStatus(opState.statusKey, opState.statusKind ?? '');
   }
 
   async function opWithBusy(label, fn) {
@@ -669,14 +692,14 @@ export function createPanels(deps) {
       const btn = $(id);
       if (btn) btn.disabled = true;
     }
-    opSetStatus('busy', 'busy');
-    opLogLine(`${label} · gửi lệnh…`);
+    opSetStatus('operator.busy', 'busy');
+    opLogLine(t('operator.sending', { label }));
     try {
       await fn();
-      opSetStatus('ok', 'ok');
+      opSetStatus('operator.ok', 'ok');
     } catch (err) {
-      opLogLine(`${label} · ERROR · ${err.message}`, 'error');
-      opSetStatus('error', 'error');
+      opLogLine(`${label} · ${t('operator.errorShort')} · ${err.message}`, 'error');
+      opSetStatus('operator.error', 'error');
     } finally {
       opState.busy = false;
       for (const id of OP_BUTTONS) {
@@ -686,32 +709,35 @@ export function createPanels(deps) {
     }
   }
 
-  $('op-ping').addEventListener('click', () => opWithBusy('health', async () => {
+  $('op-ping').addEventListener('click', () => opWithBusy(t('operator.ping'), async () => {
     const data = await opFetch('/api/health');
-    opLogLine(`health OK · ${JSON.stringify(data)}`, 'ok');
+    opLogLine(t('operator.logHealthOk', { data: JSON.stringify(data) }), 'ok');
     await opShowStats();
   }));
 
-  $('op-fleet-start').addEventListener('click', () => opWithBusy('fleet start', async () => {
+  $('op-fleet-start').addEventListener('click', () => opWithBusy(t('operator.fleetStart'), async () => {
     const count = Math.max(1, Math.min(500, Number($('op-count').value) || 20));
     const body = { count, silentFloor: 1 };
     const data = await opFetch('/api/fleet/start', body);
-    opLogLine(`fleet start OK · count=${count} · silentFloor=1${data ? ` · ${JSON.stringify(data)}` : ''}`, 'ok');
+    opLogLine(t('operator.logFleetStartOk', {
+      count,
+      data: data ? ` · ${JSON.stringify(data)}` : '',
+    }), 'ok');
     await opShowStats();
   }));
 
-  $('op-fleet-stop').addEventListener('click', () => opWithBusy('fleet stop', async () => {
+  $('op-fleet-stop').addEventListener('click', () => opWithBusy(t('operator.fleetStop'), async () => {
     const data = await opFetch('/api/fleet/stop', {});
-    opLogLine(`fleet stop OK${data ? ` · ${JSON.stringify(data)}` : ''}`, 'ok');
+    opLogLine(t('operator.logFleetStopOk', { data: data ? ` · ${JSON.stringify(data)}` : '' }), 'ok');
     await opShowStats();
   }));
 
-  $('op-publish').addEventListener('click', () => opWithBusy('publish', async () => {
+  $('op-publish').addEventListener('click', () => opWithBusy(t('operator.publish'), async () => {
     const body = opPublishBody();
     opRemember(await opFetch('/api/publish', body), body);
   }));
 
-  $('op-retry-demo').addEventListener('click', () => opWithBusy('retry-demo', async () => {
+  $('op-retry-demo').addEventListener('click', () => opWithBusy(t('operator.retryDemo'), async () => {
     // Scope to F01-A: the started fleet has 12 real devices there, one of which
     // is silent. Building-wide would mix in 460 offline seeded devices and make
     // the single retry→FAILED case hard to read.
@@ -724,18 +750,23 @@ export function createPanels(deps) {
       title: 'RETRY DEMO — F01-A silent',
       instruction: '1 of 12 devices does not auto-ACK; expect retry then FAILED.',
     });
-    opLogLine('retry-demo · F01-A · silent=true → 11 ACK + 1 retry→FAILED', 'warn');
+    opLogLine(t('operator.logRetryHint'), 'warn');
     opRemember(await opFetch('/api/publish', body), body);
   }));
 
-  $('op-cancel').addEventListener('click', () => opWithBusy('cancel', async () => {
+  $('op-cancel').addEventListener('click', () => opWithBusy(t('operator.cancel'), async () => {
     const alertId = $('op-alert-id').value.trim() || opState.lastAlertId;
-    if (!alertId) throw new Error('chưa có alertId — hãy publish trước hoặc điền ô Alert ID');
+    if (!alertId) throw new Error(t('operator.noAlertId'));
     const body = { ...opAuth(), alertId, reason: 'Operator cancel via dashboard' };
     opRemember(await opFetch('/api/cancel', body), body);
   }));
 
   // --- init ------------------------------------------------------------------------
+
+  opSetStatus('operator.idle');
+  subscribe(() => {
+    if (opState.statusKey) opSetStatus(opState.statusKey, opState.statusKind ?? '');
+  });
 
   setTab('twin');
   return {

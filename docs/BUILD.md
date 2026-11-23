@@ -219,8 +219,8 @@ khi jar `~/.m2` cũ** — kết quả sẽ âm thầm lệch working tree.
 | aegis-client | `mvn -B -ntp -pl aegis-client -am test` | 43 (AlertRecord, ClientConfig, InboxStore, AlertClientEngine, TLS smoke) |
 | aegis-simulator | `mvn -B -ntp -pl aegis-simulator -am test` | 20 (SimulatorConfig, FaultInjector deterministic, SimAgent, stats) |
 | aegis-network-lab | `mvn -B -ntp -pl aegis-network-lab -am test` | 31 (UDP discovery trust gate, multicast hint, benchmark) |
-| **Toàn reactor** | `mvn -B -ntp verify` (hoặc `./scripts/test.sh`) | **338** |
-| aegis-dashboard | `cd aegis-dashboard && npm test` | 14 (`node --test test/logic.test.js`) |
+| **Toàn reactor** | `mvn -B -ntp verify` (hoặc `./scripts/test.sh`) | **347** (338 là baseline lịch sử + 9 test H1–H4) |
+| aegis-dashboard | `cd aegis-dashboard && npm test` | 20 (`node --test test/logic.test.js test/i18n.test.js`) |
 
 Đếm test chính xác: `-q` ẩn số liệu — đọc XML trong `<module>/target/surefire-reports/`:
 

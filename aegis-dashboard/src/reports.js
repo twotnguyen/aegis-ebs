@@ -4,6 +4,8 @@
 // already flowing through the feed — no extra data source.
 // ---------------------------------------------------------------------------
 
+import { t } from './i18n.js';
+
 export const METRIC_KEYS = ['connected', 'p50', 'p95', 'p99', 'retryCount'];
 
 export function createMetricsHistory({ limit = 900 } = {}) {
@@ -132,7 +134,7 @@ export function sparklineSVG(values, { width = 240, height = 42, stroke = '#38bd
     .map((v, i) => `${((i / (n - 1 || 1)) * (width - 4) + 2).toFixed(1)},${(height - 3 - ((v - min) / span) * (height - 6)).toFixed(1)}`)
     .join(' ');
   return (
-    `<svg viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="img" aria-label="sparkline">` +
+    `<svg viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="img" aria-label="${t('reports.sparklineAria')}">` +
     `<polyline points="${pts}" fill="none" stroke="${stroke}" stroke-width="1.5" stroke-linejoin="round"/></svg>`
   );
 }

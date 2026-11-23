@@ -2,6 +2,8 @@
 
 **Hệ thống thông báo khẩn cấp cho tòa nhà văn phòng (Emergency Broadcast System)** — đồ án học phần **CMP180 · Lập trình mạng máy tính** (HUTECH).
 
+> 🌐 **Ngôn ngữ / Language:** **Tiếng Việt** (bản này) · [English](README.en.md) · [Hướng dẫn song ngữ](docs/I18N.md) · [Tất cả tài liệu Anh ngữ](docs/en/README.md)
+
 > ⚠️ **SIMULATION / TRAINING ONLY.** Đây là nguyên mẫu học thuật, **không** thay thế hệ thống báo cháy, phát thanh sơ tán hay thiết bị cảnh báo an toàn sinh mạng đã được chứng nhận. Không phát cảnh báo giả tới người không tham gia demo.
 
 Một trung tâm chỉ huy phát cảnh báo khẩn cấp tới hàng trăm client trong LAN, **có ưu tiên, xác nhận 2 tầng, gửi lại idempotent, khôi phục sau sự cố, phân quyền RBAC, nhật ký truy vết**, kèm **digital twin 3D**, **phòng thí nghiệm lỗi mạng (chaos lab)** và **thí nghiệm multicast thật** — tất cả xây bằng **Java Socket tự cài đặt giao thức**, không dùng broker/cloud push làm kênh chính.

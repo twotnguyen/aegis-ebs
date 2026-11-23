@@ -32,6 +32,7 @@ import { createChaosEngine } from './chaos.js';
 import { createFunnelTracker } from './funnel.js';
 import { createMetricsHistory } from './reports.js';
 import { createPanels } from './panels.js';
+import { t, applyStatic, getLang, setLang, subscribe } from './i18n.js';
 
 // --- 3D modules (foundation + 9 base modules + extras) -----------------------
 import * as config from './three/config.js';
@@ -61,6 +62,11 @@ const tooltipEl = $('tooltip');
 const feedModeEl = $('feed-mode');
 const lastUpdateEl = $('last-update');
 const replayBadgeEl = $('replay-badge');
+
+// --- i18n: apply stored language before the first render --------------------
+setLang(getLang()); // sync <html lang> and storage with the resolved default
+applyStatic(document);
+let lastMode = 'connecting';
 
 // --- core objects -------------------------------------------------------------
 
@@ -326,9 +332,13 @@ function initTwin() {
     title.className = 'tt-title';
     title.textContent = `${zone.zoneCode} · ${String(zone.severity ?? 'offline').toUpperCase()}`;
     const body = document.createElement('div');
-    body.textContent =
-      `devices ${zone.online}/${zone.devicesTotal} online · ` +
-      `recv ${zone.received} · ack ${zone.acknowledged} · failed ${zone.failed}`;
+    body.textContent = t('tooltip.body', {
+      devices: zone.online,
+      total: zone.devicesTotal,
+      received: zone.received,
+      acknowledged: zone.acknowledged,
+      failed: zone.failed,
+    });
     tooltipEl.append(title, body);
     tooltipEl.style.left = `${Math.min(pointerPx.x + 14, window.innerWidth - 320)}px`;
     tooltipEl.style.top = `${Math.min(pointerPx.y + 14, window.innerHeight - 70)}px`;
@@ -390,7 +400,7 @@ try {
   console.error('WebGL init failed — panels remain usable:', err);
   const notice = document.createElement('div');
   notice.className = 'panel webgl-notice';
-  notice.textContent = `WebGL is not available in this browser (${err.message}). The 3D twin is disabled; timeline, chaos, reports and funnel panels still work.`;
+  notice.textContent = t('webgl.notice', { message: err.message });
   $('app').append(notice);
 }
 
@@ -415,7 +425,7 @@ function renderHud(s = state) {
     ...alerts.map((a) => {
       const li = document.createElement('li');
       li.className = `alert alert-${a.severity}`;
-      li.title = 'Open delivery funnel for this alert';
+      li.title = t('alerts.openFunnel');
       const head = document.createElement('strong');
       head.textContent = a.zoneCode;
       li.append(head, document.createTextNode(` ${a.message}`));
@@ -426,26 +436,29 @@ function renderHud(s = state) {
   if (alerts.length === 0) {
     const li = document.createElement('li');
     li.className = 'alert alert-none';
-    li.textContent = 'No active alerts';
+    li.textContent = t('alerts.none');
     alertsEl.replaceChildren(li);
   }
-  lastUpdateEl.textContent = `last update: ${new Date(s.ts).toLocaleTimeString()}`;
+  lastUpdateEl.textContent = t('footer.lastUpdate', { time: new Date(s.ts).toLocaleTimeString() });
 }
 
 const BADGE = {
-  connecting: ['CONNECTING…', 'badge-connecting'],
-  live: ['LIVE', 'badge-live'],
-  reconnecting: ['RECONNECTING…', 'badge-reconnecting'],
-  mock: ['MOCK FEED', 'badge-mock'],
-  closed: ['CLOSED', 'badge-offline'],
+  connecting: ['badge.connecting', 'badge-connecting'],
+  live: ['badge.live', 'badge-live'],
+  reconnecting: ['badge.reconnecting', 'badge-reconnecting'],
+  mock: ['badge.mock', 'badge-mock'],
+  closed: ['badge.closed', 'badge-offline'],
 };
 
 function setMode(mode) {
-  const [text, cls] = BADGE[mode] ?? BADGE.connecting;
-  badgeEl.textContent = text;
+  const [key, cls] = BADGE[mode] ?? BADGE.connecting;
+  lastMode = BADGE[mode] ? mode : 'connecting';
+  badgeEl.textContent = t(key);
   badgeEl.className = `badge ${cls}`;
   feedModeEl.textContent =
-    mode === 'live' ? `feed: live ${feed.url}` : mode === 'mock' ? 'feed: mock (server offline)' : `feed: ${mode}`;
+    mode === 'live' ? t('feed.liveWithUrl', { url: feed.url })
+      : mode === 'mock' ? t('feed.mockOffline')
+      : t('feed.generic', { mode });
   panels?.refreshIfActive('chaos');
 }
 
@@ -508,6 +521,25 @@ const feed = createStatusFeed({
   onMode: setMode,
 });
 panels.setFeed(feed);
+
+// --- language toggle ----------------------------------------------------------
+function syncLangToggle() {
+  $('lang-vi')?.classList.toggle('lang-active', getLang() === 'vi');
+  $('lang-en')?.classList.toggle('lang-active', getLang() === 'en');
+}
+
+subscribe(() => {
+  applyStatic(document);   // static nodes first
+  syncLangToggle();
+  setMode(lastMode);       // restore dynamic top-bar text
+  renderHud();             // alerts + footer
+  panels?.refreshIfActive(panels.activeTab); // dynamic panel text
+});
+
+$('lang-toggle')?.addEventListener('click', () => {
+  setLang(getLang() === 'vi' ? 'en' : 'vi');
+});
+syncLangToggle();
 
 function afterData() {
   if (!replayActive()) {
