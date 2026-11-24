@@ -27,11 +27,11 @@ Dừng demo bằng `Ctrl+C` tại terminal đang chạy `scripts/demo-web.sh`.
 ```bash
 brew install maven            # Java 24 (Temurin) + Maven 3.10
 # Node 26 + npm cho dashboard (đã có hoặc brew install node)
-./scripts/dev.sh              # mvn -DskipTests package  → BUILD_OK
-./scripts/test.sh             # mvn test → 338 test Java
-./scripts/initdb.sh           # tạo aegis.db: 26 bảng, foreign_key_check sạch
+bash scripts/dev.sh              # mvn -DskipTests package  → BUILD_OK
+bash scripts/test.sh             # mvn test → 360 test Java
+bash scripts/initdb.sh           # tạo aegis.db: 26 bảng, foreign_key_check sạch
 sqlite3 aegis.db < aegis-persistence/src/main/resources/db/seed_demo.sql   # dữ liệu demo
-./scripts/gen-server-cert.sh  # certs/aegis-server.p12 + aegis-truststore.p12 (password: aegis-demo)
+bash scripts/gen-server-cert.sh  # certs/aegis-server.p12 + aegis-truststore.p12 (password: aegis-demo)
 ```
 
 ## 2. Chạy server
@@ -85,9 +85,9 @@ Với demo web-only dùng tab **Operator** trên dashboard (mục 0); với stud
 
 ## 7. Chaos / benchmark / demo tái lập
 ```bash
-./scripts/bench-load.sh     # benchmark 100 client → docs/evidence/benchmark/<runId>/
-./scripts/chaos-run.sh      # chaos scenarios → docs/evidence/chaos/
-./scripts/demo-e2e.sh       # demo end-to-end → docs/evidence/demo/
+bash scripts/bench-load.sh     # benchmark 100 client → docs/evidence/benchmark/<runId>/
+bash scripts/chaos-run.sh      # chaos scenarios → docs/evidence/chaos/
+bash scripts/demo-e2e.sh       # demo end-to-end → docs/evidence/demo/
 ```
 Mỗi run kèm `summary.json` (runId, commit SHA, máy đo, p50/p95/p99, ACK rate, retry).
 

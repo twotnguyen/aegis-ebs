@@ -38,9 +38,9 @@ Modular monolith Java, 4 plane: **command** (dashboard/operator) · **delivery**
 | `aegis-client` | JavaFX desktop, durable inbox, ACK 2 tầng, reconnect, popup | 45 |
 | `aegis-simulator` | Headless 100-agent smoke (200 alert), fault injection; chấp nhận 1–1000 agent | 20 |
 | `aegis-network-lab` | UDP discovery + trust gate, multicast ALERT_HINT, benchmark TCP vs multicast | 31 |
-| `aegis-dashboard` | Web Vite + Three.js 3D twin, timeline/chaos/reports/funnel (Node) | 21 |
+| `aegis-dashboard` | Web Vite + Three.js 3D twin, timeline/chaos/reports/funnel (Node) | 22 |
 
-**Tổng hiện tại: 360 test Java + 21 test dashboard = 381** (surefire XML + `node --test` sau lần verify cuối; bản evidence lưu trữ `docs/evidence/verify/` ghi 347 Java/20 dashboard của lần chạy cũ — xem `docs/BUILD.md`). Cổng: TLS `9443` · WS status `9444` · bridge Operator `9445` · UDP discovery `9999` · multicast `239.10.10.10:9998` · Vite `5173`.
+**Tổng hiện tại: 360 test Java + 22 test dashboard = 382** (surefire XML + `node --test` sau lần verify cuối; bản evidence lưu trữ `docs/evidence/verify/` ghi 347 Java/20 dashboard của lần chạy cũ — xem `docs/BUILD.md`). Cổng: TLS `9443` · WS status `9444` · bridge Operator `9445` · UDP discovery `9999` · multicast `239.10.10.10:9998` · Vite `5173`.
 
 ## 3. Công nghệ
 
@@ -96,16 +96,16 @@ brew install maven          # Java 24+ (Temurin), Maven 3.10
 
 ### Build + test + DB
 ```bash
-./scripts/dev.sh            # mvn -DskipTests package
-./scripts/test.sh           # mvn test  (360 test Java)
-./scripts/initdb.sh         # tạo aegis.db: 26 bảng, foreign_key_check sạch
+bash scripts/dev.sh            # mvn -DskipTests package
+bash scripts/test.sh           # mvn test  (360 test Java)
+bash scripts/initdb.sh         # tạo aegis.db: 26 bảng, foreign_key_check sạch
 ```
 
 **Dữ liệu demo — 2 chế độ, KHÔNG trộn trên cùng 1 DB** (chi tiết: `docs/BUILD.md`):
 - **Chế độ 1 — demo thật (khuyến nghị):** chỉ cần `initdb.sh` rồi chạy server. `ServerStore.seedWorld` tự nạp thế giới demo với hash Argon2id thật: building `AEGIS-BLD-A` (code A), 10 tầng × 4 zone × 12 device = **480 device** `DEV-A-F01-A-01`…`DEV-A-F10-D-12`. **Không** nạp `seed_demo.sql` vào DB này (seedWorld sẽ bỏ qua vì building đã tồn tại, và hash placeholder trong file sẽ chặn mọi đăng nhập).
 - **Chế độ 2 — dataset offline (xem ERD/SQL/dashboard mock):** dùng file DB riêng:
 ```bash
-./scripts/initdb.sh demo.db
+bash scripts/initdb.sh demo.db
 sqlite3 demo.db < aegis-persistence/src/main/resources/db/seed_demo.sql
 sqlite3 demo.db 'PRAGMA foreign_key_check;'   # phải sạch (không output)
 ```
@@ -113,7 +113,7 @@ sqlite3 demo.db 'PRAGMA foreign_key_check;'   # phải sạch (không output)
 
 ### Chứng chỉ TLS demo (self-signed, LAB ONLY)
 ```bash
-./scripts/gen-server-cert.sh   # sinh certs/aegis-server.p12 + aegis-truststore.p12 (mật khẩu: aegis-demo)
+bash scripts/gen-server-cert.sh   # sinh certs/aegis-server.p12 + aegis-truststore.p12 (mật khẩu: aegis-demo)
 ```
 
 ### Chạy server

@@ -12,7 +12,7 @@ CI chạy đúng các lệnh này trên `ubuntu-latest` — xem [`.github/workfl
 |---|---|
 | Cài JDK 24+ + Maven + Node 26 + sqlite3 | 5–10 phút |
 | `mvn -B -ntp verify` lần đầu (tải dependency + 360 test toàn reactor) | 5–10 phút |
-| `npm ci && npm test && npm run build` (dashboard, 21 test) | 1–2 phút |
+| `npm ci && npm test && npm run build` (dashboard, 22 test) | 1–2 phút |
 | `scripts/initdb.sh` (26 bảng) + `scripts/gen-server-cert.sh` | < 5 giây |
 | Smoke test server (seed thế giới demo 480 device) | < 1 phút |
 
@@ -72,14 +72,14 @@ Làm lần lượt; mỗi bước có **cổng kiểm chứng** — chỉ bướ
   `node --test` báo **pass 21 / fail 0**. CI chạy cùng lệnh này.
 - [ ] **Bước 4 — DB demo** (< 1 giây):
   ```bash
-  ./scripts/initdb.sh        # tạo aegis.db ở gốc repo (đã gitignore)
+  bash scripts/initdb.sh        # tạo aegis.db ở gốc repo (đã gitignore)
   ```
   **Cổng:** in `TABLES=26`; `PRAGMA foreign_key_check` không output = sạch.
-  **Lưu ý:** script **từ chối** ghi đè file DB đã tồn tại; muốn tạo lại phải dùng `./scripts/initdb.sh --force <path>` (phá hủy dữ liệu).
-  Có thể chỉ định đường dẫn: `./scripts/initdb.sh /duong/dan/aegis.db`.
+  **Lưu ý:** script **từ chối** ghi đè file DB đã tồn tại; muốn tạo lại phải dùng `bash scripts/initdb.sh --force <path>` (phá hủy dữ liệu).
+  Có thể chỉ định đường dẫn: `bash scripts/initdb.sh /duong/dan/aegis.db`.
 - [ ] **Bước 5 — Chứng chỉ TLS demo** (< 5 giây, LAB ONLY):
   ```bash
-  ./scripts/gen-server-cert.sh   # certs/aegis-server.p12 + aegis-truststore.p12, password aegis-demo
+  bash scripts/gen-server-cert.sh   # certs/aegis-server.p12 + aegis-truststore.p12, password aegis-demo
   ```
   **Cổng:** `certs/aegis-server.p12`, `certs/aegis-server.crt`, `certs/aegis-truststore.p12` tồn tại.
 - [ ] **Bước 6 — Smoke test server** (< 1 phút):
@@ -102,8 +102,8 @@ Làm lần lượt; mỗi bước có **cổng kiểm chứng** — chỉ bướ
   - Client JavaFX (cần màn hình): lệnh trong README §5 — device `DEV-A-F05-A-01`, secret `device-demo-secret`.
   - Simulator 100–200 agent: **phải đăng ký fleet trước** — mục §2.2 dưới đây.
 
-Lệnh tắt (tương đương README): `./scripts/dev.sh` = `mvn -q -DskipTests package`;
-`./scripts/test.sh` = `mvn -q test`.
+Lệnh tắt (tương đương README): `bash scripts/dev.sh` = `mvn -q -DskipTests package`;
+`bash scripts/test.sh` = `mvn -q test`.
 
 ### 2.1. Thế giới demo & 2 chế độ seed (ĐỌC TRƯỚC KHI NẠP DỮ LIỆU)
 
@@ -130,7 +130,7 @@ Khác biệt có chủ đích: hash trong file là **PLACEHOLDER**, và file th�
 - **Chế độ 1 — demo thật (khuyến nghị):** `initdb.sh` → chạy `ServerMain`. Server tự seed
   hash Argon2id thật; đăng nhập/device auth hoạt động ngay với bảng trên.
   **Không nạp `seed_demo.sql` vào DB này.**
-- **Chế độ 2 — dataset offline:** `./scripts/initdb.sh demo.db` rồi
+- **Chế độ 2 — dataset offline:** `bash scripts/initdb.sh demo.db` rồi
   `sqlite3 demo.db < aegis-persistence/src/main/resources/db/seed_demo.sql`
   (file tự bật `PRAGMA foreign_keys=ON` cho sqlite3 CLI; kiểm tra: `sqlite3 demo.db 'PRAGMA foreign_key_check;'` phải sạch).
   Dùng để xem ERD/SQL/dashboard mock. **Auth sẽ失败 cho tới khi thay placeholder bằng hash thật** (recipe §2.2).
@@ -202,7 +202,7 @@ mvn -pl aegis-simulator org.codehaus.mojo:exec-maven-plugin:3.2.0:exec \
 sau đăng ký `connects ok/failed = 2/0`, `heartbeats answered = 2`, exit 0; fleet 150 device
 nạp bằng đúng SQL trên, `foreign_key_check` sạch. `[TODO: lưu capture run 150 agent vào docs/evidence/simulator/]`
 
-Muốn reset fleet: `./scripts/initdb.sh` tạo DB mới (server sẽ seed lại thế giới gốc).
+Muốn reset fleet: `bash scripts/initdb.sh` tạo DB mới (server sẽ seed lại thế giới gốc).
 
 ## 3. Chạy test từng module
 
@@ -219,9 +219,9 @@ khi jar `~/.m2` cũ** — kết quả sẽ âm thầm lệch working tree.
 | aegis-client | `mvn -B -ntp -pl aegis-client -am test` | 45 (AlertRecord, ClientConfig, InboxStore, AlertClientEngine, TLS smoke) |
 | aegis-simulator | `mvn -B -ntp -pl aegis-simulator -am test` | 20 (SimulatorConfig, FaultInjector deterministic, SimAgent, stats) |
 | aegis-network-lab | `mvn -B -ntp -pl aegis-network-lab -am test` | 31 (UDP discovery trust gate, multicast hint, benchmark) |
-| **Toàn reactor** | `mvn -B -ntp verify` (hoặc `./scripts/test.sh`) | **360** (bản evidence lưu trữ: 347) |
-| aegis-dashboard | `cd aegis-dashboard && npm test` | 21 (`node --test test/logic.test.js test/i18n.test.js`) |
-| scripts (offline) | `python3 scripts/test-task2.py && python3 scripts/test-admin-bridge.py` | 13 (3 script + 10 bridge) |
+| **Toàn reactor** | `mvn -B -ntp verify` (hoặc `bash scripts/test.sh`) | **360** (bản evidence lưu trữ: 347) |
+| aegis-dashboard | `cd aegis-dashboard && npm test` | 22 (`node --test test/logic.test.js test/i18n.test.js`) |
+| scripts (offline) | `python3 scripts/test-task2.py && python3 scripts/test-admin-bridge.py` | 17 (7 script + 10 bridge) |
 
 Đếm test chính xác: `-q` ẩn số liệu — đọc XML trong `<module>/target/surefire-reports/`:
 

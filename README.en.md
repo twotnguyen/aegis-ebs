@@ -38,9 +38,9 @@ Java modular monolith with 4 planes: **command** (dashboard/operator) · **deliv
 | `aegis-client` | JavaFX desktop, durable inbox, two-layer ACK, reconnect, popup | 45 |
 | `aegis-simulator` | Headless 100-agent smoke (200 alerts), accepts 1–1000 agents | 20 |
 | `aegis-network-lab` | UDP discovery + trust gate, multicast ALERT_HINT, TCP vs multicast benchmark | 31 |
-| `aegis-dashboard` | Web Vite + Three.js 3D twin, timeline/chaos/reports/funnel, VI/EN i18n (Node) | 21 (15 logic + 6 i18n) |
+| `aegis-dashboard` | Web Vite + Three.js 3D twin, timeline/chaos/reports/funnel, VI/EN i18n (Node) | 22 (16 logic + 6 i18n) |
 
-**Current total: 360 Java tests + 21 dashboard tests = 381** (from the latest surefire XML and `npm test`; the archived `docs/evidence/verify/` capture recorded 347 Java / 20 dashboard from an earlier run — see `docs/BUILD.md`). Ports: TLS `9443` · status WS `9444` · Operator bridge `9445` · UDP discovery `9999` · multicast `239.10.10.10:9998` · Vite `5173`.
+**Current total: 360 Java tests + 22 dashboard tests = 382** (from the latest surefire XML and `npm test`; the archived `docs/evidence/verify/` capture recorded 347 Java / 20 dashboard from an earlier run — see `docs/BUILD.md`). Ports: TLS `9443` · status WS `9444` · Operator bridge `9445` · UDP discovery `9999` · multicast `239.10.10.10:9998` · Vite `5173`.
 
 ## 3. Technology
 
@@ -96,16 +96,16 @@ brew install maven          # Java 24+ (Temurin), Maven 3.10
 
 ### Build + test + DB
 ```bash
-./scripts/dev.sh            # mvn -DskipTests package
-./scripts/test.sh           # mvn test  (360 Java tests)
-./scripts/initdb.sh         # creates aegis.db: 26 tables, clean foreign_key_check
+bash scripts/dev.sh            # mvn -DskipTests package
+bash scripts/test.sh           # mvn test  (360 Java tests)
+bash scripts/initdb.sh         # creates aegis.db: 26 tables, clean foreign_key_check
 ```
 
 **Demo data — 2 modes, NEVER mix them in the same DB** (details: `docs/BUILD.md`):
 - **Mode 1 — real demo (recommended):** only run `initdb.sh`, then start the server. `ServerStore.seedWorld` automatically loads the demo world with real Argon2id hashes: building `AEGIS-BLD-A` (code A), 10 floors x 4 zones x 12 devices = **480 devices** `DEV-A-F01-A-01`…`DEV-A-F10-D-12`. **Do NOT** load `seed_demo.sql` into this DB (seedWorld will skip because the building already exists, and the placeholder hashes in that file will block every login).
 - **Mode 2 — offline dataset (for viewing ERD/SQL/dashboard mock):** use a separate DB file:
 ```bash
-./scripts/initdb.sh demo.db
+bash scripts/initdb.sh demo.db
 sqlite3 demo.db < aegis-persistence/src/main/resources/db/seed_demo.sql
 sqlite3 demo.db 'PRAGMA foreign_key_check;'   # must be clean (no output)
 ```
@@ -113,7 +113,7 @@ sqlite3 demo.db 'PRAGMA foreign_key_check;'   # must be clean (no output)
 
 ### Demo TLS certificate (self-signed, LAB ONLY)
 ```bash
-./scripts/gen-server-cert.sh   # generates certs/aegis-server.p12 + aegis-truststore.p12 (password: aegis-demo)
+bash scripts/gen-server-cert.sh   # generates certs/aegis-server.p12 + aegis-truststore.p12 (password: aegis-demo)
 ```
 
 ### Run the server
