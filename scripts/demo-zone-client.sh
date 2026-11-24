@@ -64,7 +64,10 @@ if [ -z "$USER_ID" ] && [ -f "$REPO/aegis.db" ] && command -v sqlite3 >/dev/null
   USER_ID="$(sqlite3 "$REPO/aegis.db" \
     "SELECT id FROM users WHERE username='employee' LIMIT 1" 2>/dev/null || true)"
 fi
-USER_ID="${USER_ID:-USER-SIM-0001}"
+if [ -z "$USER_ID" ]; then
+  echo "demo-zone-client: set USER_ID to an enabled server user UUID for ACK_USER" >&2
+  exit 2
+fi
 
 if [ -z "$DEVICE_CODE" ] || [ -z "$SERVER_HOST" ]; then
   echo "demo-zone-client: DEVICE_CODE và SERVER_HOST không được rỗng (xem --help)" >&2

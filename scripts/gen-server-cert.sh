@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Generates the self-signed TLS identity for the AEGIS EBSP gateway (port 9443)
 # Keep this launcher executable in the repository.
-# plus a truststore clients can use to verify it. Demo/lab use only.
+# POSIX chmod bit is part of the committed contract.
 #
 # Usage: scripts/gen-server-cert.sh [output-dir] [store-password]
 #   output-dir     default: certs/

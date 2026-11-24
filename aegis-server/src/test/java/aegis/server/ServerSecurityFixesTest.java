@@ -575,6 +575,23 @@ class ServerSecurityFixesTest {
     }
   }
   @Test
+  @Order(97)
+  void replayAfterTargetChangeReturnsOriginalAlert() throws Exception {
+    Envelope first = publish(operator, "req-target-change", 1, "A", "WARNING", "same payload");
+    assertTrue(first.payload().get("ok").asBoolean(), first.payload().toString());
+    exec("INSERT INTO devices(id,floor_id,device_code,credential_hash,enabled,enrolled_at) "
+        + "SELECT 'extra-dev-1', floor_id, 'DEV-EXTRA-1', credential_hash, 1, "
+        + "'2026-01-01T00:00:00.000000000Z' FROM devices WHERE device_code='DEV-A-F01-A-01'");
+    exec("INSERT INTO zone_devices(zone_id,device_id,assigned_at) "
+        + "SELECT z.id, 'extra-dev-1', '2026-01-01T00:00:00.000000000Z' FROM zones z "
+        + "JOIN floors f ON f.id=z.floor_id WHERE f.floor_number=1 AND z.zone_code='F01-A'");
+    Envelope replay = publish(operator, "req-target-change", 1, "A", "WARNING", "same payload");
+    assertTrue(replay.payload().get("ok").asBoolean(), replay.payload().toString());
+    assertTrue(replay.payload().get("duplicate").asBoolean());
+    assertEquals(first.payload().get("alertId").asText(), replay.payload().get("alertId").asText());
+  }
+
+  @Test
   @Order(98)
   void reusedRequestIdWithDifferentPayloadIsConflict() throws Exception {
     Envelope first = publish(operator, "req-conflict-1", 1, "A", "WARNING", "original title");

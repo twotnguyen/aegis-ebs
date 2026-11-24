@@ -102,10 +102,19 @@ public final class AlertService {
     return targets.resolveBuilding(scope.buildingId());
   }
 
-  private static boolean samePayload(ServerStore.OperationRow op, String userId, String payloadHash) {
-    return "PUBLISH".equals(op.kind())
-        && Objects.equals(op.requestedBy(), userId)
-        && Objects.equals(op.payloadHash(), payloadHash);
+  private boolean sameSubmission(ServerStore.OperationRow op, String userId, String category,
+                                 Priority priority, String title, String instruction,
+                                 String metaJson, Instant expiresAt) throws SQLException {
+    if (!"PUBLISH".equals(op.kind()) || !Objects.equals(op.requestedBy(), userId)) return false;
+    var alert = alerts.findById(op.alertId());
+    var revision = alerts.findRevision(op.alertId(), op.revision());
+    if (alert.isEmpty() || revision.isEmpty()) return false;
+    return Objects.equals(alert.get().category(), category)
+        && alert.get().priority() == priority
+        && Objects.equals(revision.get().title(), title)
+        && Objects.equals(revision.get().body(), instruction)
+        && Objects.equals(revision.get().metadataJson(), metaJson)
+        && Objects.equals(alert.get().expiresAt(), expiresAt);
   }
 
   /**
@@ -117,10 +126,6 @@ public final class AlertService {
                                 boolean simulation, String urgency, String severity, String certainty,
                                 Instant expiresAt, String correlationId) {
     try {
-      List<String> deviceIds = resolveTargets(scope);
-      if (deviceIds.isEmpty()) {
-        return CommandOutcome.error("NO_TARGETS", "scope resolves to zero devices");
-      }
       ObjectNode meta = Json.obj();
       ObjectNode scopeNode = meta.putObject("scope");
       scopeNode.put("buildingId", scope.buildingId());
@@ -131,16 +136,15 @@ public final class AlertService {
       meta.put("severity", severity);
       meta.put("certainty", certainty);
       if (incidentId != null) meta.put("incidentId", incidentId);
+      String metaJson = Json.write(meta);
 
-      TransactionalPublisher.Request req = new TransactionalPublisher.Request(
-          requestId, scope.buildingId(), userId, category, priority, title, instruction,
-          Json.write(meta), expiresAt, deviceIds);
-      String payloadHash = requestId == null ? null : TransactionalPublisher.payloadHash(req, deviceIds);
+      // Check replay BEFORE resolving targets: enrollment changes or an empty
+      // current scope must not turn an identical command into CONFLICT/NO_TARGETS.
       Optional<ServerStore.OperationRow> existing = requestId == null
           ? Optional.empty() : store.findOperationByRequestId(requestId);
       if (existing.isPresent()) {
         ServerStore.OperationRow op = existing.get();
-        if (!samePayload(op, userId, payloadHash)) {
+        if (!sameSubmission(op, userId, category, priority, title, instruction, metaJson, expiresAt)) {
           audit.append(userId, "PUBLISH_CONFLICT", scope.buildingId(), "CONFLICT", correlationId,
               Json.obj().put("requestId", requestId).put("alertId", op.alertId()));
           return CommandOutcome.error("CONFLICT", "requestId reused with a different payload");
@@ -150,15 +154,21 @@ public final class AlertService {
         return CommandOutcome.ok(op.alertId(), op.revision(), 0, true);
       }
 
+      List<String> deviceIds = resolveTargets(scope);
+      if (deviceIds.isEmpty()) {
+        return CommandOutcome.error("NO_TARGETS", "scope resolves to zero devices");
+      }
+      TransactionalPublisher.Request req = new TransactionalPublisher.Request(
+          requestId, scope.buildingId(), userId, category, priority, title, instruction,
+          metaJson, expiresAt, deviceIds);
       TransactionalPublisher.Result result;
       try {
         result = publisher.publish(req);
       } catch (SQLException duplicateRace) {
-        // concurrent replay hit the UNIQUE request_id constraint: verify the winner
         Optional<ServerStore.OperationRow> winner = store.findOperationByRequestId(requestId);
         if (winner.isPresent()) {
           ServerStore.OperationRow op = winner.get();
-          if (!samePayload(op, userId, payloadHash)) {
+          if (!sameSubmission(op, userId, category, priority, title, instruction, metaJson, expiresAt)) {
             return CommandOutcome.error("CONFLICT", "requestId reused with a different payload");
           }
           return CommandOutcome.ok(op.alertId(), op.revision(), 0, true);

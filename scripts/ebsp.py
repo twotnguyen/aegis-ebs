@@ -13,7 +13,7 @@ from __future__ import annotations
 import base64
 import json
 import os
-import signal
+import platform
 import re
 import socket
 import sqlite3
@@ -124,10 +124,11 @@ class _Connection:
         self._reader = threading.Thread(target=self._read_loop, name="ebsp-reader", daemon=True)
         self._reader.start()
 
-    def send(self, msg_type: str, payload: dict[str, Any], correlation: str | None = None) -> str:
+    def send(self, msg_type: str, payload: dict[str, Any], correlation: str | None = None,
+             message_id: str | None = None) -> str:
         if self.sock is None:
             raise ConnectionError("not connected")
-        message_id = str(uuid.uuid4())
+        message_id = message_id or str(uuid.uuid4())
         envelope = {
             "version": 2,
             "type": msg_type,
@@ -143,9 +144,17 @@ class _Connection:
     def request(self, msg_type: str, payload: dict[str, Any], timeout: float = 10.0) -> dict[str, Any]:
         event = threading.Event()
         result: list[dict[str, Any]] = []
-        message_id = self.send(msg_type, payload)
+        message_id = str(uuid.uuid4())
+        # Register before the write: a fast reply can reach the reader before
+        # send() returns, and must not be mistaken for an unsolicited frame.
         with self._lock:
             self._waiters[message_id] = (event, result)
+        try:
+            self.send(msg_type, payload, message_id=message_id)
+        except Exception:
+            with self._lock:
+                self._waiters.pop(message_id, None)
+            raise
         if not event.wait(timeout):
             with self._lock:
                 self._waiters.pop(message_id, None)
@@ -160,6 +169,15 @@ class _Connection:
                 if not isinstance(envelope, dict):
                     continue
                 correlation = envelope.get("correlationId")
+                if envelope.get("type") == "HEARTBEAT":
+                    try:
+                        self.send("HEARTBEAT_ACK", {
+                            "deviceId": (envelope.get("payload") or {}).get("deviceId", ""),
+                            "receivedAt": now_iso(),
+                        }, correlation=envelope.get("messageId"))
+                    except Exception:
+                        pass
+                    continue
                 with self._lock:
                     waiter = self._waiters.pop(correlation, None) if correlation else None
                 if waiter:
@@ -177,6 +195,11 @@ class _Connection:
 
     def close(self) -> None:
         self._closed.set()
+        with self._lock:
+            waiters = list(self._waiters.values())
+            self._waiters.clear()
+        for event, _result in waiters:
+            event.set()
         if self.sock is not None:
             try:
                 self.sock.close()
@@ -234,14 +257,19 @@ class Device:
 
     def _entry(self, payload: dict[str, Any]) -> dict[str, Any]:
         alert_id = str(payload.get("alertId"))
-        entry = self.inbox.setdefault(alert_id, {
+        incoming = int(payload.get("revision") or 0)
+        current = self.inbox.get(alert_id)
+        if current is not None and incoming <= int(current.get("revision") or 0):
+            return current
+        entry = {
             "alertId": alert_id,
-            "revision": payload.get("revision"),
+            "revision": incoming,
             "deliveryId": payload.get("deliveryId"),
             "acked": False,
             "userAcked": False,
             "receivedAt": now_iso(),
-        })
+        }
+        self.inbox[alert_id] = entry
         return entry
 
     def _on_frame(self, envelope: dict[str, Any]) -> None:
@@ -263,7 +291,12 @@ class Device:
             self.tombstones[alert_id] = payload
             self.push_log.append({"kind": "cancel", "payload": payload, "at": now_iso()})
             self.events.append({"kind": "cancel", "alertId": alert_id})
-            self._send_ack("ACK_CANCEL", payload, envelope.get("messageId"), wait=False)
+            ack_payload = dict(payload)
+            entry = self.inbox.get(alert_id)
+            if entry and not ack_payload.get("deliveryId"):
+                ack_payload["deliveryId"] = entry.get("deliveryId")
+                ack_payload["revision"] = entry.get("revision")
+            self._send_ack("ACK_CANCEL", ack_payload, envelope.get("messageId"), wait=False)
         elif msg_type == "SYNC_RESULT":
             for alert in payload.get("alerts") or []:
                 self._entry(alert)
@@ -272,7 +305,7 @@ class Device:
             self._save_inbox()
 
     def _send_ack(self, msg_type: str, payload: dict[str, Any], correlation: str | None,
-                  wait: bool) -> dict[str, Any] | None:
+                  wait: bool, extra: dict[str, Any] | None = None) -> dict[str, Any] | None:
         frame = {
             "alertId": payload.get("alertId"),
             "deliveryId": payload.get("deliveryId"),
@@ -280,6 +313,8 @@ class Device:
             "deviceId": self.device_id,
             "ackAt": now_iso(),
         }
+        if extra:
+            frame.update(extra)
         if not wait:
             self._conn.send(msg_type, frame, correlation)
             return None
@@ -302,9 +337,8 @@ class Device:
             return None
         result = self._send_ack("ACK_USER", {
             "alertId": alert_id, "deliveryId": entry.get("deliveryId"),
-            "revision": entry.get("revision"), "userId": user_id,
-            "action": "ACKNOWLEDGE",
-        }, None, True)
+            "revision": entry.get("revision"),
+        }, None, True, {"userId": user_id, "action": "ACKNOWLEDGE"})
         if result and result.get("ok"):
             entry["userAcked"] = True
             self._save_inbox()
@@ -345,6 +379,7 @@ class Operator:
             self._conn.close()
             raise PermissionError("operator auth rejected: " + str(result.get("code")))
         self.role = result.get("role")
+        self.user_id = result.get("userId")
 
     def publish(self, category: str = "FIRE_DRILL", priority: str = "CRITICAL",
                 title: str = "SIMULATION DRILL", instruction: str = "Simulation only.",
@@ -421,13 +456,13 @@ class ServerProc:
         if not (CERTS / "aegis-server.p12").is_file():
             raise FileNotFoundError("run scripts/gen-server-cert.sh first")
         self.log.parent.mkdir(parents=True, exist_ok=True)
-        log_file = open(self.log, "w", encoding="utf-8")
         cmd = ["java", "-cp", _classpath("aegis-server"), "aegis.server.ServerMain",
                "--db", str(self.db), "--keystore", str(CERTS / "aegis-server.p12"),
                "--storepass", "aegis-demo", "--tls-port", str(self.tls_port),
                "--ws-port", str(self.ws_port)]
-        self.proc = subprocess.Popen(cmd, cwd=REPO, stdout=log_file,
-                                     stderr=subprocess.STDOUT)
+        with open(self.log, "w", encoding="utf-8") as log_file:
+            self.proc = subprocess.Popen(cmd, cwd=REPO, stdout=log_file,
+                                         stderr=subprocess.STDOUT)
         deadline = time.time() + timeout
         while time.time() < deadline:
             if self.proc.poll() is not None:
@@ -440,7 +475,11 @@ class ServerProc:
 
     def stop(self) -> None:
         if self.proc and self.proc.poll() is None:
-            self.proc.terminate()
+            if os.name == "nt":
+                subprocess.run(["taskkill", "/PID", str(self.proc.pid), "/T", "/F"],
+                               capture_output=True, check=False)
+            else:
+                self.proc.terminate()
             try:
                 self.proc.wait(timeout=10)
             except subprocess.TimeoutExpired:
@@ -449,7 +488,11 @@ class ServerProc:
 
     def kill9(self) -> None:
         if self.proc and self.proc.poll() is None:
-            self.proc.kill()
+            if os.name == "nt":
+                subprocess.run(["taskkill", "/PID", str(self.proc.pid), "/T", "/F"],
+                               capture_output=True, check=False)
+            else:
+                self.proc.kill()
             self.proc.wait(timeout=10)
 
 
@@ -468,40 +511,48 @@ def _init_db(db: Path) -> None:
 def seed_and_provision(db: str | Path, log: str | Path, n_sim: int = 0, n_real: int = 0,
                        tls_port: int = 9443, ws_port: int = 9444,
                        host: str = DEFAULT_HOST) -> tuple[ServerProc, list[dict[str, Any]]]:
-    """Fresh DB + server seed + extra SIM-DEV/REAL-DEV fleet registration."""
+    """Fresh DB + server seed + extra fleet, then restart so targets are immutable-ready."""
     db_path = Path(db)
     _init_db(db_path)
-    server = ServerProc(db_path, log, tls_port, ws_port).start()
-    if not n_sim and not n_real:
-        return server, []
-    con = sqlite3.connect(str(db_path))
-    con.row_factory = sqlite3.Row
+    bootstrap = ServerProc(db_path, log, tls_port, ws_port).start()
     try:
-        row = con.execute("SELECT credential_hash FROM devices LIMIT 1").fetchone()
-        if row is None:
-            raise RuntimeError("server did not seed the demo world")
-        credential_hash = row["credential_hash"]
-        floor_id = con.execute("SELECT id FROM floors WHERE floor_number=1 LIMIT 1").fetchone()["id"]
-        zone_id = con.execute(
-            "SELECT id FROM zones WHERE floor_id=? AND zone_code='A'", (floor_id,)).fetchone()["id"]
-        stamp = now_iso()
-        fleet: list[dict[str, Any]] = []
-        for prefix, count in (("SIM-DEV", n_sim), ("REAL-DEV", n_real)):
-            for index in range(1, count + 1):
-                code = f"{prefix}-{index:04d}"
-                device_id = str(uuid.uuid5(uuid.NAMESPACE_URL, "aegis/" + code))
-                con.execute(
-                    "INSERT OR IGNORE INTO devices(id,floor_id,device_code,credential_hash,enabled,enrolled_at)"
-                    " VALUES(?,?,?,?,1,?)",
-                    (device_id, floor_id, code, credential_hash, stamp))
-                con.execute(
-                    "INSERT OR IGNORE INTO zone_devices(zone_id,device_id,assigned_at) VALUES(?,?,?)",
-                    (zone_id, device_id, stamp))
-                fleet.append({"code": code, "id": device_id})
-        con.commit()
-    finally:
-        con.close()
-    return server, fleet
+        if not n_sim and not n_real:
+            return bootstrap, []
+        con = sqlite3.connect(str(db_path))
+        con.row_factory = sqlite3.Row
+        try:
+            row = con.execute("SELECT credential_hash FROM devices LIMIT 1").fetchone()
+            if row is None:
+                raise RuntimeError("server did not seed the demo world")
+            credential_hash = row["credential_hash"]
+            floor_id = con.execute("SELECT id FROM floors WHERE floor_number=1 LIMIT 1").fetchone()["id"]
+            zone_row = con.execute(
+                "SELECT id FROM zones WHERE floor_id=? AND zone_code='F01-A'", (floor_id,)).fetchone()
+            if zone_row is None:
+                raise RuntimeError("demo seed did not create zone F01-A")
+            zone_id = zone_row["id"]
+            stamp = now_iso()
+            fleet: list[dict[str, Any]] = []
+            for prefix, count in (("SIM-DEV", n_sim), ("REAL-DEV", n_real)):
+                for index in range(1, count + 1):
+                    code = f"{prefix}-{index:04d}"
+                    device_id = str(uuid.uuid5(uuid.NAMESPACE_URL, "aegis/" + code))
+                    con.execute(
+                        "INSERT OR IGNORE INTO devices(id,floor_id,device_code,credential_hash,enabled,enrolled_at)"
+                        " VALUES(?,?,?,?,1,?)",
+                        (device_id, floor_id, code, credential_hash, stamp))
+                    con.execute(
+                        "INSERT OR IGNORE INTO zone_devices(zone_id,device_id,assigned_at) VALUES(?,?,?)",
+                        (zone_id, device_id, stamp))
+                    fleet.append({"code": code, "id": device_id})
+            con.commit()
+        finally:
+            con.close()
+        bootstrap.stop()
+        return ServerProc(db_path, log, tls_port, ws_port).start(), fleet
+    except Exception:
+        bootstrap.stop()
+        raise
 
 
 def sim_cmd(agents: int, scenario: str, seed: int, duration: int, port: int,
@@ -560,7 +611,11 @@ def db_stats(db: str | Path) -> dict[str, Any]:
         "JOIN alerts a ON a.id=k.alert_id WHERE k.ack_kind='RECEIVED'")
     latencies = sorted(max(0.0, (parse_ts(row["acked_at"]) - parse_ts(row["created_at"])).total_seconds() * 1000)
                        for row in acks)
-    p95 = latencies[min(len(latencies) - 1, int(len(latencies) * 0.95))] if latencies else None
+    def percentile(fraction: float) -> float | None:
+        if not latencies:
+            return None
+        return round(latencies[min(len(latencies) - 1, int(len(latencies) * fraction))], 2)
+    p50, p95, p99 = percentile(0.50), percentile(0.95), percentile(0.99)
     attempts = _rows(db, "SELECT COUNT(*) n FROM delivery_attempts")[0]["n"]
     audit = _rows(db, "SELECT action, outcome, COUNT(*) n FROM audit_events "
                        "GROUP BY action, outcome ORDER BY action, outcome")
@@ -570,7 +625,10 @@ def db_stats(db: str | Path) -> dict[str, Any]:
         "deliveriesTotal": total,
         "ackReceivedCount": len(acks),
         "ackReceivedRate": (len(acks) / total) if total else None,
-        "latencyMsFromDb": round(p95, 2) if p95 is not None else None,
+        "latencyMsFromDb": {
+            "count": len(latencies), "p50": p50, "p95": p95, "p99": p99,
+            "max": round(latencies[-1], 2) if latencies else None,
+        },
         "latencySampleCount": len(latencies),
         "attemptsTotal": attempts,
         "retriesFromAttempts": max(0, attempts - total),
@@ -583,7 +641,15 @@ def parse_sim_summary(text: str) -> dict[str, int]:
         "agentsStarted": r"agents started/finished\s*:\s*(\d+)\s*/\s*(\d+)",
         "connectSuccess": r"connects ok/failed\s*:\s*(\d+)\s*/\s*(\d+)",
         "alertsReceived": r"alerts received\s*:\s*(\d+)",
+        "duplicatePushes": r"duplicate pushes:\s*(\d+)",
+        "cancelsReceived": r"cancels:\s*(\d+)",
         "acksSent": r"ACK_RECEIVED sent\s*:\s*(\d+)",
+        "acksDropped": r"dropped:\s*(\d+)",
+        "acksDelayed": r"delayed:\s*(\d+)",
+        "duplicateAcks": r"extra copies:\s*(\d+)",
+        "disconnects": r"fault disconnects\s*:\s*(\d+)",
+        "syncRequests": r"SYNC requests:\s*(\d+)",
+        "heartbeats": r"heartbeats answered:\s*(\d+)",
         "reconnects": r"reconnects:\s*(\d+)",
         "connectionErrors": r"connection errors\s*:\s*(\d+)",
         "authRejections": r"auth rejections \(permanent\):\s*(\d+)",

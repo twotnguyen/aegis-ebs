@@ -174,12 +174,12 @@ try:
     row = None
     while time.time() < end:
         rows = q(db, "SELECT id, state, attempt_count, revision FROM deliveries "
-                     "WHERE alert_id=? AND device_id=?", (aid1, SILENT))
+                     "WHERE alert_id=? AND device_id=?", (aid1, devs[SILENT].device_id))
         row = rows[0] if rows else None
         if row and row["state"] == "FAILED":
             break
         time.sleep(1.0)
-    attempts = [a for a in ebsp.delivery_attempts(db, aid1) if a.get("device_id") == SILENT]
+    attempts = [a for a in ebsp.delivery_attempts(db, aid1) if a.get("device_id") == devs[SILENT].device_id]
     times = [a.get("attempted_at") for a in attempts]
     gaps = []
     for i in range(1, len(times)):
@@ -208,7 +208,7 @@ try:
     elif entry:
         late = d2.ack_received(aid1, entry["deliveryId"], entry["revision"])
     row_after = q(db, "SELECT state, attempt_count FROM deliveries WHERE alert_id=? AND device_id=?",
-                  (aid1, SILENT))
+                  (aid1, devs[SILENT].device_id))
     d1 = devs["REAL-DEV-0001"]
     d1.disconnect()
     d1b = connect("REAL-DEV-0001", name="REAL-DEV-0001-reconnect")

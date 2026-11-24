@@ -52,6 +52,19 @@ test('applyDelta merges partial zones, recomputes severity, replaces alerts', ()
   assert.equal(applyDelta(snap, { ...delta, buildingId: 'OTHER' }), snap);
 });
 
+test('human ACK delta updates userAcknowledged without changing receipt count', () => {
+  const snap = makeMockSnapshot(42);
+  const zone = snap.floors[0].zones[0];
+  const delta = {
+    type: 'STATUS_DELTA',
+    floors: [{ floorNumber: 1, zones: [{ zoneCode: zone.zoneCode,
+      acknowledged: zone.acknowledged, userAcknowledged: 3 }] }],
+  };
+  const merged = applyDelta(snap, delta).floors[0].zones[0];
+  assert.equal(merged.userAcknowledged, 3);
+  assert.equal(merged.acknowledged, zone.acknowledged);
+});
+
 // --- events ---------------------------------------------------------------------
 
 test('event store assigns seq, caps size, notifies subscribers', () => {
@@ -351,9 +364,9 @@ test('mock delta + chaos transform keeps the world coherent', () => {
   }
 });
 
-test('LIVE requires a valid STATUS_SNAPSHOT, not just an open socket', () => {
+test('LIVE requires a valid flat status/1 snapshot, not just an open socket', () => {
   assert.equal(isStatusSnapshot({ type: 'SERVER_HELLO' }), false);
-  assert.equal(isStatusSnapshot({ type: 'STATUS_DELTA', payload: {} }), false);
+  assert.equal(isStatusSnapshot({ type: 'STATUS_DELTA', floors: [] }), false);
   assert.equal(isStatusSnapshot({ type: 'STATUS_SNAPSHOT' }), false);
-  assert.equal(isStatusSnapshot({ type: 'STATUS_SNAPSHOT', payload: { floors: [] } }), true);
+  assert.equal(isStatusSnapshot({ type: 'STATUS_SNAPSHOT', floors: [], activeAlerts: [], metrics: {} }), true);
 });

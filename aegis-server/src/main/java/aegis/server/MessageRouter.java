@@ -267,7 +267,7 @@ public final class MessageRouter {
     // duplicate no longer throws UNIQUE) — duplicate = ack kind already recorded.
     boolean inserted = deliveries.recordAck(deviceId, alertId, revision, deliveryId, kind, userId);
     boolean duplicate = !inserted;
-    engine.onAck(alertId, deliveryId, deviceId, kind, clock.instant());
+    engine.onAck(alertId, deliveryId, revision, deviceId, kind, clock.instant());
     audit.append(deviceId, "ACK_" + kind.name(), alertId, duplicate ? "DUPLICATE" : "OK",
         env.correlationId() == null ? env.messageId() : env.correlationId(),
         Json.obj().put("deliveryId", deliveryId).put("revision", revision));

@@ -45,6 +45,7 @@ export const CONTRACT = {
             online: 'number — devices currently connected, 0..devicesTotal',
             received: 'number — messages received from zone (current window)',
             acknowledged: 'number — messages ACKed, 0..received (monotonic)',
+            userAcknowledged: 'number — human ACK_USER count, 0..acknowledged',
             failed: 'number — deliveries FAILED after max retries (3)',
             severity: '"online" | "warning" | "critical" | "offline"',
           },
@@ -107,7 +108,7 @@ export function deriveSeverity(zone) {
 
 // --- delta merge (pure: returns a new state, never mutates input) -----------
 
-const COUNTER_FIELDS = ['devicesTotal', 'online', 'received', 'acknowledged', 'failed'];
+const COUNTER_FIELDS = ['devicesTotal', 'online', 'received', 'acknowledged', 'userAcknowledged', 'failed'];
 const METRIC_FIELDS = ['connected', 'p50', 'p95', 'p99', 'retryCount'];
 
 export function applyDelta(state, delta) {
@@ -201,12 +202,14 @@ export function makeMockSnapshot(seed = 42) {
         online: devicesTotal,
         received,
         acknowledged: received,
+        userAcknowledged: received,
         failed: 0,
       };
       if (rng() < 0.08) {
         // scattered degraded zones
         zone.online = devicesTotal - 1;
         zone.acknowledged = received - 1;
+        zone.userAcknowledged = received - 1;
       }
       return zone;
     });

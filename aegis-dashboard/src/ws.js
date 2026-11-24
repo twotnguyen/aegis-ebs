@@ -21,10 +21,11 @@ const MAX_DELAY_MS = 15000;
 const MOCK_AFTER_FAILURES = 3; // mirrors EBSP "max 3 retries" demo rule
 const MOCK_TICK_MS = 2000;
 
-/** A socket opening is not LIVE data: only a parsed status/1 snapshot is. */
 export function isStatusSnapshot(msg) {
   return !!msg && msg.type === 'STATUS_SNAPSHOT'
-    && !!msg.payload && typeof msg.payload === 'object';
+    && Array.isArray(msg.floors)
+    && Array.isArray(msg.activeAlerts)
+    && !!msg.metrics && typeof msg.metrics === 'object';
 }
 
 /**

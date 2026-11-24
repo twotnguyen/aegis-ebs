@@ -349,7 +349,12 @@ public final class AlertClientEngine implements AutoCloseable {
             ? null : pendingAckResults.get(e.correlationId());
         if (pending != null) pending.complete(e.payload());
       }
-      case "ERROR" -> listenerError("server ERROR frame", new IOException(String.valueOf(e.payload())));
+      case "ERROR" -> {
+        CompletableFuture<JsonNode> pending = e.correlationId() == null
+            ? null : pendingAckResults.remove(e.correlationId());
+        if (pending != null) pending.complete(e.payload());
+        listenerError("server ERROR frame", new IOException(String.valueOf(e.payload())));
+      }
       default -> { /* SERVER_HELLO/AUTH_RESULT outside handshake, STATUS_* etc: ignore */ }
     }
   }
@@ -434,7 +439,13 @@ public final class AlertClientEngine implements AutoCloseable {
       }
     });
     pendingAckResults.put(messageId, result);
-    writeEnvelope(new Envelope(Protocol.VERSION, "ACK_USER", messageId, correlationId, now(), p));
+    try {
+      writeEnvelope(new Envelope(Protocol.VERSION, "ACK_USER", messageId, correlationId, now(), p));
+    } catch (IOException | FrameException e) {
+      pendingAckResults.remove(messageId);
+      result.completeExceptionally(e);
+      throw e;
+    }
     if (!waitForResult) return true;
     try {
       JsonNode reply = result.get(3, TimeUnit.SECONDS);
@@ -504,6 +515,10 @@ public final class AlertClientEngine implements AutoCloseable {
     Socket s = socket;
     socket = null;
     out = null;
+    for (CompletableFuture<JsonNode> pending : pendingAckResults.values()) {
+      pending.completeExceptionally(new IOException("connection closed"));
+    }
+    pendingAckResults.clear();
     if (s != null) {
       try { s.close(); } catch (IOException ignored) { }
     }

@@ -77,12 +77,26 @@ def _admin_session(headers):
         if time.time() >= session["expiresAt"]:
             _admin_sessions.pop(token, None)
             return None
-        return dict(session)
+        result = dict(session)
+        result["token"] = token
+        return result
 
 
 def _require_admin(headers):
     session = _admin_session(headers)
-    if session is None or session["role"] != "SYSTEM_ADMIN":
+    if session is None:
+        return None
+    # Re-check the current account: a disabled or demoted admin must lose both
+    # reads and writes immediately, not when the token expires.
+    conn = _connect()
+    try:
+        row = conn.execute("SELECT id, role, enabled FROM users WHERE id=?",
+                           (session["userId"],)).fetchone()
+    finally:
+        conn.close()
+    if row is None or not row["enabled"] or row["role"] != "SYSTEM_ADMIN":
+        with _lock:
+            _admin_sessions.pop(session.get("token", ""), None)
         return None
     return session
 
@@ -102,12 +116,12 @@ def fleet_codes(count, silent_floor=0):
     if silent_floor < 0 or silent_floor > 10:
         raise BadRequest("silentFloor must be 0..10")
     # First 12 devices are all F01-A: the retry demo publishes F01-A and needs
-    # 11 healthy ACKs + exactly 1 silent device. Every floor/zone/sequence
-    # combination after that is emitted once, so counts up to 480 stay unique.
+    # 11 healthy ACKs + exactly 1 silent device. Then round-robin floors before
+    # sequence numbers so a default 20-device fleet also covers F05 publishes.
     codes = ["DEV-A-F01-A-%02d" % s for s in SEQS]
-    for floor in range(2, 11):
+    for seq in SEQS:
         for zone in ZONES:
-            for seq in SEQS:
+            for floor in range(2, 11):
                 codes.append("DEV-A-F%02d-%s-%02d" % (floor, zone, seq))
     for zone in ZONES[1:]:
         for seq in SEQS:
@@ -223,7 +237,9 @@ def start_fleet(count=20, silent_floor=0):
                     try:
                         device = ebsp.Device(
                             code, secret=DEVICE_SECRET, port=TLS_PORT,
-                            auto_ack=(code != silent))
+                            auto_ack=(code != silent),
+                            inbox_file=os.path.join(REPO, "docs", "evidence",
+                                                    "bridge-inboxes", code + ".json"))
                         break
                     except Exception:
                         if attempt == 2:
@@ -452,8 +468,10 @@ def _admin_login(body):
     if not isinstance(password, str) or not password:
         raise BadRequest("password required")
     op = None
+    principal = None
     try:
         op = ebsp.Operator(username, password, port=TLS_PORT)
+        principal = {"role": getattr(op, "role", None), "userId": getattr(op, "user_id", None)}
     except Exception:
         return 401, {"ok": False, "error": "admin login denied"}
     finally:
@@ -462,11 +480,13 @@ def _admin_login(body):
                 op.close()
             except Exception:
                 pass
+    if principal is None or principal["role"] != "SYSTEM_ADMIN" or not principal["userId"]:
+        return 401, {"ok": False, "error": "admin login denied"}
     conn = _connect()
     try:
         row = conn.execute(
-            "SELECT id, role, enabled FROM users WHERE username = ?",
-            (username,)).fetchone()
+            "SELECT id, role, enabled FROM users WHERE id=? AND username=?",
+            (principal["userId"], username)).fetchone()
     finally:
         conn.close()
     if row is None or row["role"] != "SYSTEM_ADMIN" or not row["enabled"]:
@@ -488,52 +508,53 @@ def admin_grant_approve(body, actor_id):
     scope = _text_field(body, "scope", required=False) or "PUBLISH"
     if scope not in ALLOWED_GRANT_SCOPES:
         raise BadRequest("unsupported grant scope")
-    conn = _connect()
-    try:
-        with conn:
-            resolved_actor = _resolve_admin_operator(conn, actor_id)
-            user = conn.execute("SELECT id, role FROM users WHERE username = ?",
-                                (username,)).fetchone()
-            if user is None:
-                raise BadRequest("unknown username")
-            role = user["role"]
-            if role == "SECURITY_OPERATOR" and floor_id is not None:
-                raise BadRequest("floor-scoped SECOPS grant would broaden to the building")
-            if role == "FLOOR_MANAGER" and floor_id is None:
-                raise BadRequest("FLOOR_MANAGER grant requires floorId")
-            if role in ("EMPLOYEE", "DEVICE"):
-                raise BadRequest("role cannot publish")
-            if (not _table_exists(conn, "buildings") or
-                    conn.execute("SELECT 1 FROM buildings WHERE id = ?",
-                                 (building_id,)).fetchone() is None):
-                raise BadRequest("unknown buildingId")
-            if floor_id is not None:
-                floor = conn.execute("SELECT building_id FROM floors WHERE id = ?",
-                                     (floor_id,)).fetchone()
-                if floor is None or floor["building_id"] != building_id:
-                    raise BadRequest("floorId does not belong to buildingId")
-            existing = conn.execute(
-                "SELECT id FROM role_grants WHERE user_id=? AND building_id=? "
-                "AND floor_id IS ? AND scope=?",
-                (user["id"], building_id, floor_id, scope)).fetchone()
-            if existing is not None:
-                row = conn.execute(ADMIN_GRANT_BY_ID, (existing["id"],)).fetchone()
-                return {"ok": True, "duplicate": True, "grant": dict(row),
-                        "auditId": None}
-            grant_id = str(uuid.uuid4())
-            granted_at = _now_ts()
-            conn.execute(
-                "INSERT INTO role_grants "
-                "(id, user_id, building_id, floor_id, scope, granted_at) "
-                "VALUES (?,?,?,?,?,?)",
-                (grant_id, user["id"], building_id, floor_id, scope, granted_at))
-            grant = {"id": grant_id, "username": username, "role": role,
-                     "building_id": building_id, "floor_id": floor_id,
-                     "scope": scope, "granted_at": granted_at}
-            audit_id = _audit_insert(conn, "OPERATOR_GRANT_APPROVED", grant,
-                                     resolved_actor, grant_id)
-    finally:
-        conn.close()
+    with _lock:
+        conn = _connect()
+        try:
+            with conn:
+                resolved_actor = _resolve_admin_operator(conn, actor_id)
+                user = conn.execute("SELECT id, role FROM users WHERE username = ?",
+                                    (username,)).fetchone()
+                if user is None:
+                    raise BadRequest("unknown username")
+                role = user["role"]
+                if role == "SECURITY_OPERATOR" and floor_id is not None:
+                    raise BadRequest("floor-scoped SECOPS grant would broaden to the building")
+                if role == "FLOOR_MANAGER" and floor_id is None:
+                    raise BadRequest("FLOOR_MANAGER grant requires floorId")
+                if role in ("EMPLOYEE", "DEVICE"):
+                    raise BadRequest("role cannot publish")
+                if (not _table_exists(conn, "buildings") or
+                        conn.execute("SELECT 1 FROM buildings WHERE id = ?",
+                                     (building_id,)).fetchone() is None):
+                    raise BadRequest("unknown buildingId")
+                if floor_id is not None:
+                    floor = conn.execute("SELECT building_id FROM floors WHERE id = ?",
+                                         (floor_id,)).fetchone()
+                    if floor is None or floor["building_id"] != building_id:
+                        raise BadRequest("floorId does not belong to buildingId")
+                existing = conn.execute(
+                    "SELECT id FROM role_grants WHERE user_id=? AND building_id=? "
+                    "AND floor_id IS ? AND scope=?",
+                    (user["id"], building_id, floor_id, scope)).fetchone()
+                if existing is not None:
+                    row = conn.execute(ADMIN_GRANT_BY_ID, (existing["id"],)).fetchone()
+                    return {"ok": True, "duplicate": True, "grant": dict(row),
+                            "auditId": None}
+                grant_id = str(uuid.uuid4())
+                granted_at = _now_ts()
+                conn.execute(
+                    "INSERT INTO role_grants "
+                    "(id, user_id, building_id, floor_id, scope, granted_at) "
+                    "VALUES (?,?,?,?,?,?)",
+                    (grant_id, user["id"], building_id, floor_id, scope, granted_at))
+                grant = {"id": grant_id, "username": username, "role": role,
+                         "building_id": building_id, "floor_id": floor_id,
+                         "scope": scope, "granted_at": granted_at}
+                audit_id = _audit_insert(conn, "OPERATOR_GRANT_APPROVED", grant,
+                                         resolved_actor, grant_id)
+        finally:
+            conn.close()
     return {"ok": True, "duplicate": False, "grant": grant, "auditId": audit_id}
 
 

@@ -1030,6 +1030,17 @@ export function createPanels(deps) {
     return data;
   }
 
+  // A changed operator account must not keep using the previous admin token.
+  for (const id of ['op-user', 'op-pass']) {
+    const el = $(id);
+    if (el) el.addEventListener('input', () => {
+      adminState.token = null;
+      adminState.loaded = false;
+      adminState.users = [];
+      adminState.grants = [];
+      adminState.audit = [];
+    });
+  }
   async function adminFetch(path, body, retry = true) {
     if (!adminState.token) await adminLogin();
     try {

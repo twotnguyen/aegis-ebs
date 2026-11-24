@@ -47,6 +47,7 @@ public final class SimAgent implements Runnable {
   }
 
   private final String deviceId;
+  private volatile String wireDeviceId;
   private final SimulatorConfig cfg;
   private final SSLContext tls;
   private final FaultInjector faults;
@@ -144,6 +145,11 @@ public final class SimAgent implements Runnable {
       throw new AuthRejectedException("AUTH_RESULT ok=false for " + deviceId);
     }
     lastHeartbeatSent = 0; // heartbeat promptly after (re)connect
+    wireDeviceId = result.payload().path("deviceId").asText(deviceId);
+  }
+
+  private String wireDeviceId() {
+    return wireDeviceId == null ? deviceId : wireDeviceId;
   }
 
   private void readLoop(Socket s) throws IOException, FrameException {
@@ -174,7 +180,7 @@ public final class SimAgent implements Runnable {
         case "CANCEL_PUSH" -> handleCancel(s, e.payload(), e.messageId());
         case "HEARTBEAT" -> {
           ObjectNode p = mapper.createObjectNode();
-          p.put("deviceId", deviceId);
+          p.put("deviceId", wireDeviceId());
           p.put("receivedAt", now());
           send(s, "HEARTBEAT_ACK", e.messageId(), p);
           stats.heartbeats.increment();
@@ -230,7 +236,7 @@ public final class SimAgent implements Runnable {
     ObjectNode ack = mapper.createObjectNode();
     ack.put("alertId", alertId);
     ack.put("revision", revision);
-    ack.put("deviceId", deviceId);
+    ack.put("deviceId", wireDeviceId());
     ack.put("ackAt", now());
     String deliveryId = payload.hasNonNull("deliveryId") ? payload.get("deliveryId").asText()
         : deliveryIds.get(alertId);
@@ -244,7 +250,7 @@ public final class SimAgent implements Runnable {
     long now = clock.millis();
     if (now - lastHeartbeatSent >= heartbeatIntervalMs) {
       ObjectNode p = mapper.createObjectNode();
-      p.put("deviceId", deviceId);
+      p.put("deviceId", wireDeviceId());
       p.put("sentAt", now());
       send(s, "HEARTBEAT", null, p);
       lastHeartbeatSent = now;
@@ -257,14 +263,14 @@ public final class SimAgent implements Runnable {
     p.put("alertId", alertId);
     p.put("deliveryId", deliveryId);
     p.put("revision", revision);
-    p.put("deviceId", deviceId);
+    p.put("deviceId", wireDeviceId());
     p.put("ackAt", now());
     send(s, "ACK_RECEIVED", correlationId, p);
   }
 
   private void sendSyncRequest(Socket s) throws IOException, FrameException {
     ObjectNode p = mapper.createObjectNode();
-    p.put("deviceId", deviceId);
+    p.put("deviceId", wireDeviceId());
     ObjectNode known = p.putObject("knownRevisions");
     knownRevisions.forEach(known::put);
     send(s, "SYNC_REQUEST", null, p);

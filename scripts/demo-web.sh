@@ -154,6 +154,9 @@ fi
 echo "demo-web: server up (pid $SERVER_PID, TLS $TLS_PORT, WS $WS_PORT)"
 
 # ---- 4. loopback web bridge ------------------------------------------------
+if [ -z "${WEB_BRIDGE_ORIGINS:-}" ]; then
+  export WEB_BRIDGE_ORIGINS="http://localhost:$DASH_PORT,http://127.0.0.1:$DASH_PORT"
+fi
 python3 "$SCRIPT_DIR/web-operator-bridge.py" > "$EVIDENCE/bridge.log" 2>&1 &
 BRIDGE_PID=$!
 if ! wait_port "$BRIDGE_PORT" "bridge" 20 "$BRIDGE_PID"; then

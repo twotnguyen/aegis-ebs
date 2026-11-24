@@ -213,6 +213,10 @@ public final class FanoutEngine implements DeliveryEnqueuer {
       if (current.isEmpty()) { untrack(deliveryId); return; }
       d = current.get();
       if (settled(d.state())) { untrack(deliveryId); return; }
+      if (d.attemptCount() > retryPolicy.maxAttempts()) {
+        markFailed(t, d);
+        return;
+      }
     } catch (SQLException e) {
       LOG.warn("dispatch reload failed delivery={}: {}", deliveryId, e.toString());
       return;
@@ -408,7 +412,13 @@ public final class FanoutEngine implements DeliveryEnqueuer {
   public void onAck(String alertId, String deliveryId, String deviceId,
                     aegis.persistence.AckKind kind, Instant ackedAt) {
     Tracked trackedAck = tracked.get(deliveryId);
-    int revision = trackedAck == null ? 1 : trackedAck.revision().revision();
+    onAck(alertId, deliveryId, trackedAck == null ? 1 : trackedAck.revision().revision(),
+        deviceId, kind, ackedAt);
+  }
+
+  /** Router-validated revision: a late ACK must complete only that revision. */
+  public void onAck(String alertId, String deliveryId, int revision, String deviceId,
+                    aegis.persistence.AckKind kind, Instant ackedAt) {
     boolean advanced = ledger.ack(alertId, revision, deviceId);
     if (kind == aegis.persistence.AckKind.RECEIVED) {
       if (receivedCounted.add(deliveryId)) {
