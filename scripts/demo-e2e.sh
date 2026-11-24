@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # AEGIS-EBS end-to-end demo (SIMULATION/TRAINING ONLY).
+# Device/operator actors come from the tracked scripts/ebsp.py module.
 # Deterministic device actors (tracked scripts/ebsp.py) against a real
 # aegis-server JVM. Phases:
 #   1 fanout+ACK   : building-wide FIRE_DRILL -> 8 devices, 7 auto-ACK, 1 silent

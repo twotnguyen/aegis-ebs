@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # AEGIS-EBS load benchmark (SIMULATION/TRAINING ONLY).
+# This wrapper stays executable; the driver lives in scripts/bench_load.py.
 # Usage: scripts/bench-load.sh [fleet] [duration_s] [seed]
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

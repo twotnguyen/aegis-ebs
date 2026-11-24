@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # AEGIS-EBS chaos runs (SIMULATION/TRAINING ONLY).
+# This wrapper stays executable; the driver lives in scripts/chaos_run.py.
 # Usage: scripts/chaos-run.sh [scenario ...]
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Refuses to overwrite an existing database unless --force is supplied.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 FORCE=0
