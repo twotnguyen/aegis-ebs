@@ -31,16 +31,16 @@ Java modular monolith with 4 planes: **command** (dashboard/operator) · **deliv
 
 | Module | Role | Tests |
 |---|---|---:|
-| `aegis-protocol` | EBSP/2.0: length-prefix framing + DTO + validation | 56 |
-| `aegis-core` | AckLedger, RetryPolicy, DedupIndex, ScopedRBAC, TargetResolver, PriorityScheduler | 73 |
-| `aegis-persistence` | SQLite WAL, 26-table migration, transactional publish (outbox), recovery | 52 |
-| `aegis-server` | TLS gateway, auth/RBAC, incident/alert, fanout, ACK/retry, sync, recovery, audit/metrics, WS status | 63 |
-| `aegis-client` | JavaFX desktop, durable inbox, two-layer ACK, reconnect, popup | 43 |
-| `aegis-simulator` | Headless 100–200 agent TLS + deterministic fault injection | 20 |
+| `aegis-protocol` | EBSP/2.0: length-prefix framing + DTO + validation | 57 |
+| `aegis-core` | AckLedger, RetryPolicy, DedupIndex, ScopedRBAC, TargetResolver, PriorityScheduler | 76 |
+| `aegis-persistence` | SQLite WAL, 26-table migration, transactional publish (outbox), recovery | 59 |
+| `aegis-server` | TLS gateway, auth/RBAC, incident/alert, fanout, ACK/retry, sync, recovery, audit/metrics, WS status | 72 |
+| `aegis-client` | JavaFX desktop, durable inbox, two-layer ACK, reconnect, popup | 45 |
+| `aegis-simulator` | Headless 100-agent smoke (200 alerts), accepts 1–1000 agents | 20 |
 | `aegis-network-lab` | UDP discovery + trust gate, multicast ALERT_HINT, TCP vs multicast benchmark | 31 |
-| `aegis-dashboard` | Web Vite + Three.js 3D twin, timeline/chaos/reports/funnel, VI/EN i18n (Node) | 20 (14 logic + 6 i18n) |
+| `aegis-dashboard` | Web Vite + Three.js 3D twin, timeline/chaos/reports/funnel, VI/EN i18n (Node) | 21 (15 logic + 6 i18n) |
 
-**Current total: 347 Java test executions + 20 dashboard tests = 367** (338 Java + 14 dashboard was the historical baseline before H1–H4 fixes and i18n; counted from surefire XML + `npm test`, see `docs/BUILD.md`). Ports: TLS `9443` · status WS `9444` · Operator bridge `9445` · UDP discovery `9999` · multicast `239.10.10.10:9998` · Vite `5173`.
+**Current total: 360 Java tests + 21 dashboard tests = 381** (from the latest surefire XML and `npm test`; the archived `docs/evidence/verify/` capture recorded 347 Java / 20 dashboard from an earlier run — see `docs/BUILD.md`). Ports: TLS `9443` · status WS `9444` · Operator bridge `9445` · UDP discovery `9999` · multicast `239.10.10.10:9998` · Vite `5173`.
 
 ## 3. Technology
 
@@ -97,7 +97,7 @@ brew install maven          # Java 24+ (Temurin), Maven 3.10
 ### Build + test + DB
 ```bash
 ./scripts/dev.sh            # mvn -DskipTests package
-./scripts/test.sh           # mvn test  (338 Java tests)
+./scripts/test.sh           # mvn test  (360 Java tests)
 ./scripts/initdb.sh         # creates aegis.db: 26 tables, clean foreign_key_check
 ```
 
@@ -174,8 +174,8 @@ mvn -q -pl aegis-network-lab compile exec:java \
 - `mvn verify` runs the whole reactor; exact figures come from `target/surefire-reports/*.xml`.
 - Test plan: `docs/TEST-PLAN.md` (30 acceptance tests + 16 chaos scenarios C01–C16).
 - Independent per-module peer reviews: `docs/reviews/` (verdict + issues + recommendations).
-- Measured metrics (server monotonic p50/p95/p99, timeouts separated); multicast benchmark measured 2026-11-21 (8 subscribers x 200 messages, macOS loopback): **−87.5% packets / −97.8% bytes on the source link** — `target/lab-report/fanout-report.{json,md}`.
-- Measurement evidence is stored in `docs/evidence/`: `verify/` (347 Java tests + 51 XML files), `benchmark/` (100 clients), `chaos/` (5 presets C01–C05 + runs), `dashboard/` (LIVE screenshots + `web-only-demo-live.png` and metadata for the 100% web-based demo flow), `video/aegis-ebs-demo.mp4` (12-minute presentation video, 720,05 s). Each set includes runId/commit SHA/measurement machine; `scripts/make-demo-video.py` regenerates the video from real evidence.
+- Measured metrics (server monotonic p50/p95/p99, timeouts separated); multicast benchmark measured 2026-11-21 (8 subscribers x 200 messages, macOS loopback): **−87.5% publisher writes/datagrams / −97.8% publisher bytes** — application-level counters (hints carry advisory metadata only, excluding the TLS fetch), not a packet capture — `target/lab-report/fanout-report.{json,md}`.
+- Measurement evidence is stored in `docs/evidence/`: `verify/` (archived capture: 347 Java tests in 52 XML files; current counts in §2), `benchmark/` (100 clients), `chaos/` (5 presets C01–C05 + runs), `dashboard/` (LIVE screenshots + `web-only-demo-live.png` and metadata for the 100% web-based demo flow), `video/aegis-ebs-demo.mp4` (12-minute presentation video, 720,05 s). Each set includes runId/commit SHA/measurement machine; `scripts/make-demo-video.py` regenerates the video from real evidence.
 - **Web-only demo (`scripts/demo-web.sh`):** evidence `docs/evidence/dashboard/web-only-demo-live.{png}` + `web-only-demo-meta.json` — Fleet Start 20 → publish F05 (12 deliveries, ACKs) → Retry F01-A (11 RECEIVED + 1 FAILED with attempt_count=4) → Cancel, all actions performed in the Operator tab.
 - **No invented figures** — every reported result comes from an actual run with runId/commit SHA/measurement machine.
 

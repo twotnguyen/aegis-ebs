@@ -18,9 +18,9 @@ For academic honesty, every measure is labeled with its status at the time of wr
 |---|---|
 | ✅ **Implemented** | Code exists in the reactor with corresponding unit/integration tests. |
 | 🟡 **Partial / demo** | Code exists but parameters or scope are demo-level and need tuning for real deployment. |
-| 🔧 **Designed — awaiting gateway** | Specified in the blueprint/PROTOCOL; backend services are ready but the **gateway/router layer (`aegis.server.ServerMain`) is not yet in the source code**, so wire-level enforcement is incomplete. |
+| 🔧 **Needs hardening** | Demo-level code exists but needs production configuration/tests (rate limits, absolute TTL, central log masking, dual approval). No longer means "gateway missing". |
 
-**Current-state note:** modules `aegis-protocol`, `aegis-core`, `aegis-persistence` are frozen and tested (56 + 73 + 35 tests). `aegis-server` contains implemented business services (`AuthService`, `RbacService`, `Argon2idHasher`, `SessionRegistry`, `ClientSession`, `BoundedWriterQueue`, `FanoutEngine`, `AlertService`, `AuditService`, `ServerStore`, `SyncService`) but **has no TLS gateway/router entry point** to enforce authentication per message at the wire layer. The 🔧 measures are therefore **design contracts** the gateway must enforce when completed, not claims of running code.
+**Current-state note:** `aegis-server` now ships `TlsGateway` + `MessageRouter` + `ServerMain`: auth gate before every application message, RBAC reloaded from the DB on every privileged command (revocation is immediate), and ACK_USER validated against a real enabled user and exposed separately as `userAcknowledged` in the status feed. Core modules currently have 57 + 76 + 59 tests. The 🔧 items below are **production hardening gaps**, not unimplemented designs.
 
 ---
 
@@ -217,7 +217,7 @@ Cell convention: **✓** = allowed; **✗** = denied (deny-by-default); **S** = 
 | `AUTH_DEVICE` | ✗ | ✗ | ✗ | ✗ | ✓ | Device authentication (Argon2id) |
 | `HELLO`, `LOGOUT` | ✓ | ✓ | ✓ | ✓ | ✓ | Session lifecycle |
 
-> **Enforcement status:** the `ALERT_CREATE/ALERT_PUBLISH` column (and scope rules) is implemented in `ScopedRBAC.canPublish` + `RbacService` ✅ and tested by `ScopedRBACTest` (T-07). Other cells are **designed authorization policies** (FR-006, blueprint §7.1) that the **gateway/router 🔧 must enforce per message** before calling services; `AlertService`/`FanoutEngine` assume the router already checked RBAC. This matrix is a specification for completing the router, not a claim that every cell runs end-to-end.
+> **Enforcement status:** `MessageRouter` is the single auth gate: it rejects application messages before `AUTH_*`, separates device/operator sessions, and calls `ScopedRBAC.canPublish` with grants **reloaded from the DB on every privileged command** (revocation is immediate). `RbacService` loads only `PUBLISH` grants. The matrix below is enforced end-to-end for publish/status cells; dual approval and hash-chain remain stretch designs.
 
 ### 4.3. Scope rules by role (source: DB `role_grants`)
 
@@ -403,13 +403,13 @@ Status: **Met** ✅ · **Partial/demo** 🟡 · **Designed (awaiting gateway)** 
 
 ## 8. Security limitations & unfinished work (honest)
 
-1. 🔧 **Gateway/router (`ServerMain`) not yet in source code.** Per-message RBAC enforcement, pre-auth message rejection, read timeout/quota, rate limiting and wire-level error sanitization are **design contracts** awaiting completion. Backend services are ready + tested.
+1. 🔧 **Wire-level frame quota/rate limiting is not fully implemented** (`TlsGateway` has the auth gate and pre-auth TTL; no per-second frame quota or `RATE_LIMITED` yet).
 2. 🔧 **Absolute session TTL** and sessionId renewal on privilege change are not implemented (only heartbeat/suspect exists).
 3. 🟡 **Demo Argon2id parameters (16 MiB) below OWASP recommendation (19 MiB).** Must be raised for production.
-4. 🟡 **`StreamReadConstraints` not explicitly configured** (relies on Jackson default 1000 + 64KiB hard cap).
-5. 🟡 **`INTERNAL` errors currently include `e.getMessage()`** → must be sanitized at the gateway before reaching clients (NFR-017).
+4. ✅ **`StreamReadConstraints` is explicit** in `FrameCodecImpl` (depth 32, max string 64 KiB) alongside the 64 KiB frame cap.
+5. ✅ **`INTERNAL` errors are sanitized** in `MessageRouter`: details stay in the server log; clients get a generic message plus correlation id.
 6. 🟡 **No centralized log masking filter**; not leaking secrets relies on call-site discipline + T-28 scan.
-7. 🟡 **CONFLICT for duplicate requestId with a different payload** is not fully returned (only `payload_hash` stored, original result preferred).
+7. ✅ **CONFLICT for duplicate requestId with a different payload** is returned: `AlertService` compares the canonical `payload_hash` on both the lookup and unique-race paths.
 8. 🟡 **Public demo credentials + shared device secret** → lab only, not production.
 9. 🔧 **Dual-approval, hash-chain tamper-evidence, pepper, connection/rate limits** are designs/stretch goals, not implemented.
 10. **Self-signed TLS** is not a public CA, no OCSP/CRL (§6.5).

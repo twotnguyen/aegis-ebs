@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Simulator CLI configuration (headless, no JavaFX). Recommended fleet size is
- * 100-200 agents; 1..1000 accepted for tests/small demos.
+ * Simulator CLI configuration (headless, no JavaFX). The loopback smoke test runs
+ * 100 agents / 200 alerts; 1..1000 agents are accepted for load demos.
  *
  * <p>Flags: --host --port --agents --seed --scenario (clean|lossy|delayed|duplicate|flaky|mixed)
  * --truststore --truststore-password --device-prefix --device-secret --duration (seconds)

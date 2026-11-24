@@ -47,7 +47,8 @@ public final class ServerStore {
                             String summary, boolean simulation, String state,
                             Instant openedAt, Instant closedAt) {}
 
-  public record OperationRow(String id, String alertId, int revision, String kind, String state) {}
+  public record OperationRow(String id, String alertId, int revision, String kind, String state,
+                             String requestedBy, String payloadHash) {}
 
   /** Active alert as seen by one device: latest revision content + its delivery. */
   public record DeviceAlert(Alert alert, AlertRevision revision, Delivery delivery) {}
@@ -265,15 +266,17 @@ public final class ServerStore {
   public Optional<OperationRow> findOperationByRequestId(String requestId) throws SQLException {
     try (Connection c = db.open();
          PreparedStatement ps = c.prepareStatement(
-             "SELECT id,alert_id,revision,operation_kind,state FROM alert_operations WHERE request_id=?")) {
+             "SELECT id,alert_id,revision,operation_kind,state,requested_by,payload_hash "
+                 + "FROM alert_operations WHERE request_id=?")) {
       ps.setString(1, requestId);
       try (ResultSet rs = ps.executeQuery()) {
         if (!rs.next()) return Optional.empty();
         return Optional.of(new OperationRow(rs.getString(1), rs.getString(2), rs.getInt(3),
-            rs.getString(4), rs.getString(5)));
+            rs.getString(4), rs.getString(5), rs.getString(6), rs.getString(7)));
       }
     }
   }
+
 
   public OperationRow insertOperation(String alertId, int revision, String kind, String requestedBy,
                                       String requestId, String payloadHash) throws SQLException {
@@ -301,7 +304,7 @@ public final class ServerStore {
       ps.setString(9, "DONE");
       ps.executeUpdate();
     }
-    return new OperationRow(id, alertId, revision, kind, "DONE");
+    return new OperationRow(id, alertId, revision, kind, "DONE", requestedBy, payloadHash);
   }
 
   // ---- atomic alert lifecycle writes (S-09) ----------------------------------

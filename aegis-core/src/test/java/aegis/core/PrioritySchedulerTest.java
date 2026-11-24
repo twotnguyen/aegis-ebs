@@ -80,7 +80,7 @@ class PrioritySchedulerTest {
         expected.addAll(Collections.nCopies(8, "C"));
         expected.add("W");
         expected.addAll(Collections.nCopies(8, "C"));
-        expected.addAll(List.of("E", "W", "I", "I"));
+        expected.addAll(List.of("I", "E", "W", "I"));
         assertEquals(expected, drain(s));
     }
 
@@ -106,6 +106,24 @@ class PrioritySchedulerTest {
         assertEquals(8, out.indexOf("E"));
         assertEquals(17, out.indexOf("W"));
         assertEquals(26, out.indexOf("I"));
+    }
+
+    @Test
+    void alternatingHighTiersDoNotStarveInfo() {
+        PriorityScheduler<String> s = new PriorityScheduler<>();
+        s.offer(Priority.CRITICAL, "c");
+        s.offer(Priority.EMERGENCY, "e");
+        s.offer(Priority.INFO, "i");
+        String info = null;
+        for (int k = 0; k < 40; k++) {
+            String next = s.poll().orElseThrow();
+            if ("i".equals(next)) { info = next; break; }
+            // Keep replenishing whichever high tier was just consumed: the
+            // highest non-empty tier alternates on every poll.
+            if ("c".equals(next)) s.offer(Priority.EMERGENCY, "e");
+            else s.offer(Priority.CRITICAL, "c");
+        }
+        assertEquals("i", info, "INFO must be served even when high tiers alternate");
     }
 
     @Test

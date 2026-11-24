@@ -11,8 +11,8 @@ CI chạy đúng các lệnh này trên `ubuntu-latest` — xem [`.github/workfl
 | Bước | Thời gian ước tính |
 |---|---|
 | Cài JDK 24+ + Maven + Node 26 + sqlite3 | 5–10 phút |
-| `mvn -B -ntp verify` lần đầu (tải dependency + 338 test toàn reactor) | 5–10 phút |
-| `npm ci && npm run build && npm test` (dashboard, 14 test) | 1–2 phút |
+| `mvn -B -ntp verify` lần đầu (tải dependency + 360 test toàn reactor) | 5–10 phút |
+| `npm ci && npm test && npm run build` (dashboard, 21 test) | 1–2 phút |
 | `scripts/initdb.sh` (26 bảng) + `scripts/gen-server-cert.sh` | < 5 giây |
 | Smoke test server (seed thế giới demo 480 device) | < 1 phút |
 
@@ -62,20 +62,20 @@ Làm lần lượt; mỗi bước có **cổng kiểm chứng** — chỉ bướ
   ```bash
   mvn -B -ntp verify
   ```
-  **Cổng:** `BUILD SUCCESS`; **338 test Java pass, 0 failure/error** (bảng §3).
+  **Cổng:** `BUILD SUCCESS`; **360 test Java pass, 0 failure/error** (bảng §3).
   Toàn bộ test chạy headless — không cần màn hình/X server.
 - [ ] **Bước 3 — Dashboard** (~1–2 phút):
   ```bash
-  cd aegis-dashboard && npm ci && npm run build && npm test && cd ..
+  cd aegis-dashboard && npm ci && npm test && npm run build && cd ..
   ```
   **Cổng:** `dist/` có index.html + assets (cảnh báo chunk > 500 kB của Three.js là benign);
-  `node --test` báo **pass 14 / fail 0**. (CI chỉ chạy `npm ci && npm run build`; `npm test` chạy local.)
+  `node --test` báo **pass 21 / fail 0**. CI chạy cùng lệnh này.
 - [ ] **Bước 4 — DB demo** (< 1 giây):
   ```bash
   ./scripts/initdb.sh        # tạo aegis.db ở gốc repo (đã gitignore)
   ```
   **Cổng:** in `TABLES=26`; `PRAGMA foreign_key_check` không output = sạch.
-  **Lưu ý:** script `rm -f` file DB đích trước khi tạo — đừng trỏ vào DB thật.
+  **Lưu ý:** script **từ chối** ghi đè file DB đã tồn tại; muốn tạo lại phải dùng `./scripts/initdb.sh --force <path>` (phá hủy dữ liệu).
   Có thể chỉ định đường dẫn: `./scripts/initdb.sh /duong/dan/aegis.db`.
 - [ ] **Bước 5 — Chứng chỉ TLS demo** (< 5 giây, LAB ONLY):
   ```bash
@@ -210,17 +210,18 @@ Từ thư mục gốc repo. Dùng `-am` (also-make) để Maven tự build modul
 hoặc `mvn -DskipTests install` một lần rồi bỏ `-am`. **Không chạy `-pl aegis-server` thiếu `-am`
 khi jar `~/.m2` cũ** — kết quả sẽ âm thầm lệch working tree.
 
-| Module | Lệnh | Test (surefire XML, 2026-11-21) |
+| Module | Lệnh | Test (surefire XML, verify gần nhất) |
 |---|---|---|
-| aegis-protocol | `mvn -B -ntp -pl aegis-protocol test` | 56 (FrameCodec fixture/stream/validation) |
-| aegis-core | `mvn -B -ntp -pl aegis-core -am test` | 73 (AckLedger, RetryPolicy, DedupIndex, RBAC, TargetResolver, PriorityScheduler) |
-| aegis-persistence | `mvn -B -ntp -pl aegis-persistence -am test` | 52 (Db pragmas/WAL, MigrationRunner 26 bảng, TransactionalPublisher, RecoveryScanner, repos, peer-review fixes) |
-| aegis-server | `mvn -B -ntp -pl aegis-server -am test` | 63 (unit + FanoutEngine + TlsLoopbackIntegration 10 + ServerSecurityFixes 10) |
-| aegis-client | `mvn -B -ntp -pl aegis-client -am test` | 43 (AlertRecord, ClientConfig, InboxStore, AlertClientEngine, TLS smoke) |
+| aegis-protocol | `mvn -B -ntp -pl aegis-protocol test` | 57 (FrameCodec fixture/stream/validation + timestamp) |
+| aegis-core | `mvn -B -ntp -pl aegis-core -am test` | 76 (AckLedger revision, RetryPolicy, DedupIndex, RBAC, TargetResolver, PriorityScheduler) |
+| aegis-persistence | `mvn -B -ntp -pl aegis-persistence -am test` | 59 (Db pragmas/WAL, MigrationRunner 26 bảng, TransactionalPublisher, RecoveryScanner, repos) |
+| aegis-server | `mvn -B -ntp -pl aegis-server -am test` | 72 (unit + FanoutEngine + TlsLoopbackIntegration + ServerSecurityFixes) |
+| aegis-client | `mvn -B -ntp -pl aegis-client -am test` | 45 (AlertRecord, ClientConfig, InboxStore, AlertClientEngine, TLS smoke) |
 | aegis-simulator | `mvn -B -ntp -pl aegis-simulator -am test` | 20 (SimulatorConfig, FaultInjector deterministic, SimAgent, stats) |
 | aegis-network-lab | `mvn -B -ntp -pl aegis-network-lab -am test` | 31 (UDP discovery trust gate, multicast hint, benchmark) |
-| **Toàn reactor** | `mvn -B -ntp verify` (hoặc `./scripts/test.sh`) | **347** (338 là baseline lịch sử + 9 test H1–H4) |
-| aegis-dashboard | `cd aegis-dashboard && npm test` | 20 (`node --test test/logic.test.js test/i18n.test.js`) |
+| **Toàn reactor** | `mvn -B -ntp verify` (hoặc `./scripts/test.sh`) | **360** (bản evidence lưu trữ: 347) |
+| aegis-dashboard | `cd aegis-dashboard && npm test` | 21 (`node --test test/logic.test.js test/i18n.test.js`) |
+| scripts (offline) | `python3 scripts/test-task2.py && python3 scripts/test-admin-bridge.py` | 13 (3 script + 10 bridge) |
 
 Đếm test chính xác: `-q` ẩn số liệu — đọc XML trong `<module>/target/surefire-reports/`:
 

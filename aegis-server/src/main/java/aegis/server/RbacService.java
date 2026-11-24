@@ -37,6 +37,7 @@ public final class RbacService {
     Set<String> buildings = new HashSet<>();
     Map<String, Set<String>> floors = new HashMap<>();
     for (RoleGrant g : rows) {
+      if (!"PUBLISH".equals(g.scope())) continue;
       if (g.buildingId() == null) continue;
       if (g.floorId() == null) {
         buildings.add(g.buildingId());

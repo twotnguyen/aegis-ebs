@@ -52,10 +52,14 @@ jobs:
       - name: Maven verify (full reactor, all tests)
         run: mvn -B -ntp verify
 
-      - name: Dashboard build (npm ci + vite build)
+      - name: Python bridge/script tests
+        run: python3 scripts/test-admin-bridge.py && python3 scripts/test-task2.py
+
+      - name: Dashboard install, tests and build
         working-directory: aegis-dashboard
         run: |
           npm ci
+          npm test
           npm run build
 
       - name: Upload surefire reports on failure

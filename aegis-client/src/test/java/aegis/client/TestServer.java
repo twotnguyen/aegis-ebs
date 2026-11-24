@@ -38,6 +38,7 @@ final class TestServer implements AutoCloseable {
   final AtomicInteger connections = new AtomicInteger();
   volatile Consumer<Envelope> onFrame = e -> {};
   volatile boolean sawTlsSocket;
+  volatile String authDeviceId; // when set, AUTH_RESULT advertises a canonical UUID
 
   private final ServerSocket serverSocket;
   private final ExecutorService exec = Executors.newVirtualThreadPerTaskExecutor();
@@ -119,6 +120,7 @@ final class TestServer implements AutoCloseable {
       ObjectNode ar = MAPPER.createObjectNode();
       ar.put("ok", authOk);
       if (!authOk) ar.put("reason", "bad secret");
+      if (authDeviceId != null) ar.put("deviceId", authDeviceId);
       write("AUTH_RESULT", auth.messageId(), ar);
     }
 
@@ -138,6 +140,8 @@ final class TestServer implements AutoCloseable {
         onFrame.accept(e);
         switch (e.type()) {
           case "ACK_RECEIVED" -> { if (closeAfterFirstAck) { close(); return; } }
+          case "ACK_USER" -> write("COMMAND_RESULT", e.messageId(),
+              MAPPER.createObjectNode().put("ok", true));
           case "SYNC_REQUEST" -> {
             ObjectNode p = MAPPER.createObjectNode();
             var arr = p.putArray("alerts");

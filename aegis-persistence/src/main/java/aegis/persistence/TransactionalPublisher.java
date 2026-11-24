@@ -141,7 +141,7 @@ public final class TransactionalPublisher {
    * and is deliberately NOT part of the payload fingerprint: identical
    * payloads published under different requestIds hash identically.
    */
-  private static String payloadHash(Request req, List<String> deviceIds) {
+  public static String payloadHash(Request req, List<String> deviceIds) {
     String canonical = canonicalPayloadJson(req, deviceIds);
     try {
       MessageDigest sha256 = MessageDigest.getInstance("SHA-256");

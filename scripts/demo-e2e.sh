@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # AEGIS-EBS end-to-end demo (SIMULATION/TRAINING ONLY).
-# Deterministic device actors (target/e2e-dev/ebsp.py) against a real
+# Deterministic device actors (tracked scripts/ebsp.py) against a real
 # aegis-server JVM. Phases:
 #   1 fanout+ACK   : building-wide FIRE_DRILL -> 8 devices, 7 auto-ACK, 1 silent
 #   2 retry->FAILED: silent device burns the 3-retry budget (3s/6s/12s windows)
@@ -33,8 +33,9 @@ fi
 
 exec python3 - <<'PY'
 import json, os, socket, sqlite3, sys, time
-sys.path.insert(0, os.path.join(os.environ["AEGIS_REPO"], "target", "e2e-dev"))
+sys.path.insert(0, os.path.join(os.environ["AEGIS_REPO"], "scripts"))
 import ebsp
+ebsp.install_signal_handlers()
 
 N_SIM = int(os.environ["DEMO_N_SIM"])
 N_REAL = int(os.environ["DEMO_N_REAL"])

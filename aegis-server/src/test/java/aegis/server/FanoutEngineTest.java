@@ -68,6 +68,7 @@ class FanoutEngineTest {
   private String adminId;
   private final List<String> failedDevices = new ArrayList<>();
   private final List<String> pushedDevices = new ArrayList<>();
+  private final List<String> userAckDevices = new ArrayList<>();
   private final List<TestSupport.SocketPair> pairs = new ArrayList<>();
 
   @BeforeEach
@@ -93,6 +94,7 @@ class FanoutEngineTest {
     StatusNotifier recorder = new StatusNotifier() {
       @Override public void pushWritten(String deviceId) { pushedDevices.add(deviceId); }
       @Override public void ackReceived(String deviceId) { }
+      @Override public void ackUser(String deviceId) { userAckDevices.add(deviceId); }
       @Override public void deliveryFailed(String deviceId) { failedDevices.add(deviceId); }
       @Override public void alertsChanged() { }
       @Override public void connectivityChanged() { }
@@ -198,6 +200,25 @@ class FanoutEngineTest {
     // well past the 150ms + 300ms retry windows: nothing more may arrive
     assertNull(readFrame(dev.peer(), 900), "acked delivery must not be retried");
     assertEquals(1, deliveries.findById(d0.id()).orElseThrow().attemptCount());
+  }
+
+  @Test
+  void userAckIsReportedSeparatelyFromReceipt() throws Exception {
+    Dev dev = connectDevice("DEV-A-F01-B-01");
+    var result = publish("req-user-ack-1", List.of(dev.deviceId()));
+    Delivery d0 = result.deliveries().get(0);
+    assertNotNull(readFrame(dev.peer(), 3000));
+    deliveries.recordAck(dev.deviceId(), d0.alertId(), 1, d0.id(),
+        aegis.persistence.AckKind.RECEIVED, null);
+    engine.onAck(d0.alertId(), d0.id(), dev.deviceId(), aegis.persistence.AckKind.RECEIVED,
+        java.time.Instant.now());
+    assertTrue(userAckDevices.isEmpty(), "receipt ACK must not advance the human-ACK counter");
+    deliveries.recordAck(dev.deviceId(), d0.alertId(), 1, d0.id(),
+        aegis.persistence.AckKind.USER, adminId);
+    engine.onAck(d0.alertId(), d0.id(), dev.deviceId(), aegis.persistence.AckKind.USER,
+        java.time.Instant.now());
+    assertTrue(userAckDevices.contains(dev.deviceId()),
+        "ACK_USER must be visible on the status feed");
   }
 
   @Test
@@ -316,4 +337,48 @@ class FanoutEngineTest {
         "recovery must not exceed the retry budget (maxAttempts)");
     reborn.shutdown();
   }
+  /** Recovery must not turn a future retry deadline into an immediate resend. */
+  @Test
+  void recoveredRetryWaitsForPersistedDeadline() throws Exception {
+    var device = new aegis.persistence.DeviceRepo(db).findByCode("DEV-A-F02-D-01").orElseThrow();
+    var result = publish("req-rec-deadline", List.of(device.id()));
+    Delivery d0 = result.deliveries().get(0);
+    TestSupport.until("offline delivery scheduled",
+        () -> stateIs(d0.id(), DeliveryState.RETRY_SCHEDULED), 3000);
+    deliveries.updateState(d0.id(), DeliveryState.RETRY_SCHEDULED,
+        java.time.Instant.now().plusSeconds(5), d0.attemptCount());
+    engine.shutdown();
+    FanoutEngine reborn = newEngine();
+    new RecoveryScanner(db).recover(reborn::recoverEnqueue);
+    reborn.start(io);
+    Dev dev = connectDevice("DEV-A-F02-D-01");
+    reborn.resumeDevice(dev.deviceId());
+    assertNull(readFrame(dev.peer(), 800),
+        "recovery must honour next_retry_at instead of dispatching immediately");
+    assertEquals(DeliveryState.RETRY_SCHEDULED,
+        deliveries.findById(d0.id()).orElseThrow().state());
+    reborn.shutdown();
+  }
+
+  /** SENT with the last attempt already persisted must fail, not spend attempt 5. */
+  @Test
+  void recoveredDeliveryAtFinalAttemptGetsNoExtraAttempt() throws Exception {
+    var device = new aegis.persistence.DeviceRepo(db).findByCode("DEV-A-F02-A-01").orElseThrow();
+    var result = publish("req-rec-final-attempt", List.of(device.id()));
+    Delivery d0 = result.deliveries().get(0);
+    TestSupport.until("offline delivery scheduled",
+        () -> stateIs(d0.id(), DeliveryState.RETRY_SCHEDULED), 3000);
+    deliveries.updateDispatchState(d0.id(), DeliveryState.SENT, null, 4);
+    engine.shutdown();
+    FanoutEngine reborn = newEngine();
+    new RecoveryScanner(db).recover(reborn::recoverEnqueue);
+    reborn.start(io);
+    Dev dev = connectDevice("DEV-A-F02-A-01");
+    reborn.resumeDevice(dev.deviceId());
+    assertNull(readFrame(dev.peer(), 800),
+        "a persisted final attempt must not be re-sent after recovery");
+    assertEquals(4, deliveries.findById(d0.id()).orElseThrow().attemptCount());
+    reborn.shutdown();
+  }
+
 }

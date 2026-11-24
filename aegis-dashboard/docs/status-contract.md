@@ -37,6 +37,7 @@ Sent **immediately after a client connects** (and after any resync).
           "online": 10,
           "received": 30,
           "acknowledged": 27,
+          "userAcknowledged": 21,
           "failed": 1,
           "severity": "warning"
         }
@@ -70,8 +71,9 @@ Sent **immediately after a client connects** (and after any resync).
   - `zones[]` — 4 zones per floor, `zoneCode` = `F{floor:02d}-{A|B|C|D}` (unique per building).
     - `devicesTotal` — provisioned devices in the zone.
     - `online` — devices currently connected, `0..devicesTotal`.
-    - `received` — messages received from the zone (current window).
-    - `acknowledged` — messages ACKed, `0..received`, **monotonic** (EBSP: ACK only advances state).
+    - `received` — transport pushes written for the zone (current window).
+    - `acknowledged` — **ACK_RECEIVED** count: the device durably stored the alert; `0..received`, **monotonic**. It is NOT a human acknowledgement.
+    - `userAcknowledged` — **ACK_USER** count: a person pressed Acknowledge; `0..acknowledged`, monotonic. The funnel's "acknowledged" stage uses `acknowledged` (receipt); read this field for human confirmation.
     - `failed` — deliveries FAILED after max retries (EBSP demo: 3 retries, 3s/6s/12s + jitter).
     - `severity` — `"online" | "warning" | "critical" | "offline"` (rules below).
 - `activeAlerts[]` — current non-expired alerts (EBSP tombstones must be honored: cancelled/expired alerts never appear).

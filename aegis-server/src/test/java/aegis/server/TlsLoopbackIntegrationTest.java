@@ -475,7 +475,7 @@ class TlsLoopbackIntegrationTest {
         .heartbeat(60_000, 3)
         .retry(200, 3)
         .statusBatchMs(100)
-        .argon2(1, 4096, 1)
+        .writerQueueCapacity(8) // deterministic overflow: OS socket buffers vary by platform
         .build();
     AegisServer slowServer = new AegisServer(slowConfig);
     slowServer.start();

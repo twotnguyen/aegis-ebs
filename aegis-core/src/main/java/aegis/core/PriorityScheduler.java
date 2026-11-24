@@ -29,7 +29,6 @@ public final class PriorityScheduler<T> {
     private static final int TIERS = Priority.values().length;
 
     private final ArrayDeque<T>[] queues;
-    private int burstTier = -1;
     private int burstCount = 0;
     private int lastReliefTier = -1;
     private int size = 0;
@@ -55,18 +54,15 @@ public final class PriorityScheduler<T> {
         if (highest < 0) {
             return Optional.empty();
         }
-        if (burstTier == highest && burstCount >= MAX_BURST) {
-            int relief = pickReliefTier(highest);
-            if (relief >= 0) {
-                lastReliefTier = relief;
-                burstCount = 0;
-                size--;
-                return Optional.of(queues[relief].pollFirst());
-            }
-            burstCount = 0; // nothing lower to serve; start a fresh burst
+        int relief = pickReliefTier(highest);
+        if (relief >= 0 && burstCount >= MAX_BURST) {
+            lastReliefTier = relief;
+            burstCount = 0;
+            size--;
+            return Optional.of(queues[relief].pollFirst());
         }
-        if (burstTier != highest) {
-            burstTier = highest;
+        if (relief < 0) {
+            // no lower tier is waiting: the high-tier burst budget is irrelevant
             burstCount = 0;
         }
         burstCount++;

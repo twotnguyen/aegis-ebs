@@ -16,6 +16,7 @@ import { applyEventToState, createReplay } from '../src/replay.js';
 import { createChaosEngine } from '../src/chaos.js';
 import { createFunnelTracker } from '../src/funnel.js';
 import { createMetricsHistory, toCSV, sparklineSVG } from '../src/reports.js';
+import { isStatusSnapshot } from '../src/ws.js';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -348,4 +349,11 @@ test('mock delta + chaos transform keeps the world coherent', () => {
     }
     state = next;
   }
+});
+
+test('LIVE requires a valid STATUS_SNAPSHOT, not just an open socket', () => {
+  assert.equal(isStatusSnapshot({ type: 'SERVER_HELLO' }), false);
+  assert.equal(isStatusSnapshot({ type: 'STATUS_DELTA', payload: {} }), false);
+  assert.equal(isStatusSnapshot({ type: 'STATUS_SNAPSHOT' }), false);
+  assert.equal(isStatusSnapshot({ type: 'STATUS_SNAPSHOT', payload: { floors: [] } }), true);
 });

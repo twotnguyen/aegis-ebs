@@ -98,6 +98,17 @@ class TargetResolverTest {
     }
 
     @Test
+    void sameFloorMultiZoneMembershipIndexedInEveryZone() {
+        TargetResolver r = new TargetResolver(List.of(
+                new DeviceLocation("d1", "B1", "F1", "Z1"),
+                new DeviceLocation("d1", "B1", "F1", "Z2")));
+        assertEquals(List.of("d1"), r.resolveZone("B1", "F1", "Z1"));
+        assertEquals(List.of("d1"), r.resolveZone("B1", "F1", "Z2"));
+        assertEquals(List.of("d1"), r.resolveFloor("B1", "F1"));
+        assertEquals(1, r.deviceCount());
+    }
+
+    @Test
     void conflictingDeviceLocationsRejected() {
         List<DeviceLocation> conflicting = List.of(
                 new DeviceLocation("d1", "B1", "F1", "Z1"),

@@ -574,4 +574,30 @@ class ServerSecurityFixesTest {
       peer.close();
     }
   }
+  @Test
+  @Order(98)
+  void reusedRequestIdWithDifferentPayloadIsConflict() throws Exception {
+    Envelope first = publish(operator, "req-conflict-1", 1, "A", "WARNING", "original title");
+    assertTrue(first.payload().get("ok").asBoolean(), first.payload().toString());
+    Envelope second = publish(operator, "req-conflict-1", 1, "A", "WARNING", "changed title");
+    assertFalse(second.payload().get("ok").asBoolean(), second.payload().toString());
+    assertEquals("CONFLICT", second.payload().path("code").asText());
+  }
+
+  @Test
+  @Order(99)
+  void revokedGrantStopsPublishingOnExistingSession() throws Exception {
+    TestTlsClient floorManager = authOperator("floor7", "floor7-demo-secret");
+    Envelope before = publish(floorManager, "req-revoke-before", 7, "A", "WARNING", "before revoke");
+    assertTrue(before.payload().get("ok").asBoolean(), before.payload().toString());
+
+    exec("DELETE FROM role_grants WHERE user_id=(SELECT id FROM users WHERE username='floor7') "
+        + "AND scope='PUBLISH'");
+
+    Envelope after = publish(floorManager, "req-revoke-after", 7, "A", "WARNING", "after revoke");
+    assertFalse(after.payload().get("ok").asBoolean(), after.payload().toString());
+    assertEquals("FORBIDDEN", after.payload().path("code").asText());
+    floorManager.close();
+  }
+
 }

@@ -5,10 +5,11 @@
 #
 # Builds if needed, initialises aegis.db / TLS certs if missing, starts the real
 # aegis-server JVM, the loopback web-operator bridge and the Vite dashboard,
-# then prints http://localhost:5173. Nothing is committed; Ctrl-C stops all
+# then prints the dashboard URL. Nothing is committed; Ctrl-C stops all
 # three processes and leaves the logs under docs/evidence/demo-web/.
 #
-# Env: AEGIS_TLS_PORT (9443), AEGIS_WS_PORT (9444), WEB_BRIDGE_PORT (9445).
+# Env: AEGIS_TLS_PORT (9443), AEGIS_WS_PORT (9444), WEB_BRIDGE_PORT (9445),
+#      AEGIS_DASH_PORT (5173).
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -19,10 +20,11 @@ export AEGIS_REPO="$REPO"
 export AEGIS_TLS_PORT="${AEGIS_TLS_PORT:-9443}"
 export AEGIS_WS_PORT="${AEGIS_WS_PORT:-9444}"
 export WEB_BRIDGE_PORT="${WEB_BRIDGE_PORT:-9445}"
+export AEGIS_DASH_PORT="${AEGIS_DASH_PORT:-5173}"
 TLS_PORT="$AEGIS_TLS_PORT"
 WS_PORT="$AEGIS_WS_PORT"
 BRIDGE_PORT="$WEB_BRIDGE_PORT"
-DASH_PORT=5173
+DASH_PORT="$AEGIS_DASH_PORT"
 
 EVIDENCE="$REPO/docs/evidence/demo-web"
 mkdir -p "$EVIDENCE"
@@ -76,9 +78,12 @@ def alive(pid):
         return True
     except OSError:
         return False
+# On Windows/Git Bash `$!` can be a short-lived launcher wrapper whose real
+# child is the JVM. Only watch PIDs that were alive at the first check.
+observed = [p for p in pids if alive(p)]
 deadline = time.time() + limit
 while time.time() < deadline:
-    if pids and not all(alive(p) for p in pids):
+    if observed and not all(alive(p) for p in observed):
         print("demo-web: %s process exited early" % label, file=sys.stderr)
         sys.exit(2)
     for host in ("127.0.0.1", "::1"):
@@ -109,15 +114,19 @@ fi
 
 # mdep.outputFile is resolved relative to the aegis-server module dir,
 # so this writes aegis-server/cp.txt (NOT ./cp.txt at the repo root).
-if [ "$need_build" = "1" ] || [ ! -f aegis-server/cp.txt ]; then
-  echo "demo-web: generating aegis-server/cp.txt..."
-  mvn -q -pl aegis-server dependency:build-classpath -Dmdep.outputFile=cp.txt
-fi
+# Always regenerate: a checked-in/stale file can point at another machine's ~/.m2.
+echo "demo-web: installing reactor artifacts + generating aegis-server/cp.txt..."
+mvn -q -DskipTests install
+mvn -q -pl aegis-server dependency:build-classpath -Dmdep.outputFile=cp.txt
+case "$(uname -s)" in
+  MINGW*|MSYS*|CYGWIN*|Windows_NT) CP_SEP=';' ;;
+  *) CP_SEP=':' ;;
+esac
 CP="$REPO/aegis-server/target/classes"
 for module in persistence core protocol; do
-  CP="$CP:$REPO/aegis-$module/target/classes"
+  CP="$CP$CP_SEP$REPO/aegis-$module/target/classes"
 done
-CP="$CP:$(tr -d '\n' < "$REPO/aegis-server/cp.txt")"
+CP="$CP$CP_SEP$(tr -d '\n' < "$REPO/aegis-server/cp.txt")"
 
 # ---- 2. database + TLS identity --------------------------------------------
 if [ ! -f aegis.db ]; then

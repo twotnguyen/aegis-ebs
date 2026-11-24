@@ -31,7 +31,7 @@ public final class Db {
   private static final ConcurrentHashMap<String, Object> OPEN_LOCKS = new ConcurrentHashMap<>();
 
   private final String url;
-
+  private volatile boolean walReady;
   public Db(Path dbFile) {
     Objects.requireNonNull(dbFile, "dbFile");
     this.url = "jdbc:sqlite:" + dbFile.toAbsolutePath();
@@ -55,7 +55,13 @@ public final class Db {
         // Arm the busy handler BEFORE the WAL switch so ordinary lock waits
         // (BEGIN IMMEDIATE, writes) ride out contention instead of failing.
         s.execute("PRAGMA busy_timeout=" + BUSY_TIMEOUT_MILLIS);
-        switchToWal(s);
+        // journal_mode=WAL is persistent for the file; re-applying it on every
+        // connection serialises opens behind a native SQLite lock and starves
+        // high-fanout publishes. Only the first open of this Db pays that cost.
+        if (!walReady) {
+          switchToWal(s);
+          walReady = true;
+        }
       } catch (SQLException | RuntimeException e) {
         try {
           c.close();

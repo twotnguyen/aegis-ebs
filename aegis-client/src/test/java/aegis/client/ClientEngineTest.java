@@ -465,4 +465,46 @@ class ClientEngineTest {
     assertTrue(inbox.find("ALT-1").isPresent(), "durable inbox outlives the connection");
     assertEquals(1, inbox.activeAlerts().size());
   }
+  @Test void acksUseCanonicalDeviceIdFromAuthResult() throws Exception {
+    server = new TestServer(TestServer.pushScript(
+        List.of(alertPayload("ALT-CANON", 1, "DLV-CANON", "SIMULATION — canonical")), List.of(), false));
+    server.authDeviceId = "UUID-DEVICE-1";
+    startEngine(server);
+    await("ACK_RECEIVED with canonical id", 10_000,
+        () -> !server.framesOfType("ACK_RECEIVED").isEmpty());
+    Envelope ack = server.framesOfType("ACK_RECEIVED").get(0);
+    assertEquals("UUID-DEVICE-1", ack.payload().get("deviceId").asText());
+  }
+
+  @Test void failedInboxWriteDoesNotPoisonDedupForRedelivery() throws Exception {
+    JsonNode alert = alertPayload("ALT-RETRY", 1, "DLV-RETRY", "SIMULATION — retry after failure");
+    Path db = tmp.resolve("inbox.db");
+    server = new TestServer((idx, s) -> {
+      s.handshake(true);
+      s.pushAlert(alert, "push-fail-0");
+      Thread.sleep(400);
+      execSql(db, "DROP TRIGGER IF EXISTS fail_first_insert");
+      s.pushAlert(alert, "push-fail-1");
+      s.recordLoop(List.of(), false);
+    });
+    ClientConfig cfg = config(server.port(), 8, 5, 10_000);
+    inbox = new InboxStore(cfg.inboxDb(), cfg.deviceId());
+    execSql(db, "CREATE TRIGGER fail_first_insert BEFORE INSERT ON inbox "
+        + "BEGIN SELECT RAISE(ABORT, 'simulated inbox failure'); END");
+    engine = new AlertClientEngine(cfg, inbox, Socket::new, Thread::sleep,
+        Clock.systemUTC(), new Random(1), listener);
+    engine.start();
+    await("alert displayed after redelivery", 10_000, () -> inbox.find("ALT-RETRY").isPresent()
+        && !listener.fresh.isEmpty());
+    assertEquals(1, listener.fresh.size());
+    assertFalse(server.framesOfType("ACK_RECEIVED").isEmpty(), "receipt must still be ACKed");
+  }
+
+  private static void execSql(Path db, String sql) throws Exception {
+    try (var c = java.sql.DriverManager.getConnection("jdbc:sqlite:" + db.toAbsolutePath());
+         var s = c.createStatement()) {
+      s.execute(sql);
+    }
+  }
+
 }

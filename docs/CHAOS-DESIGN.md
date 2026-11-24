@@ -3,7 +3,7 @@
 > Bổ sung cho C01–C16 (blueprint §12). Tài liệu THIẾT KẾ, không phải kết quả đã đo. Mỗi kịch bản: cách inject, bất biến kỳ vọng, metric + ngưỡng, tái lập seed.
 
 ## Nền tảng inject hiện có
-- `aegis-simulator.FaultInjector` / `FaultProfile`: dropRate, delayBaseMs/delayJitterMs, duplicateRate/duplicateCount, disconnectRate; mỗi decision tiêu thụ đúng 4 RNG draw (cố định) → cùng seed identical.
+- `aegis-simulator.FaultInjector` / `FaultProfile`: dropRate, delayBaseMs/delayJitterMs, duplicateRate/duplicateCount, disconnectRate; mỗi decision tiêu thụ đúng 4 RNG draw (cố định) → **fault decisions** lặp lại với cùng seed. Retry jitter của client/server và deadline wall-clock của simulator KHÔNG nằm trong seed đó; so sánh theo fault counts, không theo timestamp chính xác.
 - Scenarios: clean/lossy/delayed/duplicate/flaky/mixed + per-rate overrides.
 - Server: `RetryPolicy` (3s/6s/12s, max 3), `BoundedWriterQueue` 256, `RecoveryScanner`, SQLite WAL busy_timeout.
 

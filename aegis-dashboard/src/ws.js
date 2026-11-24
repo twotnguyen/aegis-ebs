@@ -21,6 +21,12 @@ const MAX_DELAY_MS = 15000;
 const MOCK_AFTER_FAILURES = 3; // mirrors EBSP "max 3 retries" demo rule
 const MOCK_TICK_MS = 2000;
 
+/** A socket opening is not LIVE data: only a parsed status/1 snapshot is. */
+export function isStatusSnapshot(msg) {
+  return !!msg && msg.type === 'STATUS_SNAPSHOT'
+    && !!msg.payload && typeof msg.payload === 'object';
+}
+
 /**
  * @param {object} opts
  * @param {string} [opts.url]            WebSocket endpoint (default ws://localhost:9444)
@@ -100,8 +106,8 @@ export function createStatusFeed({ url = WS_URL, onSnapshot, onDelta, onEvent, o
     socket.onopen = () => {
       failures = 0;
       stopMock();
-      setMode('live');
       // Server is expected to push a STATUS_SNAPSHOT right after connect.
+      // Stay "connecting" until it actually arrives.
     };
     socket.onmessage = (ev) => {
       let msg;
@@ -111,8 +117,10 @@ export function createStatusFeed({ url = WS_URL, onSnapshot, onDelta, onEvent, o
         return; // ignore malformed frames
       }
       if (!msg || typeof msg !== 'object') return;
-      if (msg.type === 'STATUS_SNAPSHOT') onSnapshot?.(msg, { source: 'live' });
-      else if (msg.type === 'STATUS_DELTA') onDelta?.(msg, { source: 'live' });
+      if (isStatusSnapshot(msg)) {
+        setMode('live');
+        onSnapshot?.(msg, { source: 'live' });
+      } else if (msg.type === 'STATUS_DELTA') onDelta?.(msg, { source: 'live' });
       else if (msg.type === 'INCIDENT_EVENT') onEvent?.(msg, { source: 'live' });
     };
     socket.onerror = () => {

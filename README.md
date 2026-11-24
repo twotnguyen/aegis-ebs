@@ -31,16 +31,16 @@ Modular monolith Java, 4 plane: **command** (dashboard/operator) · **delivery**
 
 | Module | Vai trò | Test |
 |---|---|---:|
-| `aegis-protocol` | EBSP/2.0: framing length-prefix + DTO + validation | 56 |
-| `aegis-core` | AckLedger, RetryPolicy, DedupIndex, ScopedRBAC, TargetResolver, PriorityScheduler | 73 |
-| `aegis-persistence` | SQLite WAL, migration 26 bảng, transactional publish (outbox), recovery | 52 |
-| `aegis-server` | TLS gateway, auth/RBAC, incident/alert, fanout, ACK/retry, sync, recovery, audit/metrics, WS status | 63 |
-| `aegis-client` | JavaFX desktop, durable inbox, ACK 2 tầng, reconnect, popup | 43 |
-| `aegis-simulator` | Headless 100–200 agent TLS + fault injection deterministic | 20 |
+| `aegis-protocol` | EBSP/2.0: framing length-prefix + DTO + validation | 57 |
+| `aegis-core` | AckLedger, RetryPolicy, DedupIndex, ScopedRBAC, TargetResolver, PriorityScheduler | 76 |
+| `aegis-persistence` | SQLite WAL, migration 26 bảng, transactional publish (outbox), recovery | 59 |
+| `aegis-server` | TLS gateway, auth/RBAC, incident/alert, fanout, ACK/retry, sync, recovery, audit/metrics, WS status | 72 |
+| `aegis-client` | JavaFX desktop, durable inbox, ACK 2 tầng, reconnect, popup | 45 |
+| `aegis-simulator` | Headless 100-agent smoke (200 alert), fault injection; chấp nhận 1–1000 agent | 20 |
 | `aegis-network-lab` | UDP discovery + trust gate, multicast ALERT_HINT, benchmark TCP vs multicast | 31 |
-| `aegis-dashboard` | Web Vite + Three.js 3D twin, timeline/chaos/reports/funnel (Node) | 14 |
+| `aegis-dashboard` | Web Vite + Three.js 3D twin, timeline/chaos/reports/funnel (Node) | 21 |
 
-**Tổng: 338 test Java + 14 test dashboard = 352** (đếm từ surefire XML + `node --test`, xem `docs/BUILD.md`). Cổng: TLS `9443` · WS status `9444` · bridge Operator `9445` · UDP discovery `9999` · multicast `239.10.10.10:9998` · Vite `5173`.
+**Tổng hiện tại: 360 test Java + 21 test dashboard = 381** (surefire XML + `node --test` sau lần verify cuối; bản evidence lưu trữ `docs/evidence/verify/` ghi 347 Java/20 dashboard của lần chạy cũ — xem `docs/BUILD.md`). Cổng: TLS `9443` · WS status `9444` · bridge Operator `9445` · UDP discovery `9999` · multicast `239.10.10.10:9998` · Vite `5173`.
 
 ## 3. Công nghệ
 
@@ -97,7 +97,7 @@ brew install maven          # Java 24+ (Temurin), Maven 3.10
 ### Build + test + DB
 ```bash
 ./scripts/dev.sh            # mvn -DskipTests package
-./scripts/test.sh           # mvn test  (338 test Java)
+./scripts/test.sh           # mvn test  (360 test Java)
 ./scripts/initdb.sh         # tạo aegis.db: 26 bảng, foreign_key_check sạch
 ```
 
@@ -174,8 +174,8 @@ mvn -q -pl aegis-network-lab compile exec:java \
 - `mvn verify` chạy toàn reactor; số liệu chính xác từ `target/surefire-reports/*.xml`.
 - Test plan: `docs/TEST-PLAN.md` (30 acceptance + 16 chaos scenario C01–C16).
 - Peer-review độc lập từng module: `docs/reviews/` (verdict + issues + khuyến nghị).
-- Metrics đo thật (server monotonic p50/p95/p99, tách timeout); benchmark multicast đo thật 2026-11-21 (8 subscriber × 200 message, macOS loopback): **−87.5% gói / −97.8% byte trên link nguồn** — `target/lab-report/fanout-report.{json,md}`.
-- Bằng chứng đo đạc lưu tại `docs/evidence/`: `verify/` (347 test Java + 51 XML), `benchmark/` (100 client), `chaos/` (5 preset C01–C05 + runs), `dashboard/` (ảnh LIVE + `web-only-demo-live.png` và metadata luồng demo 100% trên web), `video/aegis-ebs-demo.mp4` (video thuyết trình 12 phút, 720,05 s). Mỗi bộ kèm runId/commit SHA/máy đo; `scripts/make-demo-video.py` tái tạo video từ evidence thật.
+- Metrics đo thật (server monotonic p50/p95/p99, tách timeout); benchmark multicast đo thật 2026-11-21 (8 subscriber × 200 message, macOS loopback): **−87.5% số lượt ghi/gói datagram ở phía publisher / −97.8% byte ở link nguồn** — đây là số liệu application-level (hint chỉ chứa metadata, chưa tính TLS fetch), không phải pcap — `target/lab-report/fanout-report.{json,md}`.
+- Bằng chứng đo đạc lưu tại `docs/evidence/`: `verify/` (bản lưu trữ 347 test Java / 52 XML của lần chạy cũ; số hiện tại xem bảng §2), `benchmark/` (100 client), `chaos/` (5 preset C01–C05 + runs), `dashboard/` (ảnh LIVE + `web-only-demo-live.png` và metadata luồng demo 100% trên web), `video/aegis-ebs-demo.mp4` (video thuyết trình 12 phút, 720,05 s). Mỗi bộ kèm runId/commit SHA/máy đo; `scripts/make-demo-video.py` tái tạo video từ evidence thật.
 - **Demo web-only (`scripts/demo-web.sh`):** bằng chứng `docs/evidence/dashboard/web-only-demo-live.{png}` + `web-only-demo-meta.json` — Fleet Start 20 → publish F05 (12 delivery, ACK) → Retry F01-A (11 RECEIVED + 1 FAILED attempt_count=4) → Cancel, thao tác 100% trên tab Operator.
 - **Không bịa số liệu** — mọi kết quả báo cáo đều từ lần chạy thật kèm runId/commit SHA/máy đo.
 

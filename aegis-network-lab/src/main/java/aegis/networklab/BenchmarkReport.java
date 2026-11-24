@@ -57,8 +57,10 @@ public final class BenchmarkReport {
       double byteSaved = tcp.publisherBytes() == 0 ? 0
           : 100.0 * (tcp.publisherBytes() - mc.publisherBytes()) / tcp.publisherBytes();
       sb.append(String.format(Locale.ROOT,
-          "**Multicast vs TCP fanout:** source-link packets −%.1f%% (%d → %d), source-link bytes −%.1f%%. ",
+          "**Multicast vs TCP fanout:** source-link application writes −%.1f%% (%d → %d), source-link application bytes −%.1f%%. ",
           pktSaved, tcp.publisherPackets(), mc.publisherPackets(), byteSaved));
+      sb.append("These are publisher-level writes/datagrams on loopback, not packet captures; "
+          + "hints carry only advisory metadata and exclude the TLS content fetch.\n");
       if (mc.latencyAvgNanos() > 0)
         sb.append(String.format(Locale.ROOT, "Avg hint latency %.1f µs vs TCP full-content %.1f µs (%.2f×).%n",
             mc.latencyAvgNanos() / 1000.0, tcp.latencyAvgNanos() / 1000.0,

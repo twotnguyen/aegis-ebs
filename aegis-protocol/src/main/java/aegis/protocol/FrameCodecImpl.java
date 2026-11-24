@@ -1,6 +1,7 @@
 package aegis.protocol;
 
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,6 +14,9 @@ import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
+import java.util.Objects;
 
 /**
  * EBSP/2.0 codec: uint32 big-endian length L (1..65536) + L bytes strict UTF-8 JSON.
@@ -25,7 +29,14 @@ public final class FrameCodecImpl implements FrameCodec {
 
   public FrameCodecImpl() { this(new ObjectMapper()); }
 
-  public FrameCodecImpl(ObjectMapper mapper) { this.mapper = mapper; }
+  public FrameCodecImpl(ObjectMapper mapper) {
+    this.mapper = Objects.requireNonNull(mapper, "mapper");
+    this.mapper.getFactory().setStreamReadConstraints(StreamReadConstraints.builder()
+        .maxNestingDepth(32)
+        .maxStringLength(Protocol.MAX_FRAME_BYTES)
+        .maxNumberLength(64)
+        .build());
+  }
 
   @Override
   public byte[] encode(Envelope e) throws FrameException {
@@ -141,6 +152,7 @@ public final class FrameCodecImpl implements FrameCodec {
 
     String messageId = requireText(root, "messageId");
     String sentAt = requireText(root, "sentAt");
+    validateTimestamp(sentAt);
     String correlationId = optionalText(root, "correlationId");
     JsonNode payload = root.get("payload");
     if (payload == null || payload.isNull()) throw new FrameException("missing payload");
@@ -178,9 +190,18 @@ public final class FrameCodecImpl implements FrameCodec {
     }
     if (e.messageId() == null || e.messageId().isBlank()) throw new FrameException("missing messageId");
     if (e.sentAt() == null || e.sentAt().isBlank()) throw new FrameException("missing sentAt");
+    validateTimestamp(e.sentAt());
     if (e.correlationId() != null && e.correlationId().isBlank()) {
       throw new FrameException("blank correlationId");
     }
     if (e.payload() == null || e.payload().isNull()) throw new FrameException("missing payload");
+  }
+
+  private static void validateTimestamp(String value) throws FrameException {
+    try {
+      Instant.parse(value);
+    } catch (DateTimeParseException ex) {
+      throw new FrameException("sentAt must be a UTC ISO-8601 instant", ex);
+    }
   }
 }

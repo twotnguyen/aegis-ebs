@@ -214,6 +214,14 @@ class FrameCodecValidationTest {
     ByteArrayOutputStreamHolder.writeAndRead(codec, e);
   }
 
+  @Test void rejectsMalformedSentAtOnDecodeAndEncode() throws Exception {
+    byte[] wire = mutated(n -> n.put("sentAt", "not-a-timestamp"));
+    assertThrows(FrameException.class, () -> codec.decode(wire));
+    Envelope bad = new Envelope(Protocol.VERSION, "HEARTBEAT", "m-bad", null,
+        "2026-11-21 00:00:00", M.createObjectNode());
+    assertThrows(FrameException.class, () -> codec.encode(bad));
+  }
+
   /** Small helper kept local to avoid extra files. */
   static final class ByteArrayOutputStreamHolder {
     static void writeAndRead(FrameCodec codec, Envelope e) throws Exception {

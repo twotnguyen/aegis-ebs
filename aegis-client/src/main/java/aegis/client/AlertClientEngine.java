@@ -21,6 +21,11 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -71,6 +76,7 @@ public final class AlertClientEngine implements AutoCloseable {
   private final Clock clock;
   private final RetryPolicy retry;
   private final DedupIndex dedup = new DedupIndex();
+  private final Map<String, CompletableFuture<JsonNode>> pendingAckResults = new ConcurrentHashMap<>();
   private final ClientListener listener;
   private final FrameCodec codec = new FrameCodecImpl();
   private final ObjectMapper mapper = new ObjectMapper();
@@ -86,6 +92,7 @@ public final class AlertClientEngine implements AutoCloseable {
   private volatile Thread controller;
   private volatile Thread heartbeatThread;
   private volatile long heartbeatIntervalMs;
+  private volatile String authenticatedDeviceId;
 
   public AlertClientEngine(ClientConfig cfg, InboxStore inbox, ConnectionFactory connections,
                            Sleeper sleeper, Clock clock, RandomGenerator jitter, ClientListener listener) {
@@ -127,7 +134,7 @@ public final class AlertClientEngine implements AutoCloseable {
       if (isOnline()) {
         try {
           ObjectNode p = mapper.createObjectNode();
-          p.put("deviceId", cfg.deviceId());
+          p.put("deviceId", wireDeviceId());
           p.put("sentAt", now());
           send("HEARTBEAT", null, p);
         } catch (IOException | FrameException ex) {
@@ -168,8 +175,12 @@ public final class AlertClientEngine implements AutoCloseable {
     String now = now();
     if (!inbox.markUserAck(alertId, a.revision(), userId, now)) return false;
     try {
-      sendUserAck(a.alertId(), a.revision(), a.deliveryId(), a.messageId(), userId);
-      inbox.markUserAckSent(alertId, a.revision(), now());
+      if (sendUserAck(a.alertId(), a.revision(), a.deliveryId(), a.messageId(), userId, true)) {
+        inbox.markUserAckSent(alertId, a.revision(), now());
+      } else {
+        listenerError("ACK_USER not confirmed (queued for reconnect)",
+            new IOException("no successful COMMAND_RESULT for ACK_USER"));
+      }
     } catch (IOException | FrameException ex) {
       listenerError("ACK_USER send (queued for reconnect)", ex); // durable mark stands
     }
@@ -209,9 +220,9 @@ public final class AlertClientEngine implements AutoCloseable {
         attempts = 0;
         missedHeartbeats.set(0);
         lastFrameAt.set(clock.millis());
-        boolean reconnect = connectedOnce.getAndSet(true);
+        connectedOnce.set(true);
         setState(State.ONLINE);
-        if (reconnect) sendSyncRequest();
+        sendSyncRequest(); // authoritative state on first connect and every reconnect
         resendPendingAcks();
         readLoop(s);
       } catch (AuthRejectedException ex) {
@@ -270,6 +281,8 @@ public final class AlertClientEngine implements AutoCloseable {
           : result.payload().path("code").asText("unspecified");
       throw new AuthRejectedException("AUTH_RESULT ok=false: " + reason);
     }
+    authenticatedDeviceId = result.payload().hasNonNull("deviceId")
+        ? result.payload().get("deviceId").asText() : cfg.deviceId();
   }
 
   private void captureHeartbeatInterval(JsonNode payload) {
@@ -327,35 +340,35 @@ public final class AlertClientEngine implements AutoCloseable {
       }
       case "HEARTBEAT" -> {
         ObjectNode p = mapper.createObjectNode();
-        p.put("deviceId", cfg.deviceId());
+        p.put("deviceId", wireDeviceId());
         p.put("receivedAt", now());
         send("HEARTBEAT_ACK", e.messageId(), p);
+      }
+      case "COMMAND_RESULT" -> {
+        CompletableFuture<JsonNode> pending = e.correlationId() == null
+            ? null : pendingAckResults.get(e.correlationId());
+        if (pending != null) pending.complete(e.payload());
       }
       case "ERROR" -> listenerError("server ERROR frame", new IOException(String.valueOf(e.payload())));
       default -> { /* SERVER_HELLO/AUTH_RESULT outside handshake, STATUS_* etc: ignore */ }
     }
   }
 
-  /** Durable-first alert handling; DedupIndex gates display, inbox is the durable truth. */
+  /** Durable-first alert handling; a committed inbox row is the only dedup authority. */
   private void handleAlert(AlertRecord a) throws IOException, FrameException {
-    boolean duplicate = dedup.seen(a.alertId(), a.revision(), cfg.deviceId());
+    // If store() throws, no ACK is sent and the in-memory dedup index is untouched;
+    // a redelivery after the store recovers must still be displayed and ACKed.
+    InboxStore.StoreResult r = inbox.store(a);
+    boolean duplicate = r != InboxStore.StoreResult.STORED
+        || dedup.seen(a.alertId(), a.revision(), cfg.deviceId());
     if (duplicate) {
-      // Already durably stored (index seeded from inbox): re-ACK so the server stops
-      // retrying, but never redisplay. ACK only advances state — idempotent server-side.
       sendAckReceived(a.alertId(), a.revision(), a.deliveryId(), a.messageId());
       fireAlert(a, false);
       return;
     }
-    InboxStore.StoreResult r = inbox.store(a); // COMMIT before any ACK goes on the wire
-    if (r == InboxStore.StoreResult.STORED) {
-      fireAlert(a, true);
-      sendAckReceived(a.alertId(), a.revision(), a.deliveryId(), a.messageId());
-      inbox.markAckReceivedSent(a.alertId(), a.revision(), now());
-    } else {
-      // Inbox outranks the in-memory index (restart/race edge): durable row exists.
-      sendAckReceived(a.alertId(), a.revision(), a.deliveryId(), a.messageId());
-      fireAlert(a, false);
-    }
+    fireAlert(a, true);
+    sendAckReceived(a.alertId(), a.revision(), a.deliveryId(), a.messageId());
+    inbox.markAckReceivedSent(a.alertId(), a.revision(), now());
   }
 
   private void handleCancel(JsonNode p, String pushMessageId) throws IOException, FrameException {
@@ -374,7 +387,7 @@ public final class AlertClientEngine implements AutoCloseable {
     ObjectNode ack = mapper.createObjectNode();
     ack.put("alertId", alertId);
     ack.put("revision", revision);
-    ack.put("deviceId", cfg.deviceId());
+    ack.put("deviceId", wireDeviceId());
     ack.put("ackAt", now());
     // aegis-server ack() matches ACK_CANCEL against a delivery row: echo the push's
     // deliveryId when present, else the durably-stored delivery for this alert.
@@ -395,26 +408,50 @@ public final class AlertClientEngine implements AutoCloseable {
     p.put("alertId", alertId);
     p.put("deliveryId", deliveryId);
     p.put("revision", revision);
-    p.put("deviceId", cfg.deviceId());
+    p.put("deviceId", wireDeviceId());
     p.put("ackAt", now());
     send("ACK_RECEIVED", correlationId, p);
   }
 
-  private void sendUserAck(String alertId, long revision, String deliveryId, String correlationId, String userId)
+  private boolean sendUserAck(String alertId, long revision, String deliveryId, String correlationId,
+                              String userId, boolean waitForResult)
       throws IOException, FrameException {
     ObjectNode p = mapper.createObjectNode();
     p.put("alertId", alertId);
     p.put("deliveryId", deliveryId);
     p.put("revision", revision);
-    p.put("deviceId", cfg.deviceId());
+    p.put("deviceId", wireDeviceId());
     p.put("userId", userId);
     p.put("action", "ACKNOWLEDGE");
-    send("ACK_USER", correlationId, p);
+    String messageId = "msg-" + UUID.randomUUID();
+    CompletableFuture<JsonNode> result = new CompletableFuture<>();
+    // A reconnect resend is written before the reader loop starts, so it must not
+    // block waiting for its own COMMAND_RESULT: the reader marks it sent later.
+    result.whenComplete((reply, error) -> {
+      pendingAckResults.remove(messageId);
+      if (!waitForResult && reply != null && reply.path("ok").asBoolean(false)) {
+        inbox.markUserAckSent(alertId, revision, now());
+      }
+    });
+    pendingAckResults.put(messageId, result);
+    writeEnvelope(new Envelope(Protocol.VERSION, "ACK_USER", messageId, correlationId, now(), p));
+    if (!waitForResult) return true;
+    try {
+      JsonNode reply = result.get(3, TimeUnit.SECONDS);
+      return reply != null && reply.path("ok").asBoolean(false);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      return false;
+    } catch (ExecutionException | TimeoutException e) {
+      return false; // still durably pending; reconnect will re-send
+    } finally {
+      pendingAckResults.remove(messageId);
+    }
   }
 
   private void sendSyncRequest() throws IOException, FrameException {
     ObjectNode p = mapper.createObjectNode();
-    p.put("deviceId", cfg.deviceId());
+    p.put("deviceId", wireDeviceId());
     ObjectNode known = p.putObject("knownRevisions");
     inbox.knownRevisions().forEach(known::put);
     send("SYNC_REQUEST", null, p);
@@ -427,13 +464,18 @@ public final class AlertClientEngine implements AutoCloseable {
       inbox.markAckReceivedSent(pending.alertId(), pending.revision(), now());
     }
     for (InboxStore.PendingAck pending : inbox.pendingUserAcks()) {
-      sendUserAck(pending.alertId(), pending.revision(), pending.deliveryId(), pending.messageId(), pending.userId());
-      inbox.markUserAckSent(pending.alertId(), pending.revision(), now());
+      sendUserAck(pending.alertId(), pending.revision(), pending.deliveryId(),
+          pending.messageId(), pending.userId(), false);
     }
   }
 
-  private void send(String type, String correlationId, JsonNode payload) throws IOException, FrameException {
+  private String send(String type, String correlationId, JsonNode payload) throws IOException, FrameException {
     Envelope e = new Envelope(Protocol.VERSION, type, "msg-" + UUID.randomUUID(), correlationId, now(), payload);
+    writeEnvelope(e);
+    return e.messageId();
+  }
+
+  private void writeEnvelope(Envelope e) throws IOException, FrameException {
     synchronized (writeLock) {
       OutputStream o = out;
       Socket s = socket;
@@ -451,6 +493,11 @@ public final class AlertClientEngine implements AutoCloseable {
   private static Envelope expect(Envelope e, String type) throws IOException {
     if (!type.equals(e.type())) throw new IOException("expected " + type + " but got " + e.type());
     return e;
+  }
+
+  /** The server binds sessions to its canonical device UUID, not the login code. */
+  private String wireDeviceId() {
+    return authenticatedDeviceId == null ? cfg.deviceId() : authenticatedDeviceId;
   }
 
   private void closeSocket() {

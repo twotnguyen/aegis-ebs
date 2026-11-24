@@ -30,6 +30,7 @@ Tham số (có thể bỏ qua từ trái sang phải để dùng mặc định):
 
 Biến môi trường:
   DEVICE_SECRET          mặc định device-demo-secret (credential seed demo của server)
+  USER_ID                UUID user enabled cho ACK_USER (tự lấy từ aegis.db nếu có)
 
 Ví dụ:
   bash scripts/demo-zone-client.sh
@@ -57,6 +58,12 @@ TRUSTSTORE="${4:-certs/aegis-truststore.p12}"
 TS_PASSWORD="${5:-aegis-demo}"
 INBOX="${6:-client-inbox-${DEVICE_CODE}.db}"
 DEVICE_SECRET="${DEVICE_SECRET:-device-demo-secret}"
+USER_ID="${USER_ID:-}"
+if [ -z "$USER_ID" ] && [ -f "$REPO/aegis.db" ] && command -v sqlite3 >/dev/null 2>&1; then
+  USER_ID="$(sqlite3 "$REPO/aegis.db" \
+    "SELECT id FROM users WHERE username='employee' LIMIT 1" 2>/dev/null || true)"
+fi
+USER_ID="${USER_ID:-USER-SIM-0001}"
 
 if [ -z "$DEVICE_CODE" ] || [ -z "$SERVER_HOST" ]; then
   echo "demo-zone-client: DEVICE_CODE và SERVER_HOST không được rỗng (xem --help)" >&2
@@ -86,4 +93,4 @@ echo "demo-zone-client: device=$DEVICE_CODE -> tls://$SERVER_HOST:$TLS_PORT"
 echo "demo-zone-client: truststore=$TRUSTSTORE inbox=$INBOX"
 echo "demo-zone-client: SIMULATION/TRAINING ONLY — không phải báo động thật"
 
-exec mvn -pl aegis-client javafx:run -Djavafx.args="--host $SERVER_HOST --port $TLS_PORT --device-id $DEVICE_CODE --device-secret $DEVICE_SECRET --truststore $TRUSTSTORE --truststore-password $TS_PASSWORD --inbox $INBOX"
+exec mvn -pl aegis-client javafx:run -Djavafx.args="--host $SERVER_HOST --port $TLS_PORT --device-id $DEVICE_CODE --user-id $USER_ID --device-secret $DEVICE_SECRET --truststore $TRUSTSTORE --truststore-password $TS_PASSWORD --inbox $INBOX"

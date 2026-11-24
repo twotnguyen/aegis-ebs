@@ -2,8 +2,8 @@
 """Local-only HTTP bridge for the web-only AEGIS-EBS demo + Admin Console.
 
 The browser (http://localhost:5173) talks to this process on 127.0.0.1:9445;
-this process drives the real EBSP/2.0 TLS gateway through
-target/e2e-dev/ebsp.py (Device / Operator actors). The /api/admin/* surface
+this process drives the real EBSP/2.0 TLS through the tracked `scripts/ebsp.py`
+(Device / Operator actors). The /api/admin/* surface
 reads and approves role grants in AEGIS_DB (SQLite). No Java or dashboard
 source is touched, no credential is logged or persisted, and nothing binds
 beyond loopback unless WEB_BRIDGE_HOST / WEB_BRIDGE_ORIGINS are set explicitly
@@ -25,7 +25,7 @@ from urllib.parse import parse_qs
 
 REPO = os.environ.get("AEGIS_REPO") or os.path.abspath(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
-sys.path.insert(0, os.path.join(REPO, "target", "e2e-dev"))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import ebsp  # noqa: E402  # pyright: ignore[reportMissingImports]
 
 # Loopback is the safe default. Widening the bind (Tailscale) or the CORS
@@ -55,9 +55,36 @@ _fleet = {}          # deviceCode -> ebsp.Device
 _silent_code = None  # deviceCode currently configured with auto_ack=False
 _last_count = 20
 
+ADMIN_SESSION_TTL = 1800
+ALLOWED_GRANT_SCOPES = frozenset({"PUBLISH"})
+_admin_sessions = {}  # token -> {userId, username, role, expiresAt}
+
 
 class BadRequest(Exception):
     """Input validation failure -> HTTP 400."""
+
+
+def _admin_session(headers):
+    """Return the authenticated admin session for a Bearer header, else None."""
+    auth = (headers or {}).get("Authorization", "")
+    if not isinstance(auth, str) or not auth.startswith("Bearer "):
+        return None
+    token = auth[7:].strip()
+    with _lock:
+        session = _admin_sessions.get(token)
+        if session is None:
+            return None
+        if time.time() >= session["expiresAt"]:
+            _admin_sessions.pop(token, None)
+            return None
+        return dict(session)
+
+
+def _require_admin(headers):
+    session = _admin_session(headers)
+    if session is None or session["role"] != "SYSTEM_ADMIN":
+        return None
+    return session
 
 
 # ---------------------------------------------------------------------------
@@ -75,13 +102,16 @@ def fleet_codes(count, silent_floor=0):
     if silent_floor < 0 or silent_floor > 10:
         raise BadRequest("silentFloor must be 0..10")
     # First 12 devices are all F01-A: the retry demo publishes F01-A and needs
-    # 11 healthy ACKs + exactly 1 silent device. The rest round-robin over the
-    # other floors so a F05 publish also finds a real device.
+    # 11 healthy ACKs + exactly 1 silent device. Every floor/zone/sequence
+    # combination after that is emitted once, so counts up to 480 stay unique.
     codes = ["DEV-A-F01-A-%02d" % s for s in SEQS]
-    for i in range(count - len(codes)):
-        f = (i % 9) + 2                      # floors 2..10
-        z = ZONES[(i // 9) % len(ZONES)]
-        codes.append("DEV-A-F%02d-%s-01" % (f, z))
+    for floor in range(2, 11):
+        for zone in ZONES:
+            for seq in SEQS:
+                codes.append("DEV-A-F%02d-%s-%02d" % (floor, zone, seq))
+    for zone in ZONES[1:]:
+        for seq in SEQS:
+            codes.append("DEV-A-F01-%s-%02d" % (zone, seq))
     codes = codes[:count]
     if silent_floor:
         silent = "DEV-A-F%02d-A-01" % silent_floor
@@ -407,30 +437,72 @@ def admin_audit(limit: Union[int, str, None] = 100, action=None, outcome=None):
             "action": action, "outcome": outcome}
 
 
-def _resolve_admin_operator(conn, body):
-    """Admin mutations require a real enabled SYSTEM_ADMIN, never a free string."""
-    operator = _text_field(body, "operator")
+def _resolve_admin_operator(conn, actor_id):
+    """The actor comes from the authenticated session, never from the body."""
     row = conn.execute(
-        "SELECT id, role, enabled FROM users WHERE username = ?",
-        (operator,)).fetchone()
-    if (row is None or row["role"] != "SYSTEM_ADMIN" or not row["enabled"]):
+        "SELECT id, role, enabled FROM users WHERE id = ?", (actor_id,)).fetchone()
+    if row is None or row["role"] != "SYSTEM_ADMIN" or not row["enabled"]:
         raise BadRequest("operator must be an enabled SYSTEM_ADMIN")
     return row["id"]
 
 
-def admin_grant_approve(body):
+def _admin_login(body):
+    username = _text_field(body, "username")
+    password = body.get("password")
+    if not isinstance(password, str) or not password:
+        raise BadRequest("password required")
+    op = None
+    try:
+        op = ebsp.Operator(username, password, port=TLS_PORT)
+    except Exception:
+        return 401, {"ok": False, "error": "admin login denied"}
+    finally:
+        if op is not None:
+            try:
+                op.close()
+            except Exception:
+                pass
+    conn = _connect()
+    try:
+        row = conn.execute(
+            "SELECT id, role, enabled FROM users WHERE username = ?",
+            (username,)).fetchone()
+    finally:
+        conn.close()
+    if row is None or row["role"] != "SYSTEM_ADMIN" or not row["enabled"]:
+        return 401, {"ok": False, "error": "admin login denied"}
+    token = uuid.uuid4().hex
+    with _lock:
+        _admin_sessions[token] = {
+            "userId": row["id"], "username": username, "role": row["role"],
+            "expiresAt": time.time() + ADMIN_SESSION_TTL,
+        }
+    return 200, {"ok": True, "token": token, "username": username,
+                 "role": row["role"]}
+
+
+def admin_grant_approve(body, actor_id):
     username = _text_field(body, "username")
     building_id = _text_field(body, "buildingId")
     floor_id = _text_field(body, "floorId", required=False)
     scope = _text_field(body, "scope", required=False) or "PUBLISH"
+    if scope not in ALLOWED_GRANT_SCOPES:
+        raise BadRequest("unsupported grant scope")
     conn = _connect()
     try:
         with conn:
-            actor_id = _resolve_admin_operator(conn, body)
+            resolved_actor = _resolve_admin_operator(conn, actor_id)
             user = conn.execute("SELECT id, role FROM users WHERE username = ?",
                                 (username,)).fetchone()
             if user is None:
                 raise BadRequest("unknown username")
+            role = user["role"]
+            if role == "SECURITY_OPERATOR" and floor_id is not None:
+                raise BadRequest("floor-scoped SECOPS grant would broaden to the building")
+            if role == "FLOOR_MANAGER" and floor_id is None:
+                raise BadRequest("FLOOR_MANAGER grant requires floorId")
+            if role in ("EMPLOYEE", "DEVICE"):
+                raise BadRequest("role cannot publish")
             if (not _table_exists(conn, "buildings") or
                     conn.execute("SELECT 1 FROM buildings WHERE id = ?",
                                  (building_id,)).fetchone() is None):
@@ -440,6 +512,14 @@ def admin_grant_approve(body):
                                      (floor_id,)).fetchone()
                 if floor is None or floor["building_id"] != building_id:
                     raise BadRequest("floorId does not belong to buildingId")
+            existing = conn.execute(
+                "SELECT id FROM role_grants WHERE user_id=? AND building_id=? "
+                "AND floor_id IS ? AND scope=?",
+                (user["id"], building_id, floor_id, scope)).fetchone()
+            if existing is not None:
+                row = conn.execute(ADMIN_GRANT_BY_ID, (existing["id"],)).fetchone()
+                return {"ok": True, "duplicate": True, "grant": dict(row),
+                        "auditId": None}
             grant_id = str(uuid.uuid4())
             granted_at = _now_ts()
             conn.execute(
@@ -447,29 +527,29 @@ def admin_grant_approve(body):
                 "(id, user_id, building_id, floor_id, scope, granted_at) "
                 "VALUES (?,?,?,?,?,?)",
                 (grant_id, user["id"], building_id, floor_id, scope, granted_at))
-            grant = {"id": grant_id, "username": username, "role": user["role"],
+            grant = {"id": grant_id, "username": username, "role": role,
                      "building_id": building_id, "floor_id": floor_id,
                      "scope": scope, "granted_at": granted_at}
             audit_id = _audit_insert(conn, "OPERATOR_GRANT_APPROVED", grant,
-                                     actor_id, grant_id)
+                                     resolved_actor, grant_id)
     finally:
         conn.close()
-    return {"ok": True, "grant": grant, "auditId": audit_id}
+    return {"ok": True, "duplicate": False, "grant": grant, "auditId": audit_id}
 
 
-def admin_grant_revoke(body):
+def admin_grant_revoke(body, actor_id):
     grant_id = _text_field(body, "grantId")
     conn = _connect()
     try:
         with conn:
-            actor_id = _resolve_admin_operator(conn, body)
+            resolved_actor = _resolve_admin_operator(conn, actor_id)
             row = conn.execute(ADMIN_GRANT_BY_ID, (grant_id,)).fetchone()
             if row is None:
                 raise BadRequest("unknown grantId")
             grant = dict(row)
             conn.execute("DELETE FROM role_grants WHERE id = ?", (grant_id,))
             audit_id = _audit_insert(conn, "OPERATOR_GRANT_REVOKED", grant,
-                                     actor_id, grant_id)
+                                     resolved_actor, grant_id)
     finally:
         conn.close()
     return {"ok": True, "revoked": grant_id, "grant": grant, "auditId": audit_id}
@@ -491,7 +571,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Origin", allow)
         self.send_header("Vary", "Origin")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
         self.send_header("Access-Control-Max-Age", "600")
 
     def _send(self, status, obj):
@@ -526,11 +606,11 @@ class Handler(BaseHTTPRequestHandler):
         parts = self.path.split("?", 1)
         path = parts[0]
         query = parts[1] if len(parts) > 1 else ""
-        self._reply(path, lambda: self._get(path, query))
+        self._reply(path, lambda: self._get(path, query, self.headers))
 
     def do_POST(self):
         path = self.path.split("?", 1)[0]
-        self._reply(path, lambda: self._post(path, self._json_body()))
+        self._reply(path, lambda: self._post(path, self._json_body(), self.headers))
 
     def _json_body(self):
         try:
@@ -548,7 +628,7 @@ class Handler(BaseHTTPRequestHandler):
             raise BadRequest("JSON body must be an object")
         return body
 
-    def _get(self, path, query=""):
+    def _get(self, path, query="", headers=None):
         if path == "/api/health":
             tls_open = port_open(TLS_PORT)
             with _lock:
@@ -561,6 +641,11 @@ class Handler(BaseHTTPRequestHandler):
             return 200, result
         if path == "/api/fleet/stats":
             return 200, fleet_stats()
+
+        if path.startswith("/api/admin/"):
+            session = _require_admin(headers)
+            if session is None:
+                return 401, {"ok": False, "error": "admin login required"}
 
         if path == "/api/admin/overview":
             return 200, admin_overview()
@@ -582,7 +667,10 @@ class Handler(BaseHTTPRequestHandler):
 
         return 404, {"ok": False, "error": "unknown endpoint"}
 
-    def _post(self, path, body):
+    def _post(self, path, body, headers=None):
+        if path == "/api/admin/login":
+            return _admin_login(body)
+
         if path == "/api/fleet/start":
             count = int_field(body, "count", 20, 1, MAX_FLEET)
             silent_floor = int_field(body, "silentFloor", 0, 0, 10)
@@ -592,10 +680,15 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/fleet/stop":
             return 200, {"ok": True, "stopped": stop_fleet()}
 
+        if path.startswith("/api/admin/"):
+            session = _require_admin(headers)
+            if session is None:
+                return 401, {"ok": False, "error": "admin login required"}
+
         if path == "/api/admin/grants/approve":
-            return 200, admin_grant_approve(body)
+            return 200, admin_grant_approve(body, session["userId"])
         if path == "/api/admin/grants/revoke":
-            return 200, admin_grant_revoke(body)
+            return 200, admin_grant_revoke(body, session["userId"])
 
         if path in ("/api/publish", "/api/cancel"):
             username, password = body.get("username"), body.get("password")

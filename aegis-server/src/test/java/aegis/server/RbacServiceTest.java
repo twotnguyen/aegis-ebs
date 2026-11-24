@@ -88,6 +88,23 @@ class RbacServiceTest {
   }
 
   @Test
+  void viewGrantDoesNotAuthorizePublish() throws Exception {
+    User op = user("viewer", Role.SECURITY_OPERATOR);
+    grants.grant(op.id(), "BLD-A", null, "VIEW");
+    Grants g = rbac.grantsFor(op.id());
+    assertFalse(rbac.canPublish(Role.SECURITY_OPERATOR, g, "BLD-A", floor1));
+  }
+
+  @Test
+  void revokeRemovesScopeOnNextLookup() throws Exception {
+    User op = user("revoked", Role.FLOOR_MANAGER);
+    var grant = grants.grant(op.id(), "BLD-A", floor7, "PUBLISH");
+    assertTrue(rbac.canPublish(Role.FLOOR_MANAGER, rbac.grantsFor(op.id()), "BLD-A", floor7));
+    grants.revoke(grant.id());
+    assertFalse(rbac.canPublish(Role.FLOOR_MANAGER, rbac.grantsFor(op.id()), "BLD-A", floor7));
+  }
+
+  @Test
   void noGrantsMeansNoScope() throws Exception {
     User op = user("lonely", Role.SECURITY_OPERATOR);
     Grants g = rbac.grantsFor(op.id());

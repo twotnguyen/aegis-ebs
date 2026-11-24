@@ -123,6 +123,20 @@ class AckLedgerTest {
     }
 
     @Test
+    void acksAreScopedToRevision() {
+        AckLedger ledger = new AckLedger();
+        ledger.open("a1", 1, List.of("c1", "c2"));
+        ledger.open("a1", 2, List.of("c1", "c2"));
+        assertTrue(ledger.ack("a1", 1, "c1"));
+        assertFalse(ledger.complete("a1", 1));
+        assertTrue(ledger.ack("a1", 2, "c1"));
+        assertTrue(ledger.ack("a1", 2, "c2"));
+        assertTrue(ledger.complete("a1", 2));
+        assertFalse(ledger.complete("a1", 1),
+            "an ACK for revision 2 must not complete revision 1");
+    }
+
+    @Test
     void concurrentAcksCompleteLedger() throws Exception {
         AckLedger ledger = new AckLedger();
         List<String> ids = new ArrayList<>();

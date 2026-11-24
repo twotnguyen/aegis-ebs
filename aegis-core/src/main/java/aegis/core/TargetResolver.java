@@ -5,9 +5,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Immutable snapshot resolving target deviceIds by building, floor, or zone.
@@ -28,12 +30,18 @@ public final class TargetResolver {
     public TargetResolver(Collection<DeviceLocation> devices) {
         Objects.requireNonNull(devices, "devices");
         Map<String, DeviceLocation> registry = new LinkedHashMap<>();
+        Map<String, Set<String>> zonesByDevice = new LinkedHashMap<>();
         for (DeviceLocation device : devices) {
             Objects.requireNonNull(device, "device");
             DeviceLocation previous = registry.putIfAbsent(device.deviceId(), device);
-            if (previous != null && !previous.equals(device)) {
+            if (previous != null && (!previous.buildingId().equals(device.buildingId())
+                    || !previous.floorId().equals(device.floorId()))) {
                 throw new IllegalArgumentException(
                         "conflicting locations for device " + device.deviceId() + ": " + previous + " vs " + device);
+            }
+            if (device.zoneId() != null) {
+                zonesByDevice.computeIfAbsent(device.deviceId(), k -> new LinkedHashSet<>())
+                        .add(device.zoneId());
             }
         }
         Map<String, List<String>> buildings = new HashMap<>();
@@ -43,8 +51,8 @@ public final class TargetResolver {
             buildings.computeIfAbsent(device.buildingId(), k -> new ArrayList<>()).add(device.deviceId());
             floors.computeIfAbsent(key(device.buildingId(), device.floorId()), k -> new ArrayList<>())
                     .add(device.deviceId());
-            if (device.zoneId() != null) {
-                zones.computeIfAbsent(key(device.buildingId(), device.floorId(), device.zoneId()),
+            for (String zoneId : zonesByDevice.getOrDefault(device.deviceId(), Set.of())) {
+                zones.computeIfAbsent(key(device.buildingId(), device.floorId(), zoneId),
                         k -> new ArrayList<>()).add(device.deviceId());
             }
         }

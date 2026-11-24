@@ -102,6 +102,12 @@ public final class AlertService {
     return targets.resolveBuilding(scope.buildingId());
   }
 
+  private static boolean samePayload(ServerStore.OperationRow op, String userId, String payloadHash) {
+    return "PUBLISH".equals(op.kind())
+        && Objects.equals(op.requestedBy(), userId)
+        && Objects.equals(op.payloadHash(), payloadHash);
+  }
+
   /**
    * Publishes an alert atomically. Duplicate requestId returns the ORIGINAL
    * alert (idempotent replay, no second fanout).
@@ -111,13 +117,6 @@ public final class AlertService {
                                 boolean simulation, String urgency, String severity, String certainty,
                                 Instant expiresAt, String correlationId) {
     try {
-      Optional<ServerStore.OperationRow> existing = store.findOperationByRequestId(requestId);
-      if (existing.isPresent()) {
-        ServerStore.OperationRow op = existing.get();
-        audit.append(userId, "PUBLISH_DUPLICATE", scope.buildingId(), "DUPLICATE", correlationId,
-            Json.obj().put("requestId", requestId).put("alertId", op.alertId()));
-        return CommandOutcome.ok(op.alertId(), op.revision(), 0, true);
-      }
       List<String> deviceIds = resolveTargets(scope);
       if (deviceIds.isEmpty()) {
         return CommandOutcome.error("NO_TARGETS", "scope resolves to zero devices");
@@ -136,14 +135,33 @@ public final class AlertService {
       TransactionalPublisher.Request req = new TransactionalPublisher.Request(
           requestId, scope.buildingId(), userId, category, priority, title, instruction,
           Json.write(meta), expiresAt, deviceIds);
+      String payloadHash = requestId == null ? null : TransactionalPublisher.payloadHash(req, deviceIds);
+      Optional<ServerStore.OperationRow> existing = requestId == null
+          ? Optional.empty() : store.findOperationByRequestId(requestId);
+      if (existing.isPresent()) {
+        ServerStore.OperationRow op = existing.get();
+        if (!samePayload(op, userId, payloadHash)) {
+          audit.append(userId, "PUBLISH_CONFLICT", scope.buildingId(), "CONFLICT", correlationId,
+              Json.obj().put("requestId", requestId).put("alertId", op.alertId()));
+          return CommandOutcome.error("CONFLICT", "requestId reused with a different payload");
+        }
+        audit.append(userId, "PUBLISH_DUPLICATE", scope.buildingId(), "DUPLICATE", correlationId,
+            Json.obj().put("requestId", requestId).put("alertId", op.alertId()));
+        return CommandOutcome.ok(op.alertId(), op.revision(), 0, true);
+      }
+
       TransactionalPublisher.Result result;
       try {
         result = publisher.publish(req);
       } catch (SQLException duplicateRace) {
-        // concurrent replay hit the UNIQUE request_id constraint: return the winner
+        // concurrent replay hit the UNIQUE request_id constraint: verify the winner
         Optional<ServerStore.OperationRow> winner = store.findOperationByRequestId(requestId);
         if (winner.isPresent()) {
-          return CommandOutcome.ok(winner.get().alertId(), winner.get().revision(), 0, true);
+          ServerStore.OperationRow op = winner.get();
+          if (!samePayload(op, userId, payloadHash)) {
+            return CommandOutcome.error("CONFLICT", "requestId reused with a different payload");
+          }
+          return CommandOutcome.ok(op.alertId(), op.revision(), 0, true);
         }
         throw duplicateRace;
       }

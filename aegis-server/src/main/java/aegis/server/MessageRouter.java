@@ -1,6 +1,7 @@
 package aegis.server;
 
 import aegis.core.DeviceLocation;
+import aegis.core.Grants;
 import aegis.persistence.Alert;
 import aegis.persistence.AlertRepo;
 import aegis.persistence.AckKind;
@@ -292,7 +293,10 @@ public final class MessageRouter {
     reply(session, "SYNC_RESULT", env.messageId(), payload);
   }
 
-  // ---- operator commands ----------------------------------------------------------
+  /** Grants are re-read from the DB on every privileged command so revocation is immediate. */
+  private Grants freshGrants(ClientSession session) throws SQLException {
+    return rbac.grantsFor(session.userId());
+  }
 
   private void requireOperator(ClientSession session) {
     if (session.kind() != ClientSession.Kind.OPERATOR) {
@@ -300,14 +304,14 @@ public final class MessageRouter {
     }
   }
 
-  private void incidentCreate(ClientSession session, Envelope env) {
+  private void incidentCreate(ClientSession session, Envelope env) throws SQLException {
     requireOperator(session);
     JsonNode p = env.payload();
     String buildingId = Json.optText(p, "buildingId", config.buildingId());
     String kind = Json.text(p, "kind");
     String summary = Json.text(p, "summary");
     boolean simulation = Json.optBool(p, "simulation", true);
-    if (!rbac.canPublish(session.role(), session.grants(), buildingId, null)) {
+    if (!rbac.canPublish(session.role(), freshGrants(session), buildingId, null)) {
       forbidden(session, env, buildingId, "INCIDENT_CREATE");
       return;
     }
@@ -328,7 +332,7 @@ public final class MessageRouter {
       replyError(session, env, "NOT_FOUND", "unknown incident: " + incidentId);
       return;
     }
-    if (!rbac.canPublish(session.role(), session.grants(), row.get().buildingId(), null)) {
+    if (!rbac.canPublish(session.role(), freshGrants(session), row.get().buildingId(), null)) {
       forbidden(session, env, row.get().buildingId(), "INCIDENT_TRANSITION");
       return;
     }
@@ -357,7 +361,7 @@ public final class MessageRouter {
     java.time.Instant expiresAt = Json.optInstant(p, "expiresAt");
 
     AlertService.Scope scope = alertService.resolveScope(buildingId, floorNumber, zoneCode);
-    if (!rbac.canPublish(session.role(), session.grants(), buildingId, scope.floorId())) {
+    if (!rbac.canPublish(session.role(), freshGrants(session), buildingId, scope.floorId())) {
       forbidden(session, env, buildingId, "ALERT_PUBLISH");
       return;
     }
@@ -437,7 +441,7 @@ public final class MessageRouter {
         floorId = store.floorId(alert.buildingId(), scope.get("floorNumber").asInt()).orElse(null);
       }
     }
-    if (!rbac.canPublish(session.role(), session.grants(), alert.buildingId(), floorId)) {
+    if (!rbac.canPublish(session.role(), freshGrants(session), alert.buildingId(), floorId)) {
       forbidden(session, env, alert.buildingId(), action);
       return false;
     }
@@ -450,28 +454,29 @@ public final class MessageRouter {
     // no access; SECOPS reads a granted building; FLOOR_MANAGER only granted floors.
     Role role = session.role();
     String buildingId = config.buildingId();
+    Grants grants = freshGrants(session);
     if (role == Role.EMPLOYEE || role == Role.DEVICE
-        || (role != Role.SYSTEM_ADMIN && !session.grants().coversBuilding(buildingId))) {
+        || (role != Role.SYSTEM_ADMIN && !grants.coversBuilding(buildingId))) {
       forbidden(session, env, buildingId, "STATUS_SUBSCRIBE");
       return;
     }
     ObjectNode snapshot = status.snapshot();
     if (role == Role.FLOOR_MANAGER) {
-      scopeSnapshotToGrants(snapshot, session, buildingId);
+      scopeSnapshotToGrants(snapshot, session, buildingId, grants);
     }
     reply(session, "STATUS_SNAPSHOT", env.messageId(), snapshot);
   }
 
   /** Filters floors + activeAlerts down to the operator's granted floors (S-05). */
-  private void scopeSnapshotToGrants(ObjectNode snapshot, ClientSession session, String buildingId)
-      throws SQLException {
+  private void scopeSnapshotToGrants(ObjectNode snapshot, ClientSession session, String buildingId,
+                                     Grants grants) throws SQLException {
     java.util.Set<Integer> allowedFloors = new java.util.HashSet<>();
     ArrayNode keptFloors = Json.MAPPER.createArrayNode();
     for (JsonNode f : snapshot.get("floors")) {
       int floorNumber = f.get("floorNumber").asInt();
       String floorId = store.floorId(buildingId, floorNumber).orElse(null);
       if (floorId != null
-          && rbac.canPublish(session.role(), session.grants(), buildingId, floorId)) {
+          && rbac.canPublish(session.role(), grants, buildingId, floorId)) {
         keptFloors.add(f);
         allowedFloors.add(floorNumber);
       }

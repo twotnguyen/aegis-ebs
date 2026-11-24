@@ -223,7 +223,7 @@ Báo cáo được tổ chức thành bốn chương theo mẫu báo cáo môn h
 
 - **Chương 1 — Tổng quan:** giới thiệu đề tài, tính cấp thiết, ý nghĩa khoa học/thực tiễn, mục tiêu, đối tượng và phạm vi nghiên cứu, cấu trúc báo cáo.
 - **Chương 2 — Cơ sở lý thuyết:** trình bày nền tảng lý thuyết của hệ thống dựa trên giáo trình CMP180 [1] (Bài 1–9) và các nguồn bổ sung [2]–[7]: mô hình client–server; TCP và socket Java; đa tuyến và ExecutorService; InetAddress; truyền JSON/đối tượng qua mạng và framing length-prefix; UDP; multicast; TLS; RBAC và bảo mật; chuẩn CAP 1.2. Mỗi mục đều liên hệ trực tiếp với cách kỹ thuật đó được áp dụng trong AEGIS-EBS.
-- **Chương 3 — Kết quả thực nghiệm:** yêu cầu hệ thống (FR/NFR), phân tích và thiết kế (kiến trúc, sơ đồ module, thiết kế lớp, ERD 26 bảng, giao thức EBSP/2.0, máy trạng thái), cài đặt, hướng dẫn biên dịch/chạy, kiểm thử và số liệu đo thật (347 test Java + 14 dashboard, ma trận T-01…T-30, chaos C01–C05 đo thật + C06–C16 kiểm chứng unit/probe, p50/p95/p99, tỷ lệ ACK, ảnh dashboard LIVE), ưu điểm/hạn chế. Các số liệu có runId/commit SHA/máy đo trong `docs/evidence/`.
+- **Chương 3 — Kết quả thực nghiệm:** yêu cầu hệ thống (FR/NFR), phân tích và thiết kế (kiến trúc, sơ đồ module, thiết kế lớp, ERD 26 bảng, giao thức EBSP/2.0, máy trạng thái), cài đặt, hướng dẫn biên dịch/chạy, kiểm thử và số liệu đo thật (bản lưu trữ 347 test Java + 20 dashboard; verify hiện tại 360 Java + 21 dashboard, ma trận T-01…T-30 với T-30 chưa xác minh cold clone, chaos C01–C05 đo thật + C06–C16 kiểm chứng unit/probe, p50/p95/p99, tỷ lệ ACK, ảnh dashboard LIVE), ưu điểm/hạn chế. Các số liệu có runId/commit SHA/máy đo trong `docs/evidence/`.
 - **Chương 4 — Kết luận và kiến nghị:** đối chiếu kết quả với mục tiêu, tổng kết hạn chế và đề xuất hướng phát triển (đã hoàn thiện theo kết quả nghiệm thu).
 
 Phần Tài liệu tham khảo liệt kê bảy nguồn [1]–[7] được trích dẫn trong toàn báo cáo; Phụ lục trích mã nguồn các module chính.
@@ -1313,7 +1313,7 @@ Ma trận acceptance trong `docs/TEST-PLAN.md` ánh xạ 30 bài kiểm thử ch
 | T-26, 27 | Digital twin counts / replay | aegis-dashboard/server | `npm test` 14/14 + `docs/evidence/dashboard/twin-live-overview.{png,json}` | **PASS** — severity/funnel/replay; ảnh LIVE 40 device |
 | T-28 | Secrets in logs | aegis-server | `ServerSecurityFixesTest` 12 + review-c/d grep probe | **PASS** — sanitized INTERNAL, không secret trong log |
 | T-29 | Deterministic chaos | aegis-simulator | `FaultInjectorTest` 9 + `SimulatorSmokeTest` 5 + 5 chaos run | **PASS** — 4000 draw/1000 decisions; 5 preset failed=[] |
-| T-30 | Fresh install | scripts/README | `scripts/dev.sh`, `scripts/initdb.sh`, BUILD.md | **PASS ở mức warm-cache (1,74 s)** — BUILD_OK + 26 bảng FK sạch; cold clone sạch chưa đo. Evidence: `docs/evidence/fresh-install-warm.{json,txt}` |
+| T-30 | Fresh install | scripts/README | `scripts/dev.sh`, `scripts/initdb.sh`, BUILD.md | **UNVERIFIED (cold clone chưa đo)** — chỉ có phép đo warm-cache 1,74 s (`docs/evidence/fresh-install-warm.{json,txt}`); BUILD.md là ngân sách ước tính. Không đổi thành PASS khi chưa clone sạch + cài toolchain từ đầu. |
 
 Tất cả dòng trên đối chiếu với `docs/evidence/verify/verify-summary.json` (runId `verify-347-h1h4`, commit working tree sau H1–H4, Apple M3 Pro/Java 24.0.1) và `docs/evidence/{benchmark,chaos,dashboard}/`. Không có số liệu nào suy diễn; các ô PASS là kết quả test/evidence có file cụ thể.
 

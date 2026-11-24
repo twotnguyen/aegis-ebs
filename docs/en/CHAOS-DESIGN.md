@@ -5,7 +5,7 @@ Language: English | Vietnamese original: docs/CHAOS-DESIGN.md
 > Supplemental to C01–C16 (blueprint §12). This is a DESIGN document, not measured results. Each scenario: injection method, expected invariant, metric + threshold, seed reproducibility.
 
 ## Existing injection foundation
-- `aegis-simulator.FaultInjector` / `FaultProfile`: dropRate, delayBaseMs/delayJitterMs, duplicateRate/duplicateCount, disconnectRate; each decision consumes exactly 4 RNG draws (fixed) → identical with the same seed.
+- `aegis-simulator.FaultInjector` / `FaultProfile`: dropRate, delayBaseMs/delayJitterMs, duplicateRate/duplicateCount, disconnectRate; each decision consumes exactly 4 RNG draws (fixed) → **fault decisions** repeat with the same seed. Client/server retry jitter and the simulator wall-clock deadline are outside that seed; compare fault counts, not exact timestamps.
 - Scenarios: clean/lossy/delayed/duplicate/flaky/mixed + per-rate overrides.
 - Server: `RetryPolicy` (3s/6s/12s, max 3), `BoundedWriterQueue` 256, `RecoveryScanner`, SQLite WAL busy_timeout.
 

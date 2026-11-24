@@ -35,6 +35,10 @@ class DiscoveryNonceEchoTest {
         assertEquals(9443, r.tlsPort());
         assertEquals("aegis-lab-server", r.serverId());
       }
+      long deadline = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(2);
+      while (server.repliesSent() == 0 && System.nanoTime() < deadline) {
+        Thread.sleep(10);
+      }
       assertEquals(1, server.repliesSent());
       assertEquals(0, server.invalidDropped());
     }

@@ -594,11 +594,11 @@ export function createPanels(deps) {
     return undefined;
   }
 
-  async function opFetch(path, body) {
+  async function opFetch(path, body, extraHeaders = {}) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 15000);
     try {
-      const init = { signal: controller.signal, headers: { Accept: 'application/json' } };
+      const init = { signal: controller.signal, headers: { Accept: 'application/json', ...extraHeaders } };
       if (body !== undefined) {
         init.method = 'POST';
         init.headers['Content-Type'] = 'application/json';
@@ -769,6 +769,7 @@ export function createPanels(deps) {
   // read into the DOM, even if the bridge returns them.
 
   const ADMIN_ENDPOINTS = {
+    login: '/api/admin/login',
     overview: '/api/admin/overview',
     users: '/api/admin/users',
     grants: '/api/admin/grants',
@@ -779,7 +780,7 @@ export function createPanels(deps) {
   };
   const ADMIN_SENSITIVE_RE = /(pass(word|hash)?|secret|credential|token|authorization)/i;
   const adminState = {
-    loaded: false, busy: false,
+    loaded: false, busy: false, token: null, formSeeded: false,
     overview: null, fleet: null, users: [], grants: [], audit: [],
     status: { key: 'admin.idle', kind: '', vars: undefined },
   };
@@ -907,9 +908,8 @@ export function createPanels(deps) {
     const tbody = $('admin-grants-table').querySelector('tbody');
     const usersById = new Map(adminState.users.map((u) => [u.id ?? u.user_id, u.username]));
     const rows = adminState.grants;
-    // Seed the form with real IDs from the current database instead of fake
-    // placeholders (B01 / 1) that would fail server-side grant validation.
-    if (rows.length) {
+    // Seed once, then preserve the admin's edits across status-feed refreshes.
+    if (rows.length && !adminState.formSeeded) {
       const buildingInput = $('admin-grant-building');
       const floorInput = $('admin-grant-floor');
       const rawBuilding = adminPick(rows[0], ['building_id', 'buildingId']);
@@ -917,17 +917,17 @@ export function createPanels(deps) {
       if (!buildingInput.value.trim() && rawBuilding != null && rawBuilding !== '') {
         buildingInput.value = adminText(rawBuilding);
       }
-      // A building-wide grant has no floor_id; adminText(null) would be "–".
       if (!floorInput.value.trim() && rawFloor != null && rawFloor !== '') {
         floorInput.value = adminText(rawFloor);
       }
+      adminState.formSeeded = true;
     }
     tbody.replaceChildren(
       ...rows.map((g) => {
         const tr = document.createElement('tr');
         const username = adminText(adminPick(g, ['username', 'userName']) ?? usersById.get(g.user_id ?? g.userId));
-        const buildingId = adminPick(g, ['building_id', 'buildingId']) ?? $('admin-grant-building').value;
-        const floorId = adminPick(g, ['floor_id', 'floorId']) ?? $('admin-grant-floor').value;
+        const buildingId = adminPick(g, ['building_id', 'buildingId']);
+        const floorId = adminPick(g, ['floor_id', 'floorId']);
         const scope = adminPick(g, ['scope']) ?? 'PUBLISH';
         for (const value of [username, adminText(buildingId), adminText(floorId), adminText(scope), adminText(adminPick(g, ['granted_at', 'grantedAt']))]) {
           const td = document.createElement('td');
@@ -944,8 +944,8 @@ export function createPanels(deps) {
         const ownerId = adminPick(g, ['user_id', 'userId']);
         approve.dataset.userId = ownerId == null ? '' : adminText(ownerId);
         approve.dataset.grantId = g.id == null ? '' : adminText(g.id);
-        approve.dataset.buildingId = adminText(buildingId);
-        approve.dataset.floorId = adminText(floorId);
+        approve.dataset.buildingId = buildingId == null ? '' : adminText(buildingId);
+        approve.dataset.floorId = floorId == null ? '' : adminText(floorId);
         approve.dataset.scope = adminText(scope);
         const revoke = approve.cloneNode(false);
         revoke.textContent = t('admin.grants.revoke');
@@ -1015,13 +1015,31 @@ export function createPanels(deps) {
 
   function refreshAdmin() {
     renderAdmin();
-    if (!adminState.loaded && !adminState.busy) adminLoadAll();
+    if (!adminState.busy) adminLoadAll();
   }
 
-  async function adminFetch(path, body) {
+  async function adminLogin() {
+    const { username, password } = opAuth();
+    if (!username || !password) {
+      throw new Error(t('admin.errorCall', {
+        path: ADMIN_ENDPOINTS.login, message: 'SYSTEM_ADMIN credentials required',
+      }));
+    }
+    const data = await opFetch(ADMIN_ENDPOINTS.login, { username, password });
+    adminState.token = data.token;
+    return data;
+  }
+
+  async function adminFetch(path, body, retry = true) {
+    if (!adminState.token) await adminLogin();
     try {
-      return await opFetch(path, body); // same BRIDGE_BASE + timeout + ok:false handling
+      return await opFetch(path, body, { Authorization: `Bearer ${adminState.token}` });
     } catch (err) {
+      if (retry && /401/.test(err?.message ?? '')) {
+        adminState.token = null;
+        await adminLogin();
+        return adminFetch(path, body, false);
+      }
       const offline = err instanceof TypeError || err?.name === 'NetworkError';
       if (offline) {
         const wrapped = new Error(t('admin.bridgeOffline', { bridge: BRIDGE_BASE }));
@@ -1102,6 +1120,10 @@ export function createPanels(deps) {
     if (adminState.busy) return;
     adminState.busy = true;
     adminButtonsDisabled(true);
+    for (const id of ['admin-audit-action', 'admin-audit-outcome', 'admin-audit-limit']) {
+      const el = $(id);
+      if (el) el.disabled = true;
+    }
     adminSetStatus('admin.loading');
     try {
       await loader();
@@ -1112,14 +1134,19 @@ export function createPanels(deps) {
     } finally {
       adminState.busy = false;
       adminButtonsDisabled(false);
+      for (const id of ['admin-audit-action', 'admin-audit-outcome', 'admin-audit-limit']) {
+        const el = $(id);
+        if (el) el.disabled = false;
+      }
       renderAdmin();
     }
   }
 
-  /** Bridge contract: `username` is the GRANT TARGET, `operator` is the caller
-   *  (audit only). No password is sent — the admin surface is local-only. */
+
+  /** Bridge contract: `username` is the GRANT TARGET. The actor comes from the
+   *  authenticated admin session; no caller-supplied identity is accepted. */
   function adminGrantBody(extra) {
-    return { operator: opAuth().username, ...extra };
+    return { ...extra };
   }
 
   async function adminGrant(action, body) {

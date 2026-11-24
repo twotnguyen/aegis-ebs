@@ -33,6 +33,7 @@ public final class StatusFeedService implements StatusNotifier {
   private static final class Counters {
     final AtomicLong received = new AtomicLong();
     final AtomicLong acknowledged = new AtomicLong();
+    final AtomicLong userAcknowledged = new AtomicLong();
     final AtomicLong failed = new AtomicLong();
   }
 
@@ -95,6 +96,12 @@ public final class StatusFeedService implements StatusNotifier {
   }
 
   @Override
+  public void ackUser(String deviceId) {
+    String zone = zoneOf(deviceId);
+    if (zone != null) counters(zone).userAcknowledged.incrementAndGet();
+  }
+
+  @Override
   public void deliveryFailed(String deviceId) {
     String zone = zoneOf(deviceId);
     if (zone != null) counters(zone).failed.incrementAndGet();
@@ -144,6 +151,7 @@ public final class StatusFeedService implements StatusNotifier {
     Counters c = counters.get(zoneCode);
     long received = c == null ? 0 : c.received.get();
     long acknowledged = c == null ? 0 : c.acknowledged.get();
+    long userAcknowledged = c == null ? 0 : c.userAcknowledged.get();
     long failed = c == null ? 0 : c.failed.get();
     int total = devicesTotalByZone.getOrDefault(zoneCode, 0);
     ObjectNode z = Json.obj();
@@ -152,6 +160,7 @@ public final class StatusFeedService implements StatusNotifier {
     z.put("online", online);
     z.put("received", received);
     z.put("acknowledged", acknowledged);
+    z.put("userAcknowledged", userAcknowledged);
     z.put("failed", failed);
     z.put("severity", ZoneStatus.deriveSeverity(total, online, received, acknowledged, failed));
     return z;

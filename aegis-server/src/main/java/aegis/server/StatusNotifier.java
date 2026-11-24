@@ -11,6 +11,9 @@ public interface StatusNotifier {
   /** First ACK_RECEIVED for a delivery (zone acknowledged counter, monotonic). */
   void ackReceived(String deviceId);
 
+  /** Explicit ACK_USER from a human gesture; distinct from durable receipt. */
+  void ackUser(String deviceId);
+
   /** A delivery reached FAILED after exhausting retries. */
   void deliveryFailed(String deviceId);
 

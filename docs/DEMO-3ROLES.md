@@ -28,7 +28,7 @@ Ghi chú: grant `PUBLISH` và log audit dùng đúng hai bảng có sẵn `role_
 
 **Bước 3 — JavaFX client `DEV-A-F05-B-01` popup + Acknowledge.** Thiết bị đích nhận push, ghi inbox bền vững **trước** khi gửi `ACK_RECEIVED`; cửa sổ hiện banner SIMULATION, popup + beep. Người bấm **Acknowledge** → `ACK_USER` (kèm `userId`, thời điểm riêng). Thiết bị ngoài zone `F05-B` không nhận alert này; retry (3s/6s/12s, tối đa 3) chỉ nhắm đúng delivery chưa ACK.
 
-**Bước 4 — 3D twin đổi màu.** Dashboard nhận `status/1` qua WS `9444`; zone `F05-B` trên twin (10 tầng × 4 zone, footprints 72×50 m) đổi màu theo severity; delivery funnel tiến `SENT → RECEIVED → ACK_USER`. Twin chỉ quan sát: màu trên màn hình là hệ quả của ACK thật từ client, không phải lệnh phát từ twin.
+**Bước 4 — 3D twin đổi màu.** Dashboard nhận `status/1` qua WS `9444`; zone `F05-B` trên twin (10 tầng × 4 zone, footprints 72×50 m) đổi màu theo severity; delivery funnel tiến `SENT → RECEIVED` từ `ACK_RECEIVED` (máy đã lưu bền). Xác nhận của con người là trường riêng `userAcknowledged` từ `ACK_USER` — stage `RECEIVED` của funnel **không** chứng minh có người bấm nút. Twin chỉ quan sát: màu trên màn hình là hệ quả của ACK thật từ client, không phải lệnh phát từ twin.
 
 **Bước 5 — Admin đọc audit.** Trở lại tab **Admin**, đọc bảng `audit_events` qua bridge mở rộng: các dòng có action `PUBLISH`, `PUBLISH_DUPLICATE`, `DENIED`, `AUTH_OPERATOR_SUCCESS` / `AUTH_OPERATOR_REJECTED` (cùng dòng ghi thao tác duyệt grant do bridge tạo ra) đều append-only, kèm actor/scope/outcome/correlationId. Replay incident chỉ đọc, không phát lại alert.
 

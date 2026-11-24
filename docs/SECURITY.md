@@ -16,9 +16,9 @@
 |---|---|
 | ✅ **Đã hiện thực** | Có mã nguồn trong reactor và kiểm thử đơn vị/tích hợp tương ứng. |
 | 🟡 **Một phần / demo** | Đã có mã nhưng tham số hoặc phạm vi còn ở mức demo, cần hiệu chỉnh khi triển khai thật. |
-| 🔧 **Thiết kế — chờ gateway** | Đặc tả trong blueprint/PROTOCOL; các dịch vụ nền đã sẵn sàng nhưng **lớp gateway/router (`aegis.server.ServerMain`) chưa có trong mã nguồn**, nên việc thực thi ở tầng wire chưa hoàn thiện. |
+| 🔧 **Cần hardening** | Đã có mã ở mức demo nhưng cần cấu hình/kiểm thử thêm cho production (rate limit, TTL tuyệt đối, masking log tập trung, dual approval…). Không còn mang nghĩa "chưa có gateway". |
 
-**Ghi chú hiện trạng:** các module `aegis-protocol`, `aegis-core`, `aegis-persistence` đã đóng băng và kiểm thử (56 + 73 + 35 test). `aegis-server` chứa các dịch vụ nghiệp vụ đã hiện thực (`AuthService`, `RbacService`, `Argon2idHasher`, `SessionRegistry`, `ClientSession`, `BoundedWriterQueue`, `FanoutEngine`, `AlertService`, `AuditService`, `ServerStore`, `SyncService`) nhưng **chưa có điểm nhập gateway TLS/router** để buộc xác thực theo từng message ở tầng wire. Các biện pháp 🔧 vì thế là **hợp đồng thiết kế** mà gateway phải thực thi khi hoàn thiện, không phải tuyên bố đã chạy.
+**Ghi chú hiện trạng:** `aegis-server` hiện có `TlsGateway` + `MessageRouter` + `ServerMain`: auth gate trước mọi lệnh ứng dụng, RBAC nạp lại từ DB mỗi lệnh có quyền (revoke có hiệu lực ngay), ACK_USER được kiểm tra `userId` có thật và phát riêng lên status feed (`userAcknowledged`). Các module lõi đã kiểm thử (hiện tại 57 + 76 + 59 test). Các mục 🔧 bên dưới là **khoảng cách cần hardening cho production**, không phải tuyên bố chưa hiện thực.
 
 ---
 
@@ -215,7 +215,7 @@ Quy ước ô: **✓** = được phép; **✗** = từ chối (deny-by-default)
 | `AUTH_DEVICE` | ✗ | ✗ | ✗ | ✗ | ✓ | Xác thực thiết bị (Argon2id) |
 | `HELLO`, `LOGOUT` | ✓ | ✓ | ✓ | ✓ | ✓ | Vòng đời phiên |
 
-> **Trạng thái thực thi:** cột `ALERT_CREATE/ALERT_PUBLISH` (và quy tắc scope) đã hiện thực trong `ScopedRBAC.canPublish` + `RbacService` ✅ và kiểm thử `ScopedRBACTest` (T-07). Các ô còn lại là **chính sách phân quyền thiết kế** (FR-006, blueprint §7.1) mà **gateway/router 🔧 phải thực thi theo từng message** trước khi gọi service; `AlertService`/`FanoutEngine` giả định RBAC đã được router kiểm tra. Ma trận này là đặc tả để hoàn thiện router, không phải tuyên bố mọi ô đã chạy end-to-end.
+> **Trạng thái thực thi:** `MessageRouter` là auth gate duy nhất: từ chối mọi message ứng dụng trước `AUTH_*`, tách device/operator, gọi `ScopedRBAC.canPublish` với grant **nạp lại từ DB mỗi lệnh có quyền** (revoke có hiệu lực ngay). `RbacService` chỉ nạp grant `PUBLISH`. Ma trận dưới đây là chính sách đã chạy end-to-end cho các ô publish/status; các tính năng stretch (dual approval, hash-chain) vẫn là thiết kế.
 
 ### 4.3. Quy tắc scope theo role (nguồn: DB `role_grants`)
 
@@ -401,13 +401,13 @@ Trạng thái: **Đạt** ✅ · **Một phần/demo** 🟡 · **Thiết kế (c
 
 ## 8. Hạn chế bảo mật & việc chưa hoàn thiện (trung thực)
 
-1. 🔧 **Gateway/router (`ServerMain`) chưa có trong mã nguồn.** Việc thực thi RBAC theo từng message, từ chối message trước xác thực, read timeout/quota, rate limiting, sanitize lỗi ở tầng wire là **hợp đồng thiết kế** chờ hoàn thiện. Các dịch vụ nền đã sẵn sàng + kiểm thử.
+1. 🔧 **Rate limiting/quota frame và read timeout ở tầng wire chưa hiện thực đầy đủ** (`TlsGateway` có auth gate + pre-auth TTL; chưa có quota frame/giây hoặc `RATE_LIMITED`).
 2. 🔧 **Hết hạn phiên tuyệt đối (absolute TTL)** và renew sessionId khi đổi quyền chưa hiện thực (mới có heartbeat/suspect).
 3. 🟡 **Tham số Argon2id demo (16 MiB) dưới khuyến nghị OWASP (19 MiB).** Phải nâng khi production.
-4. 🟡 **`StreamReadConstraints` chưa cấu hình tường minh** (dựa mặc định Jackson 1000 + hard cap 64KiB).
-5. 🟡 **Lỗi `INTERNAL` hiện kèm `e.getMessage()`** → cần sanitize tại gateway trước khi gửi client (NFR-017).
+4. ✅ **`StreamReadConstraints` đã cấu hình tường minh** trong `FrameCodecImpl` (độ sâu 32, chuỗi tối đa 64 KiB) cộng hard cap frame 64 KiB.
+5. ✅ **Lỗi `INTERNAL` đã sanitize** tại `MessageRouter`: chi tiết chỉ vào log server, wire nhận thông điệp chung + correlation id.
 6. 🟡 **Chưa có masking filter log tập trung**; việc không lộ secret dựa vào kỷ luật call-site + T-28 scan.
-7. 🟡 **CONFLICT khi requestId trùng nhưng payload khác** chưa trả về đầy đủ (mới lưu `payload_hash`, ưu tiên trả bản gốc).
+7. ✅ **CONFLICT khi requestId trùng nhưng payload khác** đã trả về: `AlertService` so sánh `payload_hash` canonical trên cả đường lookup và unique-race.
 8. 🟡 **Credential demo công khai + device secret dùng chung** → chỉ lab, không production.
 9. 🔧 **Dual-approval, hash-chain tamper-evidence, pepper, connection/rate limits** là thiết kế/stretch, chưa hiện thực.
 10. **Self-signed TLS** không phải CA công cộng, không OCSP/CRL (§6.5).

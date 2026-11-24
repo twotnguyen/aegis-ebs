@@ -78,6 +78,7 @@ public final class FanoutEngine implements DeliveryEnqueuer {
   private final DedupIndex dedup = new DedupIndex();
   private final AckLedger ledger = new AckLedger();
   private final Set<String> receivedCounted = ConcurrentHashMap.newKeySet();
+  private final Set<String> userAckCounted = ConcurrentHashMap.newKeySet();
   private final Set<String> failedCounted = ConcurrentHashMap.newKeySet();
   private final AtomicBoolean running = new AtomicBoolean(true);
   private volatile Thread dispatcher;
@@ -127,16 +128,46 @@ public final class FanoutEngine implements DeliveryEnqueuer {
       }
       Optional<AlertRevision> rev = alerts.findRevision(d.alertId(), d.revision());
       if (rev.isEmpty()) return;
-      if (tracked.putIfAbsent(d.id(), new Tracked(d.id(), alert, rev.get(), fresh)) != null) {
+      Tracked t = new Tracked(d.id(), alert, rev.get(), fresh);
+      if (tracked.putIfAbsent(d.id(), t) != null) {
         return; // already owned (idempotent enqueue)
       }
       generations.putIfAbsent(d.id(), 0);
       openLedger(alert.id(), d.revision());
-      scheduler.offer(alert.priority(), new Dispatch(d.id()));
-      signal.release();
+      enqueueWhenDue(t, d, true);
     } catch (SQLException e) {
       LOG.warn("enqueue failed delivery={}: {}", d.id(), e.toString());
     }
+  }
+
+  /**
+   * Dispatch now unless durable state says the retry deadline is still ahead.
+   * {@code allowReschedule} is true for recovery enqueue (which owns the timer)
+   * and false for reconnect resume (the timer is already pending).
+   */
+  private void enqueueWhenDue(Tracked t, Delivery d, boolean allowReschedule) {
+    if (d.attemptCount() > retryPolicy.maxAttempts()) {
+      markFailed(t, d);
+      return;
+    }
+    if (d.state() == DeliveryState.RETRY_SCHEDULED && d.nextRetryAt() != null) {
+      long delay = Math.max(0, java.time.Duration.between(clock.instant(), d.nextRetryAt()).toMillis());
+      if (delay > 0) {
+        if (allowReschedule) {
+          try {
+            timers.schedule(() -> {
+              scheduler.offer(t.alert().priority(), new Dispatch(d.id()));
+              signal.release();
+            }, delay, TimeUnit.MILLISECONDS);
+          } catch (java.util.concurrent.RejectedExecutionException shuttingDown) {
+            untrack(d.id());
+          }
+        }
+        return;
+      }
+    }
+    scheduler.offer(t.alert().priority(), new Dispatch(d.id()));
+    signal.release();
   }
 
   private void openLedger(String alertId, int revision) throws SQLException {
@@ -145,7 +176,7 @@ public final class FanoutEngine implements DeliveryEnqueuer {
         .map(Delivery::deviceId)
         .toList();
     try {
-      ledger.open(alertId, expected);
+      ledger.open(alertId, revision, expected);
     } catch (IllegalStateException alreadyOpen) {
       // expected: ledger is per alert, opened once
     }
@@ -366,8 +397,7 @@ public final class FanoutEngine implements DeliveryEnqueuer {
         d = opt.get();
       } catch (SQLException e) { continue; }
       if (d.deviceId().equals(deviceId) && !settled(d.state())) {
-        scheduler.offer(t.alert().priority(), new Dispatch(t.deliveryId()));
-        signal.release();
+        enqueueWhenDue(t, d, false);
       }
     }
   }
@@ -377,7 +407,9 @@ public final class FanoutEngine implements DeliveryEnqueuer {
   /** Called after DeliveryRepo.recordAck committed; advances ledger + metrics. */
   public void onAck(String alertId, String deliveryId, String deviceId,
                     aegis.persistence.AckKind kind, Instant ackedAt) {
-    boolean advanced = ledger.ack(alertId, deviceId);
+    Tracked trackedAck = tracked.get(deliveryId);
+    int revision = trackedAck == null ? 1 : trackedAck.revision().revision();
+    boolean advanced = ledger.ack(alertId, revision, deviceId);
     if (kind == aegis.persistence.AckKind.RECEIVED) {
       if (receivedCounted.add(deliveryId)) {
         metrics.incAckReceived();
@@ -390,12 +422,15 @@ public final class FanoutEngine implements DeliveryEnqueuer {
         }
       }
     } else if (kind == aegis.persistence.AckKind.USER) {
-      metrics.incAckUser();
+      if (userAckCounted.add(deliveryId)) {
+        metrics.incAckUser();
+        status.ackUser(deviceId);
+      }
     }
     if (kind != aegis.persistence.AckKind.CANCEL) {
       untrack(deliveryId); // RECEIVED/USER stop the retry cycle
     }
-    if (advanced && ledger.complete(alertId)) {
+    if (advanced && ledger.complete(alertId, revision)) {
       audit.append(null, "ALERT_FULLY_ACKED", alertId, "OK", null);
     }
   }
