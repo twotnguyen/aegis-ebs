@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # One-command, web-only AEGIS-EBS demo launcher (SIMULATION/TRAINING ONLY).
+# Keep this launcher executable in the repository.
 #
 #   bash scripts/demo-web.sh
 #

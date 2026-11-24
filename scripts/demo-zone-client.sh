@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Launcher 1 lệnh cho 1 device JavaFX nhận cảnh báo theo zone.
+# Keep this launcher executable in the repository.
 # SIMULATION/TRAINING ONLY — không phải hệ thống báo động thật.
 #
 #   bash scripts/demo-zone-client.sh [DEVICE_CODE] [SERVER_HOST] [TLS_PORT] [TRUSTSTORE] [TRUSTSTORE_PASSWORD] [INBOX]
