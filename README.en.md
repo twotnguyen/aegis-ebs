@@ -34,13 +34,13 @@ Java modular monolith with 4 planes: **command** (dashboard/operator) · **deliv
 | `aegis-protocol` | EBSP/2.0: length-prefix framing + DTO + validation | 57 |
 | `aegis-core` | AckLedger, RetryPolicy, DedupIndex, ScopedRBAC, TargetResolver, PriorityScheduler | 76 |
 | `aegis-persistence` | SQLite WAL, 26-table migration, transactional publish (outbox), recovery | 59 |
-| `aegis-server` | TLS gateway, auth/RBAC, incident/alert, fanout, ACK/retry, sync, recovery, audit/metrics, WS status | 72 |
+| `aegis-server` | TLS gateway, auth/RBAC, incident/alert, fanout, ACK/retry, sync, recovery, audit/metrics, WS status | 73 |
 | `aegis-client` | JavaFX desktop, durable inbox, two-layer ACK, reconnect, popup | 45 |
 | `aegis-simulator` | Headless 100-agent smoke (200 alerts), accepts 1–1000 agents | 20 |
 | `aegis-network-lab` | UDP discovery + trust gate, multicast ALERT_HINT, TCP vs multicast benchmark | 31 |
 | `aegis-dashboard` | Web Vite + Three.js 3D twin, timeline/chaos/reports/funnel, VI/EN i18n (Node) | 22 (16 logic + 6 i18n) |
 
-**Current total: 360 Java tests + 22 dashboard tests = 382** (from the latest surefire XML and `npm test`; the archived `docs/evidence/verify/` capture recorded 347 Java / 20 dashboard from an earlier run — see `docs/BUILD.md`). Ports: TLS `9443` · status WS `9444` · Operator bridge `9445` · UDP discovery `9999` · multicast `239.10.10.10:9998` · Vite `5173`.
+**Current total: 361 Java tests (1 skipped, 0 failures/errors) + 22 dashboard tests = 383** (from the latest surefire XML and `npm test`; the archived `docs/evidence/verify/` capture recorded 347 Java / 20 dashboard from an earlier run — see `docs/BUILD.md`). Ports: TLS `9443` · status WS `9444` · Operator bridge `9445` · UDP discovery `9999` · multicast `239.10.10.10:9998` · Vite `5173`.
 
 ## 3. Technology
 
@@ -97,7 +97,7 @@ brew install maven          # Java 24+ (Temurin), Maven 3.10
 ### Build + test + DB
 ```bash
 bash scripts/dev.sh            # mvn -DskipTests package
-bash scripts/test.sh           # mvn test  (360 Java tests)
+bash scripts/test.sh           # mvn test  (361 Java tests)
 bash scripts/initdb.sh         # creates aegis.db: 26 tables, clean foreign_key_check
 ```
 

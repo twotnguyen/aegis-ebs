@@ -11,7 +11,7 @@ CI chạy đúng các lệnh này trên `ubuntu-latest` — xem [`.github/workfl
 | Bước | Thời gian ước tính |
 |---|---|
 | Cài JDK 24+ + Maven + Node 26 + sqlite3 | 5–10 phút |
-| `mvn -B -ntp verify` lần đầu (tải dependency + 360 test toàn reactor) | 5–10 phút |
+| `mvn -B -ntp verify` lần đầu (tải dependency + 361 test toàn reactor) | 5–10 phút |
 | `npm ci && npm test && npm run build` (dashboard, 22 test) | 1–2 phút |
 | `scripts/initdb.sh` (26 bảng) + `scripts/gen-server-cert.sh` | < 5 giây |
 | Smoke test server (seed thế giới demo 480 device) | < 1 phút |
@@ -62,14 +62,14 @@ Làm lần lượt; mỗi bước có **cổng kiểm chứng** — chỉ bướ
   ```bash
   mvn -B -ntp verify
   ```
-  **Cổng:** `BUILD SUCCESS`; **360 test Java pass, 0 failure/error** (bảng §3).
+  **Cổng:** `BUILD SUCCESS`; **361 test Java, 0 failure/error, 1 skipped** (bảng §3).
   Toàn bộ test chạy headless — không cần màn hình/X server.
 - [ ] **Bước 3 — Dashboard** (~1–2 phút):
   ```bash
   cd aegis-dashboard && npm ci && npm test && npm run build && cd ..
   ```
   **Cổng:** `dist/` có index.html + assets (cảnh báo chunk > 500 kB của Three.js là benign);
-  `node --test` báo **pass 21 / fail 0**. CI chạy cùng lệnh này.
+  `node --test` báo **pass 22 / fail 0**. CI chạy cùng lệnh này.
 - [ ] **Bước 4 — DB demo** (< 1 giây):
   ```bash
   bash scripts/initdb.sh        # tạo aegis.db ở gốc repo (đã gitignore)
@@ -200,7 +200,7 @@ mvn -pl aegis-simulator org.codehaus.mojo:exec-maven-plugin:3.2.0:exec \
 **Cổng kiểm chứng:** summary in `auth rejections (permanent): 0` và `connects ok` > 0.
 Đã kiểm chứng thật (2026-11-21, máy tham chiếu): trước đăng ký 2/2 agent bị từ chối;
 sau đăng ký `connects ok/failed = 2/0`, `heartbeats answered = 2`, exit 0; fleet 150 device
-nạp bằng đúng SQL trên, `foreign_key_check` sạch. `[TODO: lưu capture run 150 agent vào docs/evidence/simulator/]`
+nạp bằng đúng SQL trên, `foreign_key_check` sạch. **Chưa có capture chạy đủ 150 agent end-to-end**; chỉ có phép thử 2/2 agent ở §2.2 và 150 dòng đã nạp — xem `docs/evidence/simulator/simulator-150-agent-status.md`. Không tuyên bố đã chạy 150 agent.
 
 Muốn reset fleet: `bash scripts/initdb.sh` tạo DB mới (server sẽ seed lại thế giới gốc).
 
@@ -215,11 +215,11 @@ khi jar `~/.m2` cũ** — kết quả sẽ âm thầm lệch working tree.
 | aegis-protocol | `mvn -B -ntp -pl aegis-protocol test` | 57 (FrameCodec fixture/stream/validation + timestamp) |
 | aegis-core | `mvn -B -ntp -pl aegis-core -am test` | 76 (AckLedger revision, RetryPolicy, DedupIndex, RBAC, TargetResolver, PriorityScheduler) |
 | aegis-persistence | `mvn -B -ntp -pl aegis-persistence -am test` | 59 (Db pragmas/WAL, MigrationRunner 26 bảng, TransactionalPublisher, RecoveryScanner, repos) |
-| aegis-server | `mvn -B -ntp -pl aegis-server -am test` | 72 (unit + FanoutEngine + TlsLoopbackIntegration + ServerSecurityFixes) |
+| aegis-server | `mvn -B -ntp -pl aegis-server -am test` | 73 (unit + FanoutEngine + TlsLoopbackIntegration + ServerSecurityFixes) |
 | aegis-client | `mvn -B -ntp -pl aegis-client -am test` | 45 (AlertRecord, ClientConfig, InboxStore, AlertClientEngine, TLS smoke) |
 | aegis-simulator | `mvn -B -ntp -pl aegis-simulator -am test` | 20 (SimulatorConfig, FaultInjector deterministic, SimAgent, stats) |
 | aegis-network-lab | `mvn -B -ntp -pl aegis-network-lab -am test` | 31 (UDP discovery trust gate, multicast hint, benchmark) |
-| **Toàn reactor** | `mvn -B -ntp verify` (hoặc `bash scripts/test.sh`) | **360** (bản evidence lưu trữ: 347) |
+| **Toàn reactor** | `mvn -B -ntp verify` (hoặc `bash scripts/test.sh`) | **361** (1 skipped; bản evidence lưu trữ: 347) |
 | aegis-dashboard | `cd aegis-dashboard && npm test` | 22 (`node --test test/logic.test.js test/i18n.test.js`) |
 | scripts (offline) | `python3 scripts/test-task2.py && python3 scripts/test-admin-bridge.py` | 17 (7 script + 10 bridge) |
 
@@ -237,7 +237,7 @@ contract WS: [`aegis-dashboard/docs/status-contract.md`](../aegis-dashboard/docs
 `aegis-client` phụ thuộc JavaFX 24 (`javafx-controls`, `javafx-graphics`) để chạy GUI
 (`mvn -pl aegis-client javafx:run` — cần màn hình thật; plugin fork với working dir =
 `aegis-client/` nên đường dẫn truststore trong lệnh chạy là `../certs/…`).
-**Toàn bộ 43 test hiện tại của aegis-client không khởi động JavaFX toolkit**
+**Toàn bộ 45 test hiện tại của aegis-client không khởi động JavaFX toolkit**
 (chỉ test logic/config/store/engine/TLS), nên `mvn verify` chạy tốt trên
 `ubuntu-latest` headless — đã kiểm chứng, không cần X server.
 

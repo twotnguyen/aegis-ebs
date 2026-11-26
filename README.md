@@ -34,13 +34,13 @@ Modular monolith Java, 4 plane: **command** (dashboard/operator) · **delivery**
 | `aegis-protocol` | EBSP/2.0: framing length-prefix + DTO + validation | 57 |
 | `aegis-core` | AckLedger, RetryPolicy, DedupIndex, ScopedRBAC, TargetResolver, PriorityScheduler | 76 |
 | `aegis-persistence` | SQLite WAL, migration 26 bảng, transactional publish (outbox), recovery | 59 |
-| `aegis-server` | TLS gateway, auth/RBAC, incident/alert, fanout, ACK/retry, sync, recovery, audit/metrics, WS status | 72 |
+| `aegis-server` | TLS gateway, auth/RBAC, incident/alert, fanout, ACK/retry, sync, recovery, audit/metrics, WS status | 73 |
 | `aegis-client` | JavaFX desktop, durable inbox, ACK 2 tầng, reconnect, popup | 45 |
 | `aegis-simulator` | Headless 100-agent smoke (200 alert), fault injection; chấp nhận 1–1000 agent | 20 |
 | `aegis-network-lab` | UDP discovery + trust gate, multicast ALERT_HINT, benchmark TCP vs multicast | 31 |
 | `aegis-dashboard` | Web Vite + Three.js 3D twin, timeline/chaos/reports/funnel (Node) | 22 |
 
-**Tổng hiện tại: 360 test Java + 22 test dashboard = 382** (surefire XML + `node --test` sau lần verify cuối; bản evidence lưu trữ `docs/evidence/verify/` ghi 347 Java/20 dashboard của lần chạy cũ — xem `docs/BUILD.md`). Cổng: TLS `9443` · WS status `9444` · bridge Operator `9445` · UDP discovery `9999` · multicast `239.10.10.10:9998` · Vite `5173`.
+**Tổng hiện tại: 361 test Java (1 skipped, 0 failure/error) + 22 test dashboard = 383** (surefire XML + `node --test` sau lần verify cuối; bản evidence lưu trữ `docs/evidence/verify/` ghi 347 Java/20 dashboard của lần chạy cũ — xem `docs/BUILD.md`). Cổng: TLS `9443` · WS status `9444` · bridge Operator `9445` · UDP discovery `9999` · multicast `239.10.10.10:9998` · Vite `5173`.
 
 ## 3. Công nghệ
 
@@ -97,7 +97,7 @@ brew install maven          # Java 24+ (Temurin), Maven 3.10
 ### Build + test + DB
 ```bash
 bash scripts/dev.sh            # mvn -DskipTests package
-bash scripts/test.sh           # mvn test  (360 test Java)
+bash scripts/test.sh           # mvn test  (361 test Java)
 bash scripts/initdb.sh         # tạo aegis.db: 26 bảng, foreign_key_check sạch
 ```
 

@@ -28,7 +28,7 @@ Dừng demo bằng `Ctrl+C` tại terminal đang chạy `scripts/demo-web.sh`.
 brew install maven            # Java 24 (Temurin) + Maven 3.10
 # Node 26 + npm cho dashboard (đã có hoặc brew install node)
 bash scripts/dev.sh              # mvn -DskipTests package  → BUILD_OK
-bash scripts/test.sh             # mvn test → 360 test Java
+bash scripts/test.sh             # mvn test → 361 test Java
 bash scripts/initdb.sh           # tạo aegis.db: 26 bảng, foreign_key_check sạch
 sqlite3 aegis.db < aegis-persistence/src/main/resources/db/seed_demo.sql   # dữ liệu demo
 bash scripts/gen-server-cert.sh  # certs/aegis-server.p12 + aegis-truststore.p12 (password: aegis-demo)

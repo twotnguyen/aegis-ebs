@@ -223,7 +223,7 @@ Báo cáo được tổ chức thành bốn chương theo mẫu báo cáo môn h
 
 - **Chương 1 — Tổng quan:** giới thiệu đề tài, tính cấp thiết, ý nghĩa khoa học/thực tiễn, mục tiêu, đối tượng và phạm vi nghiên cứu, cấu trúc báo cáo.
 - **Chương 2 — Cơ sở lý thuyết:** trình bày nền tảng lý thuyết của hệ thống dựa trên giáo trình CMP180 [1] (Bài 1–9) và các nguồn bổ sung [2]–[7]: mô hình client–server; TCP và socket Java; đa tuyến và ExecutorService; InetAddress; truyền JSON/đối tượng qua mạng và framing length-prefix; UDP; multicast; TLS; RBAC và bảo mật; chuẩn CAP 1.2. Mỗi mục đều liên hệ trực tiếp với cách kỹ thuật đó được áp dụng trong AEGIS-EBS.
-- **Chương 3 — Kết quả thực nghiệm:** yêu cầu hệ thống (FR/NFR), phân tích và thiết kế (kiến trúc, sơ đồ module, thiết kế lớp, ERD 26 bảng, giao thức EBSP/2.0, máy trạng thái), cài đặt, hướng dẫn biên dịch/chạy, kiểm thử và số liệu đo thật (bản lưu trữ 347 test Java + 20 dashboard; verify hiện tại 360 Java + 22 dashboard, ma trận T-01…T-30 với T-30 chưa xác minh cold clone, chaos C01–C05 đo thật + C06–C16 kiểm chứng unit/probe, p50/p95/p99, tỷ lệ ACK, ảnh dashboard LIVE), ưu điểm/hạn chế. Các số liệu có runId/commit SHA/máy đo trong `docs/evidence/`.
+- **Chương 3 — Kết quả thực nghiệm:** yêu cầu hệ thống (FR/NFR), phân tích và thiết kế (kiến trúc, sơ đồ module, thiết kế lớp, ERD 26 bảng, giao thức EBSP/2.0, máy trạng thái), cài đặt, hướng dẫn biên dịch/chạy, kiểm thử và số liệu đo thật (bản lưu trữ 347 test Java + 20 dashboard; verify hiện tại 361 Java (1 skipped) + 22 dashboard, ma trận T-01…T-30 với T-30 chưa xác minh cold clone, chaos C01–C05 đo thật + C06–C16 kiểm chứng unit/probe, p50/p95/p99, tỷ lệ ACK, ảnh dashboard LIVE), ưu điểm/hạn chế. Các số liệu có runId/commit SHA/máy đo trong `docs/evidence/`.
 - **Chương 4 — Kết luận và kiến nghị:** đối chiếu kết quả với mục tiêu, tổng kết hạn chế và đề xuất hướng phát triển (đã hoàn thiện theo kết quả nghiệm thu).
 
 Phần Tài liệu tham khảo liệt kê bảy nguồn [1]–[7] được trích dẫn trong toàn báo cáo; Phụ lục trích mã nguồn các module chính.
@@ -1158,7 +1158,7 @@ Kết quả mong đợi `BUILD SUCCESS`; số liệu test chính xác đọc t�
 cd aegis-dashboard
 npm ci            # cài đúng package-lock.json
 npm run build     # production vào dist/ (cảnh báo chunk > 500 kB của Three.js là benign)
-npm test          # node --test test/logic.test.js test/i18n.test.js (20 test: 14 logic + 6 i18n)
+npm test          # node --test test/logic.test.js test/i18n.test.js (22 test: 16 logic + 6 i18n)
 cd ..
 ```
 
@@ -1288,6 +1288,8 @@ Mốc lịch sử: commit `f68f9e2` (khắc phục S-01…S-10) ghi nhận 338 t
 Lần chạy này xác nhận đủ 347 lượt test Java trên đĩa (kể cả 56 lượt aegis-protocol) và khắc phục một lỗi teardown tất định: `TlsLoopbackIntegrationTest.stopServer` trước đây ném `UncheckedIOException` (NoSuchFileException `slow.db-wal`) khi `Files.walk` đua với checkpoint WAL của SQLite làm sidecar biến mất giữa traversal; đã bọc catch `UncheckedIOException` để teardown không đánh trượt test (sửa trong commit này). `ClientEngineTest` (20 test, gồm reconnect/SYNC/dedup) chạy ổn định — không còn flaky như lần CI trước. Một WARN `no such table: alert_revisions` xuất hiện ở test dùng DB tối giản là log lành tính (test vẫn pass), không phải lỗi sản phẩm.
 
 **Test dashboard (đã chạy thật khi viết báo cáo).** Ngày 21/11/2026, người viết báo cáo chạy lại `npm test` trong `aegis-dashboard` trên máy phát triển (macOS 15.7.3, Node v26.7.0, HEAD `9f0dad2`): kết quả **14 test pass / 0 fail / 0 skipped**, thời gian 232,65 ms, exit 0. Phạm vi phủ của 14 test: quy tắc severity chuẩn tắc (`deriveSeverity`), hợp nhất delta (`applyDelta`), event store (seq/giới hạn kích thước/subscriber), suy sự kiện từ delta, mock incident tất định, vá trạng thái zone không đột biến input, replay controller (load/step/seek/stop/play), ba lệnh chaos mock (DROP_ACK/DELAY_ACK/DISCONNECT), command log tới acknowledged, funnel clamp theo targeted, metrics history/CSV escape/sparkline, và tính nhất quán của mock delta + chaos transform.
+
+**Verify hiện tại (2026-11-26, Windows 10 x64, JDK 24.0.1).** `mvn -B -ntp verify` toàn reactor: **BUILD SUCCESS, 361 test Java, 0 failure/0 error, 1 skipped** (protocol 57, core 76, persistence 59, server 73, client 45, simulator 20, network-lab 31 — `UnicastFallbackTest` có 1 test skipped do multicast không khả dụng). `npm test`: 22/22 pass; script Python: 17/17 pass. Số liệu lịch sử 347/338 ở trên giữ nguyên để đối chiếu bằng chứng cũ.
 
 #### 3.5.2 Kiểm thử chấp nhận T-01…T-30
 

@@ -28,7 +28,7 @@ Stop the demo with `Ctrl+C` in the terminal running `scripts/demo-web.sh`.
 brew install maven            # Java 24 (Temurin) + Maven 3.10
 # Node 26 + npm for the dashboard (already installed or: brew install node)
 ./scripts/dev.sh              # mvn -DskipTests package  → BUILD_OK
-./scripts/test.sh             # mvn test → 338 Java tests
+./scripts/test.sh             # mvn test → 361 Java tests
 ./scripts/initdb.sh           # creates aegis.db: 26 tables, clean foreign_key_check
 sqlite3 aegis.db < aegis-persistence/src/main/resources/db/seed_demo.sql   # demo data
 ./scripts/gen-server-cert.sh  # certs/aegis-server.p12 + aegis-truststore.p12 (password: aegis-demo)

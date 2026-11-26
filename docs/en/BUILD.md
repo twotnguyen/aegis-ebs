@@ -12,8 +12,8 @@ CI runs exactly these commands on `ubuntu-latest` — see [`.github/workflows/ci
 | Step | Estimated time |
 |---|---|
 | Install JDK 24+ + Maven + Node 26 + sqlite3 | 5–10 minutes |
-| First `mvn -B -ntp verify` (dependency download + 338 tests across the reactor) | 5–10 minutes |
-| `npm ci && npm run build && npm test` (dashboard, 20 tests) | 1–2 minutes |
+| First `mvn -B -ntp verify` (dependency download + 361 tests across the reactor) | 5–10 minutes |
+| `npm ci && npm run build && npm test` (dashboard, 22 tests) | 1–2 minutes |
 | `scripts/initdb.sh` (26 tables) + `scripts/gen-server-cert.sh` | < 5 seconds |
 | Server smoke test (demo world seeded with 480 devices) | < 1 minute |
 
@@ -62,14 +62,14 @@ Work through the steps in order; each has a **verification gate** — proceed on
   ```bash
   mvn -B -ntp verify
   ```
-  **Gate:** `BUILD SUCCESS`; **338 Java tests pass, 0 failures/errors** (table in §3).
+  **Gate:** `BUILD SUCCESS`; **361 Java tests, 0 failures/errors, 1 skipped** (table in §3).
   All tests run headless — no display/X server needed.
 - [ ] **Step 3 — Dashboard** (~1–2 minutes):
   ```bash
   cd aegis-dashboard && npm ci && npm run build && npm test && cd ..
   ```
   **Gate:** `dist/` contains index.html + assets (the Three.js > 500 kB chunk warning is benign);
-  `npm test` reports **pass 20 / fail 0** (14 logic + 6 i18n). (CI only runs `npm ci && npm run build`; `npm test` runs locally.)
+  `npm test` reports **pass 22 / fail 0** (16 logic + 6 i18n). (CI only runs `npm ci && npm run build`; `npm test` runs locally.)
 - [ ] **Step 4 — Demo DB** (< 1 second):
   ```bash
   ./scripts/initdb.sh        # creates aegis.db at the repo root (gitignored)
@@ -200,7 +200,7 @@ mvn -pl aegis-simulator org.codehaus.mojo:exec-maven-plugin:3.2.0:exec \
 **Verification gate:** summary prints `auth rejections (permanent): 0` and `connects ok` > 0.
 Actually verified (2026-11-21, reference machine): before registration 2/2 agents were rejected;
 after registration `connects ok/failed = 2/0`, `heartbeats answered = 2`, exit 0; the 150-device fleet
-was loaded with exactly the SQL above and `foreign_key_check` was clean. `[TODO: save capture of the 150-agent run in docs/evidence/simulator/]`
+was loaded with exactly the SQL above and `foreign_key_check` was clean. **No end-to-end 150-agent capture exists**; only the 2/2-agent registration probe in §2.2 and the 150 inserted rows are verified — see `docs/evidence/simulator/simulator-150-agent-status.md`. Do not claim a 150-agent run.
 
 To reset the fleet: `./scripts/initdb.sh` creates a new DB (the server will re-seed the original world).
 
@@ -212,15 +212,15 @@ when the `~/.m2` jars are old** — results will silently diverge from the worki
 
 | Module | Command | Tests (surefire XML, 2026-11-21) |
 |---|---|---|
-| aegis-protocol | `mvn -B -ntp -pl aegis-protocol test` | 56 (FrameCodec fixture/stream/validation) |
+| aegis-protocol | `mvn -B -ntp -pl aegis-protocol test` | 57 (FrameCodec fixture/stream/validation + timestamp) |
 | aegis-core | `mvn -B -ntp -pl aegis-core -am test` | 73 (AckLedger, RetryPolicy, DedupIndex, RBAC, TargetResolver, PriorityScheduler) |
 | aegis-persistence | `mvn -B -ntp -pl aegis-persistence -am test` | 52 (Db pragmas/WAL, MigrationRunner 26 tables, TransactionalPublisher, RecoveryScanner, repos, peer-review fixes) |
-| aegis-server | `mvn -B -ntp -pl aegis-server -am test` | 63 (unit + FanoutEngine + TlsLoopbackIntegration 10 + ServerSecurityFixes 10) |
-| aegis-client | `mvn -B -ntp -pl aegis-client -am test` | 43 (AlertRecord, ClientConfig, InboxStore, AlertClientEngine, TLS smoke) |
+| aegis-server | `mvn -B -ntp -pl aegis-server -am test` | 73 (unit + FanoutEngine + TlsLoopbackIntegration + ServerSecurityFixes) |
+| aegis-client | `mvn -B -ntp -pl aegis-client -am test` | 45 (AlertRecord, ClientConfig, InboxStore, AlertClientEngine, TLS smoke) |
 | aegis-simulator | `mvn -B -ntp -pl aegis-simulator -am test` | 20 (SimulatorConfig, deterministic FaultInjector, SimAgent, stats) |
 | aegis-network-lab | `mvn -B -ntp -pl aegis-network-lab -am test` | 31 (UDP discovery trust gate, multicast hint, benchmark) |
-| **Whole reactor** | `mvn -B -ntp verify` (or `./scripts/test.sh`) | **347** (338 historical baseline + 9 H1–H4 tests) |
-| aegis-dashboard | `cd aegis-dashboard && npm test` | 20 (`node --test test/logic.test.js test/i18n.test.js`) |
+| **Whole reactor** | `mvn -B -ntp verify` (or `./scripts/test.sh`) | **361** (1 skipped; archived evidence: 347) |
+| aegis-dashboard | `cd aegis-dashboard && npm test` | 22 (`node --test test/logic.test.js test/i18n.test.js`) |
 
 Exact test count: `-q` hides the figures — read the XML in `<module>/target/surefire-reports/`:
 
@@ -236,7 +236,7 @@ WS contract: [`aegis-dashboard/docs/status-contract.md`](../../aegis-dashboard/d
 `aegis-client` depends on JavaFX 24 (`javafx-controls`, `javafx-graphics`) to run the GUI
 (`mvn -pl aegis-client javafx:run` — needs a real display; the plugin forks with working dir =
 `aegis-client/`, so the truststore path in the run command is `../certs/…`).
-**All 43 current aegis-client tests do not start the JavaFX toolkit**
+**All 45 current aegis-client tests do not start the JavaFX toolkit**
 (only logic/config/store/engine/TLS tests), so `mvn verify` runs fine on headless
 `ubuntu-latest` — verified, no X server needed.
 
