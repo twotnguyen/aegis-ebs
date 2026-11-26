@@ -1,0 +1,59 @@
+
+added 16 packages in 10s
+
+> aegis-dashboard@0.1.0 test
+> node --test test/logic.test.js test/i18n.test.js
+
+(node:24232) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ DICT.vi and DICT.en have exactly the same key set (2.0951ms)
+✔ interpolation substitutes every {var} and survives missing vars (0.5168ms)
+✔ missing keys fall back to English, then to the key itself (0.6381ms)
+✔ getLang/setLang work headlessly, default to vi and persist the choice (0.3792ms)
+✔ subscribe notifies on language change and can be detached (0.2641ms)
+✔ every data-i18n key in index.html exists in the dictionary (1.5585ms)
+(node:6472) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ deriveSeverity implements the normative rules (1.7658ms)
+✔ applyDelta merges partial zones, recomputes severity, replaces alerts (12.6077ms)
+✔ human ACK delta updates userAcknowledged without changing receipt count (0.3654ms)
+✔ event store assigns seq, caps size, notifies subscribers (0.3837ms)
+✔ eventsFromDelta derives delivery/ack/failure/alert events (1.4338ms)
+✔ makeMockIncident is deterministic, monotonic and contract-shaped (0.8629ms)
+✔ applyEventToState patches zone counters without mutating input (0.5975ms)
+✔ replay controller: load/step/seek/stop are coherent (2.1444ms)
+✔ replay play() advances to the end and fires onEnd (128.2647ms)
+✔ chaos DROP_ACK freezes acknowledged and fails deliveries after sustained unacked (1.4163ms)
+✔ chaos DELAY_ACK inflates percentiles; DISCONNECT drops devices; prev untouched (0.6301ms)
+✔ chaos command log reaches acknowledged (mock COMMAND_RESULT) (45.6491ms)
+✔ funnel tracks increments since alert opened and clamps to targeted (0.9293ms)
+✔ metrics history computes window stats; CSV escapes; sparkline renders (0.8592ms)
+✔ mock delta + chaos transform keeps the world coherent (3.3245ms)
+✔ LIVE requires a valid flat status/1 snapshot, not just an open socket (0.1562ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 322.306
+
+> aegis-dashboard@0.1.0 build
+> vite build
+
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 32 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                  24.59 kB │ gzip:   5.52 kB
+dist/assets/index-Be04NkaZ.css   12.38 kB │ gzip:   3.11 kB
+dist/assets/index-BkEsJRIN.js   956.17 kB │ gzip: 258.04 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 387ms

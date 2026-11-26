@@ -200,7 +200,7 @@ mvn -pl aegis-simulator org.codehaus.mojo:exec-maven-plugin:3.2.0:exec \
 **Verification gate:** summary prints `auth rejections (permanent): 0` and `connects ok` > 0.
 Actually verified (2026-11-21, reference machine): before registration 2/2 agents were rejected;
 after registration `connects ok/failed = 2/0`, `heartbeats answered = 2`, exit 0; the 150-device fleet
-was loaded with exactly the SQL above and `foreign_key_check` was clean. **No end-to-end 150-agent capture exists**; only the 2/2-agent registration probe in §2.2 and the 150 inserted rows are verified — see `docs/evidence/simulator/simulator-150-agent-status.md`. Do not claim a 150-agent run.
+was loaded with exactly the SQL above and `foreign_key_check` was clean. Real capture: runId `sim150-1795689017` — 150/150 agents started and finished, 0 permanent auth rejections, 450 heartbeats, seed 42; see `docs/evidence/simulator/sim150-1795689017/summary.json`. 88 pre-TLS-handshake failures were retried successfully; no alert was published in this capture.
 
 To reset the fleet: `./scripts/initdb.sh` creates a new DB (the server will re-seed the original world).
 

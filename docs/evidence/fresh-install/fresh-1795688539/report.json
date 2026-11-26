@@ -1,0 +1,76 @@
+{
+  "runId": "fresh-1795688539",
+  "result": "PASS",
+  "criterion": "NFR-015: documented fresh clone boots in < 30 minutes",
+  "commit": "ff41a0bfa5ee0a7055bf954b6f3f630ddf7f172a",
+  "startedAtEpoch": 1795688539,
+  "readyAtEpoch": 1795688990,
+  "cloneToReadySeconds": 451,
+  "budgetSeconds": 1800,
+  "machine": {
+    "os": "Windows 10 x64 10.0.22631",
+    "cpu": "Intel(R) Core(TM) i3-9100 CPU @ 3.60GHz",
+    "ramGB": 15.9,
+    "java": "24.0.1 (Temurin/HotSpot)",
+    "maven": "3.9.9",
+    "node": "26.12.1",
+    "npm": "11.9.0",
+    "sqlite3": "3.54.1"
+  },
+  "cacheCondition": "Fresh git clone from origin; isolated cold Maven repository (-Dmaven.repo.local) and isolated cold npm cache. JDK/Maven/Node were already installed and were NOT reinstalled/timed.",
+  "interpretation": "451 s = 7m31s clone-to-ready with cold dependency caches, excluding toolchain installation. Adding the 5-10 min toolchain budget referenced in BUILD.md still stays well under the 30-minute NFR-015 budget.",
+  "steps": [
+    {
+      "step": "git clone https://github.com/twotnguyen/aegis-ebs.git",
+      "exit": 0,
+      "seconds": 2,
+      "endEpoch": 1795688541
+    },
+    {
+      "step": "mvn -B -ntp verify (isolated cold m2)",
+      "exit": 0,
+      "seconds": 156,
+      "endEpoch": 1795688709,
+      "gate": "BUILD SUCCESS; 361 Java tests, 0 failures/errors, 1 skipped"
+    },
+    {
+      "step": "npm ci --cache <temp> && npm test && npm run build",
+      "exit": 0,
+      "seconds": 14,
+      "endEpoch": 1795688668,
+      "gate": "22/22 dashboard tests pass; dist/index.html + assets built"
+    },
+    {
+      "step": "bash scripts/initdb.sh",
+      "exit": 0,
+      "endEpoch": 1795688676,
+      "gate": "TABLES=26; PRAGMA foreign_key_check clean"
+    },
+    {
+      "step": "bash scripts/gen-server-cert.sh",
+      "exit": 0,
+      "seconds": 2,
+      "endEpoch": 1795688821,
+      "gate": "aegis-server.p12, aegis-server.crt, aegis-truststore.p12 generated"
+    },
+    {
+      "step": "java aegis.server.ServerMain --tls-port 19443 --ws-port 19444",
+      "exit": "running",
+      "endEpoch": 1795688990,
+      "gate": "'AEGIS EBS server ready' logged; 480 demo devices seeded; ports 19443/19444 listening"
+    }
+  ],
+  "deviations": [
+    "JDK keytool is not on this machine's PATH; the temp clone's cert script was patched to call the absolute JDK 24 keytool.exe. Behaviour is identical to scripts/gen-server-cert.sh.",
+    "Git Bash saw CRLF in cloned *.sh files; line endings were normalized in the temp clone only before running initdb.sh/gen-server-cert.sh.",
+    "Non-default ports 19443/19444 were used to avoid conflicts with any existing local server."
+  ],
+  "evidence": [
+    "build.log",
+    "npm.log",
+    "initdb.log",
+    "certs.log",
+    "server.log"
+  ],
+  "note": "SIMULATION/TRAINING ONLY. This is a real timed run, not an extrapolation; no toolchain installation time is included."
+}

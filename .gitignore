@@ -15,3 +15,6 @@ certs/
 *.key
 cp.txt
 *.log
+# raw run logs under docs/evidence/ are part of the reproducible record
+!docs/evidence/fresh-install/**/*.log
+!docs/evidence/simulator/**/*.log

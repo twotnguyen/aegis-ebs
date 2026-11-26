@@ -1,0 +1,10 @@
+AEGIS SIMULATOR — SIMULATION/TRAINING ONLY — NOT REAL DEVICES
+fleet=150 seed=42 scenario=clean target=localhost:19443 duration=30s faults=FaultProfile[dropRate=0.0, delayBaseMs=0, delayJitterMs=0, duplicateRate=0.0, duplicateCount=1, disconnectRate=0.0]
+==== AEGIS SIMULATOR SUMMARY (SIMULATION/TRAINING) ====
+agents started/finished : 150 / 150
+connects ok/failed      : 150 / 88   reconnects: 0
+alerts received         : 0   (duplicate pushes: 0, cancels: 0)
+ACK_RECEIVED sent       : 0   dropped: 0   delayed: 0   extra copies: 0
+fault disconnects       : 0   SYNC requests: 0   heartbeats answered: 450
+connection errors       : 0   auth rejections (permanent): 0
+=======================================================

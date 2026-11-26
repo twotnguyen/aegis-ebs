@@ -1,0 +1,8 @@
+Generating 2048-bit RSA key pair and self-signed certificate (SHA384withRSA) with a validity of 365 days
+	for: CN=localhost, OU=AEGIS-EBS, O=CMP180, L=HoChiMinh, C=VN
+CREATED certs/aegis-server.p12
+Certificate stored in file <certs/aegis-server.crt>
+Certificate was added to keystore
+TRUSTSTORE certs/aegis-truststore.p12
+Run server: mvn -q -pl aegis-server exec:java -Dexec.mainClass=aegis.server.ServerMain \
+  -Dexec.args="--keystore certs/aegis-server.p12 --storepass aegis-demo"

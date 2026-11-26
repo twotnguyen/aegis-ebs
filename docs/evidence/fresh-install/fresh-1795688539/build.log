@@ -1,0 +1,526 @@
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.fusesource.jansi.internal.JansiLoader in an unnamed module (file:/C:/Users/Admin/AppData/Local/Programs/apache-maven-3.9.9/apache-maven-3.9.9/lib/jansi-2.4.1.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by com.google.common.util.concurrent.AbstractFuture$UnsafeAtomicHelper (file:/C:/Users/Admin/AppData/Local/Programs/apache-maven-3.9.9/apache-maven-3.9.9/lib/guava-33.2.1-jre.jar)
+WARNING: Please consider reporting this to the maintainers of class com.google.common.util.concurrent.AbstractFuture$UnsafeAtomicHelper
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] AEGIS Emergency Broadcast System                                   [pom]
+[INFO] aegis-protocol                                                     [jar]
+[INFO] aegis-core                                                         [jar]
+[INFO] aegis-persistence                                                  [jar]
+[INFO] aegis-server                                                       [jar]
+[INFO] aegis-client                                                       [jar]
+[INFO] aegis-simulator                                                    [jar]
+[INFO] aegis-network-lab                                                  [jar]
+[INFO] 
+[INFO] --------------------------< aegis:aegis-ebs >---------------------------
+[INFO] Building AEGIS Emergency Broadcast System 1.0.0                    [1/8]
+[INFO]   from pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] ------------------------< aegis:aegis-protocol >------------------------
+[INFO] Building aegis-protocol 1.0.0                                      [2/8]
+[INFO]   from aegis-protocol\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ aegis-protocol ---
+[INFO] skip non existing resourceDirectory C:\Users\Admin\AppData\Local\Temp\opencode\aegis-cold-1795688539\repo\aegis-protocol\src\main\resources
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ aegis-protocol ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 8 source files with javac [debug release 24] to target\classes
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ aegis-protocol ---
+[INFO] Copying 1 resource from src\test\resources to target\test-classes
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ aegis-protocol ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 3 source files with javac [debug release 24] to target\test-classes
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ aegis-protocol ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running aegis.protocol.FrameCodecFixtureTest
+[INFO] Tests run: 20, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.684 s -- in aegis.protocol.FrameCodecFixtureTest
+[INFO] Running aegis.protocol.FrameCodecStreamTest
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.175 s -- in aegis.protocol.FrameCodecStreamTest
+[INFO] Running aegis.protocol.FrameCodecValidationTest
+[INFO] Tests run: 24, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.202 s -- in aegis.protocol.FrameCodecValidationTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 57, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.4.1:jar (default-jar) @ aegis-protocol ---
+[INFO] Building jar: C:\Users\Admin\AppData\Local\Temp\opencode\aegis-cold-1795688539\repo\aegis-protocol\target\aegis-protocol-1.0.0.jar
+[INFO] 
+[INFO] --------------------------< aegis:aegis-core >--------------------------
+[INFO] Building aegis-core 1.0.0                                          [3/8]
+[INFO]   from aegis-core\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ aegis-core ---
+[INFO] skip non existing resourceDirectory C:\Users\Admin\AppData\Local\Temp\opencode\aegis-cold-1795688539\repo\aegis-core\src\main\resources
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ aegis-core ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 8 source files with javac [debug release 24] to target\classes
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ aegis-core ---
+[INFO] skip non existing resourceDirectory C:\Users\Admin\AppData\Local\Temp\opencode\aegis-cold-1795688539\repo\aegis-core\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ aegis-core ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 6 source files with javac [debug release 24] to target\test-classes
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ aegis-core ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running aegis.core.AckLedgerTest
+[INFO] Tests run: 14, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.116 s -- in aegis.core.AckLedgerTest
+[INFO] Running aegis.core.DedupIndexTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.039 s -- in aegis.core.DedupIndexTest
+[INFO] Running aegis.core.PrioritySchedulerTest
+[INFO] Tests run: 14, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.036 s -- in aegis.core.PrioritySchedulerTest
+[INFO] Running aegis.core.RetryPolicyTest
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.024 s -- in aegis.core.RetryPolicyTest
+[INFO] Running aegis.core.ScopedRBACTest
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.028 s -- in aegis.core.ScopedRBACTest
+[INFO] Running aegis.core.TargetResolverTest
+[INFO] Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.069 s -- in aegis.core.TargetResolverTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 76, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.4.1:jar (default-jar) @ aegis-core ---
+[INFO] Building jar: C:\Users\Admin\AppData\Local\Temp\opencode\aegis-cold-1795688539\repo\aegis-core\target\aegis-core-1.0.0.jar
+[INFO] 
+[INFO] ----------------------< aegis:aegis-persistence >-----------------------
+[INFO] Building aegis-persistence 1.0.0                                   [4/8]
+[INFO]   from aegis-persistence\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ aegis-persistence ---
+[INFO] Copying 3 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ aegis-persistence ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 25 source files with javac [debug release 24] to target\classes
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ aegis-persistence ---
+[INFO] skip non existing resourceDirectory C:\Users\Admin\AppData\Local\Temp\opencode\aegis-cold-1795688539\repo\aegis-persistence\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ aegis-persistence ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 10 source files with javac [debug release 24] to target\test-classes
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ aegis-persistence ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running aegis.persistence.AckInsertedContractTest
+SLF4J(W): No SLF4J providers were found.
+SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.sqlite.SQLiteJDBCLoader in an unnamed module (file:/C:/Users/Admin/AppData/Local/Temp/opencode/aegis-cold-1795688539/m2/org/xerial/sqlite-jdbc/3.46.1.0/sqlite-jdbc-3.46.1.0.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.536 s -- in aegis.persistence.AckInsertedContractTest
+[INFO] Running aegis.persistence.DbTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.118 s -- in aegis.persistence.DbTest
+[INFO] Running aegis.persistence.DeliveryRankGuardTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.523 s -- in aegis.persistence.DeliveryRankGuardTest
+[INFO] Running aegis.persistence.MigrationRunnerTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.117 s -- in aegis.persistence.MigrationRunnerTest
+[INFO] Running aegis.persistence.PeerReviewFixesTest
+[INFO] Running aegis.persistence.PeerReviewFixesTest$PayloadHashCanonical
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.372 s -- in aegis.persistence.PeerReviewFixesTest$PayloadHashCanonical
+[INFO] Running aegis.persistence.PeerReviewFixesTest$ConcurrentFirstOpen
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.249 s -- in aegis.persistence.PeerReviewFixesTest$ConcurrentFirstOpen
+[INFO] Running aegis.persistence.PeerReviewFixesTest$MixedPrecisionTimestampOrdering
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.257 s -- in aegis.persistence.PeerReviewFixesTest$MixedPrecisionTimestampOrdering
+[INFO] Running aegis.persistence.PeerReviewFixesTest$DuplicateAckIsIdempotent
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.183 s -- in aegis.persistence.PeerReviewFixesTest$DuplicateAckIsIdempotent
+[INFO] Running aegis.persistence.PeerReviewFixesTest$CrossDeviceAckRejected
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.257 s -- in aegis.persistence.PeerReviewFixesTest$CrossDeviceAckRejected
+[INFO] Tests run: 0, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.325 s -- in aegis.persistence.PeerReviewFixesTest
+[INFO] Running aegis.persistence.RecoveryScannerTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.339 s -- in aegis.persistence.RecoveryScannerTest
+[INFO] Running aegis.persistence.RepositoriesTest
+[INFO] Running aegis.persistence.RepositoriesTest$Audit
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.059 s -- in aegis.persistence.RepositoriesTest$Audit
+[INFO] Running aegis.persistence.RepositoriesTest$Deliveries
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.573 s -- in aegis.persistence.RepositoriesTest$Deliveries
+[INFO] Running aegis.persistence.RepositoriesTest$Alerts
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.179 s -- in aegis.persistence.RepositoriesTest$Alerts
+[INFO] Running aegis.persistence.RepositoriesTest$RoleGrants
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.142 s -- in aegis.persistence.RepositoriesTest$RoleGrants
+[INFO] Running aegis.persistence.RepositoriesTest$Devices
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.138 s -- in aegis.persistence.RepositoriesTest$Devices
+[INFO] Running aegis.persistence.RepositoriesTest$Users
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.191 s -- in aegis.persistence.RepositoriesTest$Users
+[INFO] Tests run: 0, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.288 s -- in aegis.persistence.RepositoriesTest
+[INFO] Running aegis.persistence.TransactionalPublisherTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.354 s -- in aegis.persistence.TransactionalPublisherTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 59, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.4.1:jar (default-jar) @ aegis-persistence ---
+[INFO] Building jar: C:\Users\Admin\AppData\Local\Temp\opencode\aegis-cold-1795688539\repo\aegis-persistence\target\aegis-persistence-1.0.0.jar
+[INFO] 
+[INFO] -------------------------< aegis:aegis-server >-------------------------
+[INFO] Building aegis-server 1.0.0                                        [5/8]
+[INFO]   from aegis-server\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ aegis-server ---
+[INFO] skip non existing resourceDirectory C:\Users\Admin\AppData\Local\Temp\opencode\aegis-cold-1795688539\repo\aegis-server\src\main\resources
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ aegis-server ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 25 source files with javac [debug release 24] to target\classes
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ aegis-server ---
+[INFO] skip non existing resourceDirectory C:\Users\Admin\AppData\Local\Temp\opencode\aegis-cold-1795688539\repo\aegis-server\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ aegis-server ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 12 source files with javac [debug release 24] to target\test-classes
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ aegis-server ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running aegis.server.Argon2idHasherTest
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by com.sun.jna.Native in an unnamed module (file:/C:/Users/Admin/AppData/Local/Temp/opencode/aegis-cold-1795688539/m2/net/java/dev/jna/jna/5.8.0/jna-5.8.0.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.222 s -- in aegis.server.Argon2idHasherTest
+[INFO] Running aegis.server.BoundedWriterQueueTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.269 s -- in aegis.server.BoundedWriterQueueTest
+[INFO] Running aegis.server.FanoutEngineTest
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 10.81 s -- in aegis.server.FanoutEngineTest
+[INFO] Running aegis.server.MetricsRegistryTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.009 s -- in aegis.server.MetricsRegistryTest
+[INFO] Running aegis.server.RbacServiceTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.259 s -- in aegis.server.RbacServiceTest
+[INFO] Running aegis.server.ServerSecurityFixesTest
+17:23:27.516 [main] INFO aegis.server.StatusFeedServer -- status feed listening on ws://localhost:56605/ (status/1)
+17:23:27.762 [main] INFO aegis.server.TlsGateway -- EBSP/2.0 TLS gateway listening on port 56606
+17:23:27.764 [main] INFO aegis.server.AegisServer -- aegis-server up: TLS 56606 WS 56605 building AEGIS-BLD-A db C:\Users\Admin\AppData\Local\Temp\aegis-sec10870027077915920805\sec.db
+17:23:28.743 [virtual-87] WARN aegis.server.MessageRouter -- command ALERT_UPDATE failed
+java.util.NoSuchElementException: No value present
+	at java.base/java.util.Optional.orElseThrow(Optional.java:377)
+	at aegis.server.AlertService.update(AlertService.java:212)
+	at aegis.server.MessageRouter.alertUpdate(MessageRouter.java:392)
+	at aegis.server.MessageRouter.route(MessageRouter.java:108)
+	at aegis.server.TlsGateway.readLoop(TlsGateway.java:130)
+	at aegis.server.TlsGateway.lambda$acceptLoop$0(TlsGateway.java:108)
+	at java.base/java.util.concurrent.ThreadPerTaskExecutor$TaskRunner.run(ThreadPerTaskExecutor.java:291)
+	at java.base/java.lang.VirtualThread.run(VirtualThread.java:466)
+17:23:28.829 [virtual-87] WARN aegis.server.AlertService -- update failed alertId=0ac1cbf3-5ac7-42ca-9878-f37ca6362841
+org.sqlite.SQLiteException: [SQLITE_CONSTRAINT_TRIGGER] A RAISE function within a trigger fired, causing the SQL statement to abort (simulated crash)
+	at org.sqlite.core.DB.newSQLException(DB.java:1179)
+	at org.sqlite.core.DB.newSQLException(DB.java:1190)
+	at org.sqlite.core.DB.execute(DB.java:985)
+	at org.sqlite.core.DB.executeUpdate(DB.java:1054)
+	at org.sqlite.jdbc3.JDBC3PreparedStatement.lambda$executeLargeUpdate$2(JDBC3PreparedStatement.java:129)
+	at org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout(JDBC3Statement.java:454)
+	at org.sqlite.jdbc3.JDBC3PreparedStatement.executeLargeUpdate(JDBC3PreparedStatement.java:124)
+	at org.sqlite.jdbc3.JDBC3PreparedStatement.executeUpdate(JDBC3PreparedStatement.java:105)
+	at aegis.server.ServerStore.insertOperationOn(ServerStore.java:305)
+	at aegis.server.ServerStore.applyUpdate(ServerStore.java:352)
+	at aegis.server.AlertService.update(AlertService.java:217)
+	at aegis.server.MessageRouter.alertUpdate(MessageRouter.java:392)
+	at aegis.server.MessageRouter.route(MessageRouter.java:108)
+	at aegis.server.TlsGateway.readLoop(TlsGateway.java:130)
+	at aegis.server.TlsGateway.lambda$acceptLoop$0(TlsGateway.java:108)
+	at java.base/java.util.concurrent.ThreadPerTaskExecutor$TaskRunner.run(ThreadPerTaskExecutor.java:291)
+	at java.base/java.lang.VirtualThread.run(VirtualThread.java:466)
+17:23:28.963 [virtual-87] WARN aegis.server.AlertService -- cancel failed alertId=2685f15b-27e4-482b-9171-372b6a9accf2
+org.sqlite.SQLiteException: [SQLITE_CONSTRAINT_TRIGGER] A RAISE function within a trigger fired, causing the SQL statement to abort (simulated crash)
+	at org.sqlite.core.DB.newSQLException(DB.java:1179)
+	at org.sqlite.core.DB.newSQLException(DB.java:1190)
+	at org.sqlite.core.DB.execute(DB.java:985)
+	at org.sqlite.core.DB.executeUpdate(DB.java:1054)
+	at org.sqlite.jdbc3.JDBC3PreparedStatement.lambda$executeLargeUpdate$2(JDBC3PreparedStatement.java:129)
+	at org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout(JDBC3Statement.java:454)
+	at org.sqlite.jdbc3.JDBC3PreparedStatement.executeLargeUpdate(JDBC3PreparedStatement.java:124)
+	at org.sqlite.jdbc3.JDBC3PreparedStatement.executeUpdate(JDBC3PreparedStatement.java:105)
+	at aegis.server.ServerStore.insertOperationOn(ServerStore.java:305)
+	at aegis.server.ServerStore.applyCancel(ServerStore.java:386)
+	at aegis.server.AlertService.cancel(AlertService.java:255)
+	at aegis.server.MessageRouter.alertCancel(MessageRouter.java:415)
+	at aegis.server.MessageRouter.route(MessageRouter.java:109)
+	at aegis.server.TlsGateway.readLoop(TlsGateway.java:130)
+	at aegis.server.TlsGateway.lambda$acceptLoop$0(TlsGateway.java:108)
+	at java.base/java.util.concurrent.ThreadPerTaskExecutor$TaskRunner.run(ThreadPerTaskExecutor.java:291)
+	at java.base/java.lang.VirtualThread.run(VirtualThread.java:466)
+17:23:29.016 [virtual-87] WARN aegis.server.IncidentService -- incident create failed building=AEGIS-BLD-A
+org.sqlite.SQLiteException: [SQLITE_CONSTRAINT_TRIGGER] A RAISE function within a trigger fired, causing the SQL statement to abort (simulated crash)
+	at org.sqlite.core.DB.newSQLException(DB.java:1179)
+	at org.sqlite.core.DB.newSQLException(DB.java:1190)
+	at org.sqlite.core.DB.execute(DB.java:985)
+	at org.sqlite.core.DB.executeUpdate(DB.java:1054)
+	at org.sqlite.jdbc3.JDBC3PreparedStatement.lambda$executeLargeUpdate$2(JDBC3PreparedStatement.java:129)
+	at org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout(JDBC3Statement.java:454)
+	at org.sqlite.jdbc3.JDBC3PreparedStatement.executeLargeUpdate(JDBC3PreparedStatement.java:124)
+	at org.sqlite.jdbc3.JDBC3PreparedStatement.executeUpdate(JDBC3PreparedStatement.java:105)
+	at aegis.server.ServerStore.insertIncidentEventOn(ServerStore.java:250)
+	at aegis.server.ServerStore.createIncidentAtomic(ServerStore.java:429)
+	at aegis.server.IncidentService.create(IncidentService.java:53)
+	at aegis.server.MessageRouter.incidentCreate(MessageRouter.java:318)
+	at aegis.server.MessageRouter.route(MessageRouter.java:105)
+	at aegis.server.TlsGateway.readLoop(TlsGateway.java:130)
+	at aegis.server.TlsGateway.lambda$acceptLoop$0(TlsGateway.java:108)
+	at java.base/java.util.concurrent.ThreadPerTaskExecutor$TaskRunner.run(ThreadPerTaskExecutor.java:291)
+	at java.base/java.lang.VirtualThread.run(VirtualThread.java:466)
+17:23:29.058 [virtual-87] WARN aegis.server.IncidentService -- incident transition failed incidentId=f4f8a670-1f45-467b-b879-8f631cb00362
+org.sqlite.SQLiteException: [SQLITE_CONSTRAINT_TRIGGER] A RAISE function within a trigger fired, causing the SQL statement to abort (simulated crash)
+	at org.sqlite.core.DB.newSQLException(DB.java:1179)
+	at org.sqlite.core.DB.newSQLException(DB.java:1190)
+	at org.sqlite.core.DB.execute(DB.java:985)
+	at org.sqlite.core.DB.executeUpdate(DB.java:1054)
+	at org.sqlite.jdbc3.JDBC3PreparedStatement.lambda$executeLargeUpdate$2(JDBC3PreparedStatement.java:129)
+	at org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout(JDBC3Statement.java:454)
+	at org.sqlite.jdbc3.JDBC3PreparedStatement.executeLargeUpdate(JDBC3PreparedStatement.java:124)
+	at org.sqlite.jdbc3.JDBC3PreparedStatement.executeUpdate(JDBC3PreparedStatement.java:105)
+	at aegis.server.ServerStore.insertIncidentEventOn(ServerStore.java:250)
+	at aegis.server.ServerStore.transitionIncidentAtomic(ServerStore.java:455)
+	at aegis.server.IncidentService.transition(IncidentService.java:79)
+	at aegis.server.MessageRouter.incidentTransition(MessageRouter.java:339)
+	at aegis.server.MessageRouter.route(MessageRouter.java:106)
+	at aegis.server.TlsGateway.readLoop(TlsGateway.java:130)
+	at aegis.server.TlsGateway.lambda$acceptLoop$0(TlsGateway.java:108)
+	at java.base/java.util.concurrent.ThreadPerTaskExecutor$TaskRunner.run(ThreadPerTaskExecutor.java:291)
+	at java.base/java.lang.VirtualThread.run(VirtualThread.java:466)
+17:23:30.610 [virtual-105] INFO aegis.server.TlsGateway -- pre-auth session expired session=1528d961-750d-43dc-87e6-7f5e3994eb2a reason=read timeout
+17:23:32.257 [virtual-108] INFO aegis.server.TlsGateway -- pre-auth session expired session=2b7ec6e2-06e3-4d47-9397-d6b14adf2f25 reason=ttl
+17:23:35.083 [virtual-83] WARN aegis.server.TlsGateway -- connection cap 12 reached; rejecting /127.0.0.1:57018
+17:23:35.086 [virtual-83] WARN aegis.server.TlsGateway -- connection cap 12 reached; rejecting /127.0.0.1:57019
+17:23:35.088 [virtual-83] WARN aegis.server.TlsGateway -- connection cap 12 reached; rejecting /127.0.0.1:57020
+17:23:35.090 [virtual-83] WARN aegis.server.TlsGateway -- connection cap 12 reached; rejecting /127.0.0.1:57021
+17:23:36.496 [virtual-114] INFO aegis.server.TlsGateway -- pre-auth session expired session=0e07589b-dc31-45a8-9034-cc01cc45a789 reason=read timeout
+17:23:36.504 [virtual-116] INFO aegis.server.TlsGateway -- pre-auth session expired session=5968f4b3-1247-4db9-8a4f-c2a65f66fbbc reason=read timeout
+17:23:36.515 [virtual-118] INFO aegis.server.TlsGateway -- pre-auth session expired session=a2e0419b-b3dd-4c80-b32a-68640f3f0470 reason=read timeout
+17:23:36.524 [virtual-120] INFO aegis.server.TlsGateway -- pre-auth session expired session=b39f8643-e236-4086-89ad-e3b0fad3c3cc reason=read timeout
+17:23:36.539 [virtual-122] INFO aegis.server.TlsGateway -- pre-auth session expired session=3703f485-d71e-4f79-8fd7-2c565513c501 reason=read timeout
+17:23:36.548 [virtual-124] INFO aegis.server.TlsGateway -- pre-auth session expired session=dbc3a6c5-041a-48de-a068-12f43d1a02b6 reason=read timeout
+17:23:36.554 [virtual-126] INFO aegis.server.TlsGateway -- pre-auth session expired session=75ec053e-b106-4b41-8b57-2432fe1eea3f reason=read timeout
+17:23:36.567 [virtual-128] INFO aegis.server.TlsGateway -- pre-auth session expired session=483fba1b-d934-40e9-a347-be9c4f669572 reason=read timeout
+17:23:36.574 [virtual-130] INFO aegis.server.TlsGateway -- pre-auth session expired session=b672de34-1560-47c8-ab42-c1c2342c6416 reason=read timeout
+17:23:36.582 [virtual-132] INFO aegis.server.TlsGateway -- pre-auth session expired session=6dfed47b-b5eb-4dca-a70b-2204756a30fd reason=read timeout
+17:23:36.589 [virtual-134] INFO aegis.server.TlsGateway -- pre-auth session expired session=c5e6a592-f0a2-4e05-aae8-882f9280b9b2 reason=read timeout
+[INFO] Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 10.39 s -- in aegis.server.ServerSecurityFixesTest
+[INFO] Running aegis.server.SessionRegistryTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.019 s -- in aegis.server.SessionRegistryTest
+[INFO] Running aegis.server.TlsLoopbackIntegrationTest
+17:23:38.026 [main] INFO aegis.server.StatusFeedServer -- status feed listening on ws://localhost:61245/ (status/1)
+17:23:38.050 [main] INFO aegis.server.TlsGateway -- EBSP/2.0 TLS gateway listening on port 61246
+17:23:38.051 [main] INFO aegis.server.AegisServer -- aegis-server up: TLS 61246 WS 61245 building AEGIS-BLD-A db C:\Users\Admin\AppData\Local\Temp\aegis-it15372269523421613957\aegis.db
+17:23:44.457 [aegis-timer-2] INFO aegis.server.AegisServer -- heartbeat suspect session=5ef0ab59-8aa6-4958-88eb-cb810acf6eb0 device=32b7727d-1907-414c-95a9-1ad9eb5aa262
+17:23:44.687 [main] INFO aegis.server.StatusFeedServer -- status feed listening on ws://localhost:52002/ (status/1)
+17:23:44.712 [main] INFO aegis.server.TlsGateway -- EBSP/2.0 TLS gateway listening on port 52003
+17:23:44.712 [main] INFO aegis.server.AegisServer -- aegis-server up: TLS 52003 WS 52002 building AEGIS-BLD-A db C:\Users\Admin\AppData\Local\Temp\aegis-it15372269523421613957\slow.db
+17:23:55.921 [virtual-379] WARN aegis.server.TlsGateway -- slow client disconnected session=cfdf165e-397c-40ab-b305-c066bad8466f device=2f15e74c-83cf-4405-a27a-38a6403fba22
+17:23:59.160 [main] INFO aegis.server.AegisServer -- recovered 5 active deliveries from durable state
+17:23:59.160 [main] INFO aegis.server.StatusFeedServer -- status feed listening on ws://localhost:64372/ (status/1)
+17:23:59.182 [main] INFO aegis.server.TlsGateway -- EBSP/2.0 TLS gateway listening on port 64373
+17:23:59.182 [main] INFO aegis.server.AegisServer -- aegis-server up: TLS 64373 WS 64372 building AEGIS-BLD-A db C:\Users\Admin\AppData\Local\Temp\aegis-it15372269523421613957\aegis.db
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 22.22 s -- in aegis.server.TlsLoopbackIntegrationTest
+[INFO] Running aegis.server.ZoneStatusTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s -- in aegis.server.ZoneStatusTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 73, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.4.1:jar (default-jar) @ aegis-server ---
+[INFO] Building jar: C:\Users\Admin\AppData\Local\Temp\opencode\aegis-cold-1795688539\repo\aegis-server\target\aegis-server-1.0.0.jar
+[INFO] 
+[INFO] -------------------------< aegis:aegis-client >-------------------------
+[INFO] Building aegis-client 1.0.0                                        [6/8]
+[INFO]   from aegis-client\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ aegis-client ---
+[INFO] skip non existing resourceDirectory C:\Users\Admin\AppData\Local\Temp\opencode\aegis-cold-1795688539\repo\aegis-client\src\main\resources
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ aegis-client ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 7 source files with javac [debug release 24] to target\classes
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ aegis-client ---
+[INFO] skip non existing resourceDirectory C:\Users\Admin\AppData\Local\Temp\opencode\aegis-cold-1795688539\repo\aegis-client\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ aegis-client ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 7 source files with javac [debug release 24] to target\test-classes
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ aegis-client ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running aegis.client.AlertRecordTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.242 s -- in aegis.client.AlertRecordTest
+[INFO] Running aegis.client.ClientConfigTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.008 s -- in aegis.client.ClientConfigTest
+[INFO] Running aegis.client.ClientEngineTest
+SLF4J(W): No SLF4J providers were found.
+SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.sqlite.SQLiteJDBCLoader in an unnamed module (file:/C:/Users/Admin/AppData/Local/Temp/opencode/aegis-cold-1795688539/m2/org/xerial/sqlite-jdbc/3.46.1.0/sqlite-jdbc-3.46.1.0.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+[INFO] Tests run: 22, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.797 s -- in aegis.client.ClientEngineTest
+[INFO] Running aegis.client.ClientTlsSmokeTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.101 s -- in aegis.client.ClientTlsSmokeTest
+[INFO] Running aegis.client.InboxStoreTest
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.489 s -- in aegis.client.InboxStoreTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 45, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.4.1:jar (default-jar) @ aegis-client ---
+[INFO] Building jar: C:\Users\Admin\AppData\Local\Temp\opencode\aegis-cold-1795688539\repo\aegis-client\target\aegis-client-1.0.0.jar
+[INFO] 
+[INFO] -----------------------< aegis:aegis-simulator >------------------------
+[INFO] Building aegis-simulator 1.0.0                                     [7/8]
+[INFO]   from aegis-simulator\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ aegis-simulator ---
+[INFO] skip non existing resourceDirectory C:\Users\Admin\AppData\Local\Temp\opencode\aegis-cold-1795688539\repo\aegis-simulator\src\main\resources
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ aegis-simulator ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 8 source files with javac [debug release 24] to target\classes
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ aegis-simulator ---
+[INFO] skip non existing resourceDirectory C:\Users\Admin\AppData\Local\Temp\opencode\aegis-cold-1795688539\repo\aegis-simulator\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ aegis-simulator ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 5 source files with javac [debug release 24] to target\test-classes
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ aegis-simulator ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running aegis.simulator.FaultInjectorTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.305 s -- in aegis.simulator.FaultInjectorTest
+[INFO] Running aegis.simulator.SimulatorConfigTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.058 s -- in aegis.simulator.SimulatorConfigTest
+[INFO] Running aegis.simulator.SimulatorSmokeTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 36.54 s -- in aegis.simulator.SimulatorSmokeTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 20, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.4.1:jar (default-jar) @ aegis-simulator ---
+[INFO] Building jar: C:\Users\Admin\AppData\Local\Temp\opencode\aegis-cold-1795688539\repo\aegis-simulator\target\aegis-simulator-1.0.0.jar
+[INFO] 
+[INFO] ----------------------< aegis:aegis-network-lab >-----------------------
+[INFO] Building aegis-network-lab 1.0.0                                   [8/8]
+[INFO]   from aegis-network-lab\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ aegis-network-lab ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ aegis-network-lab ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 31 source files with javac [debug release 24] to target\classes
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ aegis-network-lab ---
+[INFO] skip non existing resourceDirectory C:\Users\Admin\AppData\Local\Temp\opencode\aegis-cold-1795688539\repo\aegis-network-lab\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ aegis-network-lab ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 7 source files with javac [debug release 24] to target\test-classes
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ aegis-network-lab ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running aegis.networklab.DiscoveryNonceEchoTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.609 s -- in aegis.networklab.DiscoveryNonceEchoTest
+[INFO] Running aegis.networklab.DiscoveryTrustTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.518 s -- in aegis.networklab.DiscoveryTrustTest
+[INFO] Running aegis.networklab.FanoutBenchmarkTest
+[FanoutBenchmarkTest] real multicast measured: multicast loopback verified on 239.10.10.10:59516 (ttl=1, attempt 1)
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.278 s -- in aegis.networklab.FanoutBenchmarkTest
+[INFO] Running aegis.networklab.LabDatagramCodecTest
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.042 s -- in aegis.networklab.LabDatagramCodecTest
+[INFO] Running aegis.networklab.MulticastLoopbackTest
+[MulticastLoopbackTest] REAL MULTICAST loopback verified: multicast loopback verified on 239.10.10.10:59523 (ttl=1, attempt 1)
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.965 s -- in aegis.networklab.MulticastLoopbackTest
+[INFO] Running aegis.networklab.UnicastFallbackTest
+[WARNING] Tests run: 2, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0.040 s -- in aegis.networklab.UnicastFallbackTest
+[INFO] Running aegis.networklab.VerifiedAlertSubscriberTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.224 s -- in aegis.networklab.VerifiedAlertSubscriberTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[WARNING] Tests run: 31, Failures: 0, Errors: 0, Skipped: 1
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.4.1:jar (default-jar) @ aegis-network-lab ---
+[INFO] Building jar: C:\Users\Admin\AppData\Local\Temp\opencode\aegis-cold-1795688539\repo\aegis-network-lab\target\aegis-network-lab-1.0.0.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for AEGIS Emergency Broadcast System 1.0.0:
+[INFO] 
+[INFO] AEGIS Emergency Broadcast System ................... SUCCESS [  0.003 s]
+[INFO] aegis-protocol ..................................... SUCCESS [ 24.740 s]
+[INFO] aegis-core ......................................... SUCCESS [  2.650 s]
+[INFO] aegis-persistence .................................. SUCCESS [  8.972 s]
+[INFO] aegis-server ....................................... SUCCESS [ 47.949 s]
+[INFO] aegis-client ....................................... SUCCESS [ 18.230 s]
+[INFO] aegis-simulator .................................... SUCCESS [ 39.964 s]
+[INFO] aegis-network-lab .................................. SUCCESS [ 11.180 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  02:33 min
+[INFO] Finished at: 2026-11-26T17:25:09+07:00
+[INFO] ------------------------------------------------------------------------

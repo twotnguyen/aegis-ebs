@@ -200,7 +200,7 @@ mvn -pl aegis-simulator org.codehaus.mojo:exec-maven-plugin:3.2.0:exec \
 **Cổng kiểm chứng:** summary in `auth rejections (permanent): 0` và `connects ok` > 0.
 Đã kiểm chứng thật (2026-11-21, máy tham chiếu): trước đăng ký 2/2 agent bị từ chối;
 sau đăng ký `connects ok/failed = 2/0`, `heartbeats answered = 2`, exit 0; fleet 150 device
-nạp bằng đúng SQL trên, `foreign_key_check` sạch. **Chưa có capture chạy đủ 150 agent end-to-end**; chỉ có phép thử 2/2 agent ở §2.2 và 150 dòng đã nạp — xem `docs/evidence/simulator/simulator-150-agent-status.md`. Không tuyên bố đã chạy 150 agent.
+nạp bằng đúng SQL trên, `foreign_key_check` sạch. Capture thật: runId `sim150-1795689017` — 150/150 agent khởi động và kết thúc, 0 auth rejection vĩnh viễn, 450 heartbeat, seed 42; xem `docs/evidence/simulator/sim150-1795689017/summary.json`. 88 lỗi trước TLS handshake được retry thành công; không có alert nào được publish trong lần capture này.
 
 Muốn reset fleet: `bash scripts/initdb.sh` tạo DB mới (server sẽ seed lại thế giới gốc).
 
