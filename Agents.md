@@ -76,7 +76,7 @@ Dự án này được xây dựng bởi một **orchestrator** (agent `cmp180-t
 
 ## 8. Bằng chứng kiểm định (tính đến commit gần nhất)
 
-- 317 test Java + 14 test dashboard; peer-review reports trong `docs/reviews/`.
+- 361 test Java (1 skipped) + 22 test dashboard; 52 surefire XML trong `docs/evidence/verify/`; peer-review reports trong `docs/reviews/`.
 - Integration TLS loopback thật: auth → publish → fanout → ACK → retry → FAILED → RBAC deny → cancel tombstone → reconnect SYNC → WS snapshot/delta → heartbeat suspect → slow-client eviction → server restart recovery.
 - Multicast thật đo được: giảm ~87.5% gói / ~97.8% byte so TCP fanout (8 subscriber × 200 message).
 - Simulator fleet 100 agent: 200/200 ACK; fault injection cùng seed cho kết quả identical.

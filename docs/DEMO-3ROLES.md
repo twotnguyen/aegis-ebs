@@ -8,7 +8,7 @@
 
 Demo được chiếu đồng thời trên ba màn hình, mỗi màn hình một vai trò, để phân biệt rõ ai quan sát, ai nhận cảnh báo, ai điều hành. Ba vai trò dùng chung một server TLS (`9443`), một status feed (`ws://localhost:9444`) và một HTTP bridge (`http://localhost:9445`); khởi động bằng `bash scripts/demo-web.sh` hoặc các lệnh thủ công trong `docs/USER-GUIDE.md`.
 
-Các số liệu đã công bố giữ nguyên, không đổi trong tài liệu này: 347 test Java + 20 test dashboard, CI (`.github/workflows/ci.yml`), benchmark 100 client, chaos C01–C05, digital twin footprints 72×50 m, i18n 299 key. Không đưa số liệu mới vào luồng demo.
+Số liệu hiện tại (không suy diễn thêm): 361 test Java (1 skipped) + 22 test dashboard, CI (`.github/workflows/ci.yml`), benchmark 100 client, chaos C01–C05, digital twin footprints 72×50 m, i18n 299 key. Không đưa số liệu mới vào luồng demo.
 
 ## 2. Ba vai trò
 

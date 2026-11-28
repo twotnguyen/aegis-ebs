@@ -41,7 +41,7 @@ This section records performance mechanisms already in place so proposals do not
 | Triangle budget | Target < 300k triangles for the whole scene (`CONTRACT.md:25`); triangle counting at build: `environment.js:414-430`, `interior.js:247-253`. |
 | Pixel ratio capped | `main.js:75` (`min(devicePixelRatio, 2)`). |
 
-**Important integration note:** `main.js` currently builds a simple twin (40 zone boxes + 11 slabs + 10 label sprites, `main.js:117-207`) and **does not import the `src/three` modules** — assembly belongs to the "assembler" per `CONTRACT.md:28-29`. Therefore the 3D analysis below covers both (a) the simple twin currently running and (b) the module scene once integrated; benchmarks must measure both (§6.4).
+**Integration status:** `main.js` now imports and assembles all `src/three` modules through `safeBuild()` (`main.js:38-50,143-165`); the old simple twin is no longer the current configuration. The 3D analysis below describes the assembled module scene; the empty benchmark tables in §6.5 are unmeasured items, not a pending integration.
 
 ---
 
@@ -221,9 +221,9 @@ Excluding: shadow pass (meshes with `castShadow=true` redrawn into the shadow ma
 
 ### F7. Draw-call budget + `renderer.info` measurement (and assembler integration)
 
-- **Current state:** `CONTRACT.md:25` sets only a triangle budget (<300k), no draw-call budget; build-time triangle counting exists (`environment.js:414-430`, `interior.js:247-253`), `statusViz.getStats` exposes zone/beacon/particle counts (`statusViz.js:637-650`). `main.js` has not assembled the modules (§1.2).
-- **Problem:** No permanent draw-call/frame-time observability → none of F1–F6 can be verified; when the assembler integrates modules, the module scene (~550–670 estimated draw calls, §3.1) will replace the ~66-call twin — a budget is needed to stay within target-machine capability.
-- **Solution:** (a) Add an HUD/overlay measuring `renderer.info.render.calls/triangles`, `memory.textures/geometries`, `programs.length` + a ring buffer of p50/p95/p99 frame time (reuse the `reports.js` ring-buffer pattern); (b) set a main-pass draw-call budget (proposed starting point ≤200 in overview — **a target to be calibrated by measurement, not a measured result**); (c) benchmark the simple twin and the module scene in parallel (§6.4) before deciding on official integration.
+- **Current state:** `CONTRACT.md:25` sets only a triangle budget (<300k), no draw-call budget; build-time triangle counting exists (`environment.js:414-430`, `interior.js:247-253`), `statusViz.getStats` exposes zone/beacon/particle counts (`statusViz.js:637-650`). `main.js` has assembled the modules via `safeBuild()` (`main.js:143-165`); a `renderer.info` HUD is still absent.
+- **Problem:** No permanent draw-call/frame-time observability → none of F1–F6 can be verified; the module scene (~550–670 estimated draw calls, §3.1) is now running instead of the ~66-call twin — a budget is needed to stay within target-machine capability.
+- **Solution:** (a) Add an HUD/overlay measuring `renderer.info.render.calls/triangles`, `memory.textures/geometries`, `programs.length` + a ring buffer of p50/p95/p99 frame time (reuse the `reports.js` ring-buffer pattern); (b) set a main-pass draw-call budget (proposed starting point ≤200 in overview — **a target to be calibrated by measurement, not a measured result**); (c) benchmark the current module scene, comparing with the simple twin only when needed (§6.4).
 - **Expected benefit:** Every 3D proposal has verifiable figures; performance regressions detected as soon as modules are added.
 - **How to measure:** That HUD itself; the §6.4 procedure; record results in the empty §6.5 tables.
 
@@ -339,7 +339,7 @@ WHERE a.ack_kind = 'RECEIVED'
 
 ### 6.4 3D benchmark (in parallel with the backend benchmark)
 
-- Two configurations: (a) current simple `main.js` twin; (b) `src/three` module scene assembled via the assembler (when available) — if not integrated, measure modules with a dedicated page harness per `CONTRACT.md:28-29`.
+- Current configuration: the `src/three` module scene is already assembled in `main.js` via `safeBuild()` (§1.2); use a dedicated page harness per `CONTRACT.md:28-29` only to measure an isolated module.
 - Fixed views: `overview`, zoom to 1 floor (`flyToFloor`), `explode`, `isolateFloor` (`camera.js:8-19`); DPR 1 and 2 (`main.js:75`); day and night (`lighting.js:252-257`).
 - Per configuration: 60s camera orbit along a fixed trajectory; collect `renderer.info.render.calls/triangles`, `memory.textures/geometries`, `programs.length` after each frame; frame time via `performance.now()` → p50/p95/p99 (ring buffer, `reports.js` pattern).
 - A/B variants for F5: transmission on/off, shadow `autoUpdate` on/off; for F2: culling on/off; for F3/F4: before/after batching/atlas.

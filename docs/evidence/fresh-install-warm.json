@@ -16,6 +16,6 @@
     "java": "24.0.1"
   },
   "condition": "WARM CACHE — Maven target/ và node_modules đã có sẵn trong repo; đây KHÔNG phải phép đo clone sạch (cold install).",
-  "interpretation": "Cho thấy scripts/dev.sh + initdb.sh chạy nhanh khi dependency đã nạp; NFR-015 (<30 phút) chưa được chứng minh bằng cold clone trên máy sạch. Không suy diễn thêm.",
+  "interpretation": "Warm-cache measurement only; NFR-015 (<30 min) is evidenced by the 451 s cold clone run in docs/evidence/fresh-install/fresh-1795688539/report.json. No inference beyond these two runs.",
   "raw": "docs/evidence/fresh-install-time.txt"
 }

@@ -4,7 +4,7 @@ AEGIS-EBS · CMP180 capstone · **SIMULATION/TRAINING only**
 
 Tài liệu này mô tả cách build lại toàn bộ hệ thống từ một máy sạch: Maven reactor
 7 module (Java 24) + dashboard `aegis-dashboard` (Node/Vite/Three.js) + SQLite 26 bảng.
-CI chạy đúng các lệnh này trên `ubuntu-latest` — xem [`.github/workflows/ci.yml`](../.github/workflows/ci.yml).
+CI chạy `mvn verify`, tạo cert + classpath, chạy test Python bridge rồi `npm ci && npm test && npm run build`; Bước 4 (DB) và Bước 6 (smoke server) ở dưới là hướng dẫn chạy tay — xem [`.github/workflows/ci.yml`](../.github/workflows/ci.yml).
 
 **NFR-015: fresh install < 30 phút.** Ngân sách tham khảo (máy sạch, mạng bình thường):
 

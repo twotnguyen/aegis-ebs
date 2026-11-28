@@ -51,11 +51,12 @@ jobs:
       # with xvfb-run. sqlite-jdbc native-access warnings are benign.
       - name: Maven verify (full reactor, all tests)
         run: mvn -B -ntp verify
-      # test-task2.py boots ServerMain: a clean checkout has no certs/ or cp.txt
-      # (both gitignored, and mvn verify does not generate the classpath file).
+      # test-task2.py boots ServerMain: a clean checkout has no certs/ or cp.txt.
+      # dependency:build-classpath also needs sibling module jars installed locally.
       - name: Prepare demo TLS certs and server classpath
         run: |
           bash scripts/gen-server-cert.sh
+          mvn -q -DskipTests install
           mvn -q -pl aegis-server dependency:build-classpath -Dmdep.outputFile=cp.txt
 
       - name: Python bridge/script tests

@@ -14,7 +14,7 @@ Hệ thống 4 plane: command (operator/dashboard), delivery (TCP/TLS fanout), p
 | Argon2id password | 🟡 | `Argon2idHasher` (argon2-jvm); tham số demo 16 MiB < khuyến nghị OWASP 19 MiB — cần nâng khi production |
 | Frame giới hạn | ✅ | `FrameCodecImpl` chặn length >65536 TRƯỚC cấp phát; UTF-8 strict (REPORT); JSON single object; version==2; type enum |
 | Bounded writer queue | ✅ | `BoundedWriterQueue` 256/session, priority eviction, slow-client disconnect + audit SLOW_CLIENT_DISCONNECT |
-| Pre-auth TTL/cap | ✅ | `TlsGateway` soTimeout=preAuthTimeoutMs (mặc định 10s) + absolute TTL từ `ClientSession.createdAt` (heartbeat không gia hạn); maxConnections (mặc định 512); audit PRE_AUTH_EXPIRED |
+| Pre-auth TTL/cap | 🟡 | `TlsGateway` có soTimeout=preAuthTimeoutMs (10s), maxConnections (512), audit PRE_AUTH_EXPIRED ✅; **absolute TTL cho phiên đã xác thực chưa có** (`SECURITY.md` §3.7/§8) |
 | requestId idempotency | ✅ | `alert_operations.request_id UNIQUE` + payload_hash canonical; duplicate requestId → trả alert gốc, không tạo mới |
 | ACK cross-device guard | ✅ | `MessageRouter.ack` kiểm deviceId/alertId/revision khớp deliveryId; `DeliveryRepo.recordAck` ràng buộc ownership (M1 fix) |
 | Sanitize error | ✅ | INTERNAL trả thông điệp chung, chi tiết chỉ LOG.warn (NFR-017, S-04 fix) |
@@ -35,7 +35,7 @@ Hệ thống 4 plane: command (operator/dashboard), delivery (TCP/TLS fanout), p
 | T5 | out-of-scope broadcast | Elevation | TargetResolver snapshot + ScopedRBAC | T-08 | ✅ |
 | T6 | malformed frame | DoS/Tamper | frame cap + UTF-8/JSON strict + max depth | T-09, C10 | ✅ |
 | T7 | slow-client exhaustion | DoS | bounded queue 256 + eviction | T-23, C16 | ✅ |
-| T8 | log exposure | Info disclosure | mask secrets, sanitized error | T-28 | ✅ |
+| T8 | log exposure | Info disclosure | sanitized error ✅; masking filter tập trung 🔧 | T-28 | 🟡 |
 | T9 | privileged misuse | Elevation | audit high-risk + (optional dual approval) | C08 | 🟡 |
 | T10 | DB exposure | Info disclosure | file permission, PII minimization | — | 🔧 |
 

@@ -39,7 +39,7 @@ Phần này ghi nhận các cơ chế hiệu năng đã hiện hữu để các 
 | Ngân sách tam giác | Mục tiêu < 300k tam giác toàn cảnh (`CONTRACT.md:25`); đếm tam giác lúc build: `environment.js:414-430`, `interior.js:247-253`. |
 | Pixel ratio giới hạn | `main.js:75` (`min(devicePixelRatio, 2)`). |
 
-**Lưu ý tích hợp quan trọng:** `main.js` hiện dựng twin đơn giản (40 box zone + 11 slab + 10 sprite nhãn, `main.js:117-207`) và **chưa import các module `src/three`** — việc ráp nối thuộc "assembler" theo `CONTRACT.md:28-29`. Vì vậy phân tích 3D bên dưới cover cả (a) twin đơn giản đang chạy và (b) cảnh module khi được tích hợp; benchmark phải đo cả hai (§6.4).
+**Trạng thái tích hợp:** `main.js` đã import và ráp toàn bộ module `src/three` qua `safeBuild()` (`main.js:38-50,143-165`); twin đơn giản cũ không còn là cấu hình hiện tại. Phân tích 3D bên dưới mô tả cảnh module đang chạy; các bảng benchmark trống ở §6.5 là hạng mục chưa đo, không phải chờ tích hợp.
 
 ---
 
@@ -219,9 +219,9 @@ Chưa kể: pass bóng (các mesh `castShadow=true` bị vẽ lại vào shadow 
 
 ### F7. Ngân sách draw call + đo đạc `renderer.info` (và tích hợp assembler)
 
-- **Hiện trạng:** `CONTRACT.md:25` chỉ đặt ngân sách tam giác (<300k), chưa có ngân sách draw call; đếm tam giác lúc build đã có (`environment.js:414-430`, `interior.js:247-253`), `statusViz.getStats`暴露 số zone/beacon/particle (`statusViz.js:637-650`). `main.js` chưa ráp module (§1.2).
-- **Vấn đề:** Không có công cụ quan sát draw call/frame time thường trực → mọi tối ưu F1–F6 không kiểm chứng được; khi assembler tích hợp, cảnh module (~550–670 draw call ước tính, §3.1) sẽ thay twin ~66 draw call — cần ngân sách để không vượt khả năng máy đích.
-- **Giải pháp:** (a) Thêm HUD/overlay đo `renderer.info.render.calls/triangles`, `memory.textures/geometries`, `programs.length` + ring buffer frame time p50/p95/p99 (tái sử dụng pattern ring buffer của `reports.js`); (b) đặt ngân sách draw call pass chính (đề xuất khởi điểm ≤200 ở overview — **con số mục tiêu, phải hiệu chỉnh bằng đo đạc**, không phải kết quả đo); (c) benchmark song song twin đơn giản và cảnh module (§6.4) trước khi quyết định tích hợp chính thức.
+- **Hiện trạng:** `CONTRACT.md:25` chỉ đặt ngân sách tam giác (<300k), chưa có ngân sách draw call; đếm tam giác lúc build đã có (`environment.js:414-430`, `interior.js:247-253`), `statusViz.getStats`暴露 số zone/beacon/particle (`statusViz.js:637-650`). `main.js` đã ráp module qua `safeBuild()` (`main.js:143-165`); HUD `renderer.info` vẫn chưa có.
+- **Vấn đề:** Không có công cụ quan sát draw call/frame time thường trực → mọi tối ưu F1–F6 không kiểm chứng được; cảnh module (~550–670 draw call ước tính, §3.1) đang chạy thay twin ~66 draw call — cần ngân sách để không vượt khả năng máy đích.
+- **Giải pháp:** (a) Thêm HUD/overlay đo `renderer.info.render.calls/triangles`, `memory.textures/geometries`, `programs.length` + ring buffer frame time p50/p95/p99 (tái sử dụng pattern ring buffer của `reports.js`); (b) đặt ngân sách draw call pass chính (đề xuất khởi điểm ≤200 ở overview — **con số mục tiêu, phải hiệu chỉnh bằng đo đạc**, không phải kết quả đo); (c) benchmark cảnh module hiện tại, đối chiếu twin đơn giản chỉ khi cần (§6.4).
 - **Lợi ích kỳ vọng:** Mọi đề xuất 3D có số liệu kiểm chứng; phát hiện hồi quy hiệu năng ngay khi thêm module.
 - **Cách đo:** Chính HUD đó; quy trình §6.4; ghi kết quả vào bảng trống §6.5.
 
@@ -337,7 +337,7 @@ WHERE a.ack_kind = 'RECEIVED'
 
 ### 6.4 Benchmark 3D (song song với benchmark backend)
 
-- Hai cấu hình: (a) twin đơn giản `main.js` hiện tại; (b) cảnh module `src/three` ráp qua assembler (khi có) — nếu chưa tích hợp, đo module bằng harness trang riêng theo `CONTRACT.md:28-29`.
+- Cấu hình hiện tại: cảnh module `src/three` đã ráp trong `main.js` qua `safeBuild()` (§1.2); nếu cần đo riêng từng module, dùng harness trang riêng theo `CONTRACT.md:28-29`.
 - Góc nhìn cố định: `overview`, zoom 1 tầng (`flyToFloor`), `explode`, `isolateFloor` (`camera.js:8-19`); DPR 1 và 2 (`main.js:75`); ngày và đêm (`lighting.js:252-257`).
 - Mỗi cấu hình: 60s quay camera theo quỹ đạo cố định; thu `renderer.info.render.calls/triangles`, `memory.textures/geometries`, `programs.length` sau mỗi frame; frame time bằng `performance.now()` → p50/p95/p99 (ring buffer, pattern `reports.js`).
 - Biến thể A/B cho F5: transmission bật/tắt, shadow `autoUpdate` bật/tắt; cho F2: culling bật/tắt; cho F3/F4: trước/sau khi gom batch/atlas.

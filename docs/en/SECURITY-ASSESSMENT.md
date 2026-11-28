@@ -16,7 +16,7 @@ The system has 4 planes: command (operator/dashboard), delivery (TCP/TLS fanout)
 | Argon2id password | 🟡 | `Argon2idHasher` (argon2-jvm); demo parameters 16 MiB < OWASP recommendation of 19 MiB — must be raised for production |
 | Frame cap | ✅ | `FrameCodecImpl` blocks length >65536 BEFORE allocation; strict UTF-8 (REPORT); single JSON object; version==2; type enum |
 | Bounded writer queue | ✅ | `BoundedWriterQueue` 256/session, priority eviction, slow-client disconnect + SLOW_CLIENT_DISCONNECT audit |
-| Pre-auth TTL/cap | ✅ | `TlsGateway` soTimeout=preAuthTimeoutMs (default 10s) + absolute TTL from `ClientSession.createdAt` (heartbeats do not renew it); maxConnections (default 512); PRE_AUTH_EXPIRED audit |
+| Pre-auth TTL/cap | 🟡 | `TlsGateway` has soTimeout=preAuthTimeoutMs (10s), maxConnections (512), PRE_AUTH_EXPIRED audit ✅; **no absolute TTL for authenticated sessions** (`SECURITY.md` §3.7/§8) |
 | requestId idempotency | ✅ | `alert_operations.request_id UNIQUE` + canonical payload_hash; duplicate requestId → returns original alert, no new one |
 | ACK cross-device guard | ✅ | `MessageRouter.ack` checks deviceId/alertId/revision against deliveryId; `DeliveryRepo.recordAck` enforces ownership (M1 fix) |
 | Sanitized errors | ✅ | INTERNAL returns a generic message, details only in LOG.warn (NFR-017, S-04 fix) |
@@ -37,7 +37,7 @@ The system has 4 planes: command (operator/dashboard), delivery (TCP/TLS fanout)
 | T5 | out-of-scope broadcast | Elevation | TargetResolver snapshot + ScopedRBAC | T-08 | ✅ |
 | T6 | malformed frame | DoS/Tamper | frame cap + strict UTF-8/JSON + max depth | T-09, C10 | ✅ |
 | T7 | slow-client exhaustion | DoS | bounded queue 256 + eviction | T-23, C16 | ✅ |
-| T8 | log exposure | Info disclosure | mask secrets, sanitized errors | T-28 | ✅ |
+| T8 | log exposure | Info disclosure | sanitized errors ✅; centralized masking filter 🔧 | T-28 | 🟡 |
 | T9 | privileged misuse | Elevation | audit for high-risk actions + (optional dual approval) | C08 | 🟡 |
 | T10 | DB exposure | Info disclosure | file permissions, PII minimization | — | 🔧 |
 

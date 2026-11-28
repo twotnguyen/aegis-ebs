@@ -5,7 +5,7 @@
 > **Video demo đã tạo:** `docs/evidence/video/aegis-ebs-demo.mp4` — **720,05 s (12:00)**, 1280×720/24 fps, H.264+AAC, 4,2 MB. Dựng bằng `scripts/make-demo-video.py` từ **evidence thật** (ảnh dashboard LIVE `docs/evidence/dashboard/twin-live-overview.png`, số liệu benchmark/chaos/verify) + voiceover tiếng Việt (`say -v Linh`). Đây là **video thuyết trình có số liệu đã kiểm chứng**, KHÔNG phải bản quay màn hình live 12 phút; metadata trung thực trong `demo-video-meta.json`. Nếu cần bản quay live OBS đúng thao tác, dùng storyboard bên dưới.
 > Kiểm chứng: `ffprobe` → duration 720,046440 s; khung 08:20 trích tại `docs/evidence/video/frame-live-check.png` (đã soát bằng vision: không chồng chữ, có ảnh dashboard LIVE).
 
-## Checklist chuẩn bị trước quay
+## Checklist chuẩn bị trước quay (dành cho bản quay live OBS; video đã dựng từ evidence như nêu ở trên)
 - [ ] `./scripts/dev.sh` BUILD_OK; `./scripts/initdb.sh` + seed; `./scripts/gen-server-cert.sh`.
 - [ ] Server chạy (9443/9444); dashboard `npm run dev` (5173); 1 client JavaFX + simulator fleet sẵn sàng.
 - [ ] Màn hình: dashboard 3D (chính) + terminal lệnh + client popup (phụ).
@@ -27,7 +27,7 @@
 | 11:30–12:00 | Kết | "Hệ thống chứng minh truyền tin tin cậy, chịu lỗi, phân quyền, đo lường trung thực." | Dashboard overview; recap 9 bài CMP180 | Tổng kết + giới hạn demo |
 
 ## Cách quay từng cảnh
-- Dashboard: OBS window capture trình duyệt; dùng phím 1–5 chuyển tab; camera 3D fly-to-floor/cutaway/explode cho cảnh tầng.
+- Dashboard: OBS window capture trình duyệt; dùng phím 1–7 chuyển tab (Twin · Incidents · Chaos · Reports · Funnel · Operator · Admin); camera 3D fly-to-floor/cutaway/explode cho cảnh tầng.
 - Terminal: OBS window capture terminal; gõ lệnh thật (không giả output).
 - Client: OBS window capture JavaFX popup.
 - Voiceover: thu riêng hoặc live; giữ nhãn SIMULATION trong lời dẫn.

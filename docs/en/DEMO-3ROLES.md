@@ -10,7 +10,7 @@ Language: English | Vietnamese original: docs/DEMO-3ROLES.md
 
 The demo is shown on three screens at once, one role per screen, so it is clear who observes, who receives alerts, and who operates. The three roles share one TLS server (`9443`), one status feed (`ws://localhost:9444`) and one HTTP bridge (`http://localhost:9445`); start everything with `bash scripts/demo-web.sh` or the manual commands in `docs/en/USER-GUIDE.md`.
 
-Published figures stay unchanged in this document: 347 Java tests + 20 dashboard tests, CI (`.github/workflows/ci.yml`), 100-client benchmark, chaos C01-C05, digital twin footprints 72x50 m, i18n 299 keys. No new figures are introduced into the demo flow.
+Current figures (no extrapolation): 361 Java tests (1 skipped) + 22 dashboard tests, CI (`.github/workflows/ci.yml`), 100-client benchmark, chaos C01-C05, digital twin footprints 72x50 m, i18n 299 keys. No new figures are introduced into the demo flow.
 
 ## 2. The three roles
 

@@ -97,7 +97,7 @@ Method: list actors/vectors → threatened assets → impact → countermeasures
 - **Immutable grants** (`aegis.core.Grants`): defensive copy in the constructor, accessors return unmodifiable views → mutating the source collection after creation cannot change scope.
 - **Scope from DB, not client** (`aegis.server.RbacService.grantsFor(userId)` ✅): loads `role_grants` → `Grants`. `BUILDING_WIDE_FLOOR = "*"` is the placeholder for building-wide scope (does not match a specific floor grant).
 - **Immutable target snapshot** (`TargetResolver` + `TransactionalPublisher` ✅): resolve devices from the DB at activation time; no out-of-scope devices; snapshot unchanged after activation (FR-009, T-08).
-- 🔧 **Router enforces per message** (blueprint §7.1: "Strictly validate API message types against authenticated role"): the gateway must check `MessageType` against `ClientSession.role()`/`kind()` **before** calling services; `AlertService` assumes "RBAC is enforced by the router BEFORE these methods run". Every denial → `ACCESS_DENIED`/`INVALID_SCOPE` + audit (FR-006, FR-020, NFR-008).
+- ✅ **Router enforces per message** (`MessageRouter.requireOperator`/`requireDevice` + `freshGrants`): `MessageType` is checked against the authenticated role/scope **before** services run; every denial → FORBIDDEN/INVALID_SCOPE + audit (FR-006, FR-020, NFR-008).
 - **No self-elevation**: an operator cannot change its own role/grants (Security Operator persona, blueprint §1.1); grant administration belongs to SYSTEM_ADMIN only.
 
 ### 3.3. Argon2id password storage (against T2, T10)
@@ -128,9 +128,7 @@ Method: list actors/vectors → threatened assets → impact → countermeasures
 - **Exact byte contract**: `uint32 BE length L` + `L bytes strict UTF-8 JSON`; `DataInputStream.readFully` for the 4 header bytes then the body → partial reads handled; coalesced frames consumed correctly with no over-read (✅ `FrameCodecStreamTest`).
 - **Strict UTF-8**: `CharsetDecoder.onMalformedInput(REPORT).onUnmappableCharacter(REPORT)` → invalid UTF-8 rejected (✅).
 - **Strict JSON**: objects only; no trailing tokens after the object; `version` must be integer == 2; `type` in `MessageType` enum; `messageId`/`sentAt` required non-blank; `payload` required (✅ `FrameCodecValidationTest`).
-- **Max depth**:
-  - 🟡 Jackson `2.17.2` applies default `StreamReadConstraints`: `maxNestingDepth = 1000`, `maxStringLength = 20_000_000`. Since frames are capped at 64KiB, string length/depth are indirectly bounded by frame size.
-  - 🔧 **Recommendation**: configure stricter explicit `StreamReadConstraints` (e.g. small `maxNestingDepth`, `maxStringLength` ≤ 64KiB) on the decode `ObjectMapper`, to follow blueprint §7.1 ("too-deep ... JSON") and not depend on library defaults. `FrameCodecImpl`/`Json.MAPPER` do not currently set explicit constraints.
+- **Max depth — ✅ explicit in the decoder:** `FrameCodecImpl.java:34-38` sets `maxNestingDepth=32`, `maxStringLength=65536`, `maxNumberLength=64` on the decode `ObjectMapper`, alongside the 64 KiB frame cap. Server metadata parsing still uses `Json.MAPPER` defaults, but frame payloads always go through `FrameCodecImpl`.
 - **Read timeout + per-connection quota** (blueprint §7.1): 🔧 the gateway must set `setSoTimeout`, limit connection count and frames/second quota against floods (with `RATE_LIMITED`, `SERVER_BUSY`).
 
 ### 3.6. Bounded queue + slow-client policy (against T7)
@@ -362,10 +360,10 @@ Status: **Met** ✅ · **Partial/demo** 🟡 · **Designed (awaiting gateway)** 
 |---|---|---|---|---|
 | A1 | Enforce least *** | Scoped roles; EMPLOYEE/DEVICE cannot publish; minimal grants | ✅ | `ScopedRBAC`, `Grants` |
 | A2 | Deny by default | `Grants.none()` → denied; unmatched role → false | ✅ | `ScopedRBAC.canPublish` |
-| A3 | Check authorization at EVERY request/command | Router checks type against role before services | 🔧 | `AlertService` assumes router; gateway not present |
-| A4 | Prevent horizontal/vertical escalation | Building/floor scope from DB; no self-service privilege change | ✅ 🔧 | `RbacService.grantsFor`; router |
+| A3 | Check authorization at EVERY request/command | `MessageRouter.requireOperator`/`requireDevice` checks type against role before services | ✅ | `MessageRouter.java:293-319`; `ScopedRBACTest` |
+| A4 | Prevent horizontal/vertical escalation | Building/floor scope from DB; no self-service privilege change | ✅ | `RbacService.grantsFor`; router |
 | A5 | Do not trust client-supplied role/scope | Server derives scope from DB, ignores client metadata | ✅ | blueprint §7.2; `TargetResolver` |
-| A6 | Log authorization violations (attributable) | DENIED audit + actor/scope/correlationId | ✅ 🔧 | `AuditService`; router records DENIED |
+| A6 | Log authorization violations (attributable) | DENIED audit + actor/scope/correlationId | ✅ | `AuditService`; router records DENIED |
 | A7 | Fail safely on check errors | `Objects.requireNonNull`; null grants → none | ✅ | `ScopedRBAC`, `Grants` |
 | A8 | Test deny-by-default + abnormal conditions | `ScopedRBACTest` (T-07, C08) | ✅ | 73 core tests |
 | A9 | Separate authentication ≠ authorization | `AuthService` (identity) ≠ `RbacService` (scope) | ✅ | two separate services |
@@ -376,7 +374,7 @@ Status: **Met** ✅ · **Partial/demo** 🟡 · **Designed (awaiting gateway)** 
 |---|---|---|---|---|
 | S1 | Session ID entropy ≥ 64 bit, CSPRNG | UUIDv4 = 122-bit entropy (`SecureRandom`) | ✅ | `Json.uuid()` |
 | S2 | Session ID length ≥ 128 bit, meaningless content | 128-bit UUID, no PII | ✅ | `Json.uuid()` |
-| S3 | Session ID is not authorization evidence outside the authenticated connection | Role/scope checked per command on the session | ✅ 🔧 | PROTOCOL §7.4; router |
+| S3 | Session ID is not authorization evidence outside the authenticated connection | Role/scope checked per command on the session | ✅ | PROTOCOL §7.4; router |
 | S4 | Idle + absolute expiry | Heartbeat suspect (10s/3 misses) ✅; no absolute TTL yet | 🟡 🔧 | `SessionRegistry.sweep`; FR-004 |
 | S5 | Renew session ID on privilege change / against fixation | Reconnect creates new session; renewal on privilege change unclear | 🔧 | UC-03; gateway |
 | S6 | Session revocation (logout/revoke) | `LOGOUT`, `closeAll`, `deviceOnline` close old sessions | ✅ 🔧 | `SessionRegistry`; FR-004 |

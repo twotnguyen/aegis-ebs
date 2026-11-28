@@ -95,7 +95,7 @@ Phương pháp: liệt kê tác nhân/vector → tài sản bị đe dọa → t
 - **Grants bất biến** (`aegis.core.Grants`): defensive copy ở constructor, accessor trả unmodifiable view → sửa collection nguồn sau khi tạo không ảnh hưởng scope.
 - **Scope lấy từ DB, không từ client** (`aegis.server.RbacService.grantsFor(userId)` ✅): nạp `role_grants` → `Grants`. `BUILDING_WIDE_FLOOR = "*"` là placeholder cho scope toàn building (không khớp floor grant cụ thể).
 - **Target snapshot bất biến** (`TargetResolver` + `TransactionalPublisher` ✅): resolve thiết bị từ DB tại thời điểm activate; không device ngoài scope; snapshot không đổi sau activate (FR-009, T-08).
-- 🔧 **Router thực thi theo từng message** (blueprint §7.1: "Strictly validate API message types against authenticated role"): gateway phải kiểm tra `MessageType` so với `ClientSession.role()`/`kind()` **trước khi** gọi service; `AlertService` giả định "RBAC is enforced by the router BEFORE these methods run". Mọi lần từ chối → `ACCESS_DENIED`/`INVALID_SCOPE` + audit (FR-006, FR-020, NFR-008).
+- ✅ **Router thực thi theo từng message** (`MessageRouter.requireOperator`/`requireDevice` + `freshGrants`): `MessageType` được kiểm so với role/scope đã xác thực **trước khi** gọi service; mọi từ chối → FORBIDDEN/INVALID_SCOPE + audit (FR-006, FR-020, NFR-008).
 - **Không tự nâng quyền**: operator không đổi được role/grant của chính mình (persona Security Operator, blueprint §1.1); quản trị grant chỉ thuộc SYSTEM_ADMIN.
 
 ### 3.3. Lưu trữ mật khẩu Argon2id (chống T2, T10)
@@ -126,9 +126,7 @@ Phương pháp: liệt kê tác nhân/vector → tài sản bị đe dọa → t
 - **Đọc đúng byte contract**: `uint32 BE length L` + `L bytes strict UTF-8 JSON`; `DataInputStream.readFully` cho 4 byte header rồi body → xử lý partial read; coalesced frames được tiêu thụ đúng, không over-read (✅ `FrameCodecStreamTest`).
 - **Strict UTF-8**: `CharsetDecoder.onMalformedInput(REPORT).onUnmappableCharacter(REPORT)` → UTF-8 lỗi bị từ chối (✅).
 - **JSON chặt**: chỉ chấp nhận JSON object; cấm trailing tokens sau object; `version` phải là integer == 2; `type` thuộc `MessageType` enum; `messageId`/`sentAt` bắt buộc non-blank; `payload` bắt buộc (✅ `FrameCodecValidationTest`).
-- **Giới hạn độ sâu (max depth)**:
-  - 🟡 Jackson `2.17.2` áp `StreamReadConstraints` mặc định: `maxNestingDepth = 1000`, `maxStringLength = 20_000_000`. Vì frame bị chặn ở 64KiB, độ dài chuỗi/độ sâu thực tế đã bị giới hạn gián tiếp bởi kích thước frame.
-  - 🔧 **Khuyến nghị**: cấu hình `StreamReadConstraints` tường minh chặt hơn (ví dụ `maxNestingDepth` nhỏ, `maxStringLength` ≤ 64KiB) trên `ObjectMapper` dùng cho decode để đúng tinh thần blueprint §7.1 ("too-deep ... JSON") và không phụ thuộc mặc định thư viện. Hiện `FrameCodecImpl`/`Json.MAPPER` chưa đặt ràng buộc tường minh.
+- **Giới hạn độ sâu (max depth) — ✅ tường minh trong decoder:** `FrameCodecImpl.java:34-38` đặt `maxNestingDepth=32`, `maxStringLength=65536`, `maxNumberLength=64` trên `ObjectMapper` decode, cộng hard cap frame 64 KiB. `Json.MAPPER` dùng cho metadata server vẫn ở mặc định nhưng payload frame luôn đi qua `FrameCodecImpl`.
 - **Read timeout + quota mỗi kết nối** (blueprint §7.1): 🔧 gateway phải đặt `setSoTimeout`, giới hạn số kết nối và quota frame/giây để chống flood (kèm `RATE_LIMITED`, `SERVER_BUSY`).
 
 ### 3.6. Hàng đợi bounded + chính sách slow-client (chống T7)
@@ -360,10 +358,10 @@ Trạng thái: **Đạt** ✅ · **Một phần/demo** 🟡 · **Thiết kế (c
 |---|---|---|---|---|
 | A1 | Enforce least *** | Role scoped; EMPLOYEE/DEVICE không publish; grant tối thiểu | ✅ | `ScopedRBAC`, `Grants` |
 | A2 | Deny by default | `Grants.none()` → từ chối; role không khớp → false | ✅ | `ScopedRBAC.canPublish` |
-| A3 | Kiểm tra phân quyền tại MỖI request/command | Router kiểm type theo role trước service | 🔧 | `AlertService` giả định router; gateway chưa có |
-| A4 | Chống leo thang ngang/dọc (horizontal/vertical) | Scope building/floor từ DB; không tự đổi quyền | ✅ 🔧 | `RbacService.grantsFor`; router |
+| A3 | Kiểm tra phân quyền tại MỖI request/command | `MessageRouter.requireOperator`/`requireDevice` kiểm type theo role trước service | ✅ | `MessageRouter.java:293-319`; `ScopedRBACTest` |
+| A4 | Chống leo thang ngang/dọc (horizontal/vertical) | Scope building/floor từ DB; không tự đổi quyền | ✅ | `RbacService.grantsFor`; router |
 | A5 | Không tin client-supplied role/scope | Server suy scope từ DB, bỏ qua metadata client | ✅ | blueprint §7.2; `TargetResolver` |
-| A6 | Ghi log vi phạm phân quyền (attributable) | Audit DENIED + actor/scope/correlationId | ✅ 🔧 | `AuditService`; router ghi DENIED |
+| A6 | Ghi log vi phạm phân quyền (attributable) | Audit DENIED + actor/scope/correlationId | ✅ | `AuditService`; router ghi DENIED |
 | A7 | Fail-safe khi kiểm tra lỗi (terminate safely) | `Objects.requireNonNull`; null grants → none | ✅ | `ScopedRBAC`, `Grants` |
 | A8 | Test deny-by-default + abnormal conditions | `ScopedRBACTest` (T-07, C08) | ✅ | 73 test core |
 | A9 | Tách authentication ≠ authorization | `AuthService` (identity) ≠ `RbacService` (scope) | ✅ | hai service riêng |
@@ -374,7 +372,7 @@ Trạng thái: **Đạt** ✅ · **Một phần/demo** 🟡 · **Thiết kế (c
 |---|---|---|---|---|
 | S1 | Session ID entropy ≥ 64 bit, CSPRNG | UUIDv4 = 122-bit entropy (`SecureRandom`) | ✅ | `Json.uuid()` |
 | S2 | Session ID length ≥ 128 bit, nội dung vô nghĩa | UUID 128-bit, không chứa PII | ✅ | `Json.uuid()` |
-| S3 | Session ID không là bằng chứng phân quyền ngoài kết nối xác thực | Kiểm role/scope mỗi lệnh trên phiên | ✅ 🔧 | PROTOCOL §7.4; router |
+| S3 | Session ID không là bằng chứng phân quyền ngoài kết nối xác thực | Kiểm role/scope mỗi lệnh trên phiên | ✅ | PROTOCOL §7.4; router |
 | S4 | Hết hạn idle + absolute | Heartbeat suspect (10s/3 miss) ✅; TTL tuyệt đối chưa có | 🟡 🔧 | `SessionRegistry.sweep`; FR-004 |
 | S5 | Renew session ID khi đổi quyền / chống fixation | Reconnect tạo phiên mới; renew khi privilege change chưa rõ | 🔧 | UC-03; gateway |
 | S6 | Thu hồi phiên (logout/revoke) | `LOGOUT`, `closeAll`, `deviceOnline` đóng phiên cũ | ✅ 🔧 | `SessionRegistry`; FR-004 |
