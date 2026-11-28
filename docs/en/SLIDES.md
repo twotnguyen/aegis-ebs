@@ -190,7 +190,7 @@ Language: English | Vietnamese original: docs/SLIDES.md
 - **Note:** state limitations proactively, in the spirit of NFR-018 + blueprint §0.2.
 
 ### Slide 15 — Conclusion & future work (10:40–11:15)
-- **Achieved against objectives:** self-built EBSP/2.0 over Java TCP/UDP; two-layer ACK + idempotent retry + dedup + reconnect + crash recovery; scoped RBAC + audit; 3D digital twin + chaos lab + measurement. Evidence: `verify-347-h1h4` (347 Java/14 dashboard), 100-client benchmark, chaos C01–C05, LIVE screenshots. All 4 HIGH findings of the in-depth audit were fixed (`docs/reviews/backend-depth-audit-fixes.md`).
+- **Achieved against objectives:** self-built EBSP/2.0 over Java TCP/UDP; two-layer ACK + idempotent retry + dedup + reconnect + crash recovery; scoped RBAC + audit; 3D digital twin + chaos lab + measurement. Evidence: current verify **361 Java/1 skipped + 22 dashboard** (`docs/evidence/verify/`), 100-client benchmark, chaos C01–C05, LIVE screenshots; archived `verify-347-h1h4` (347/14) kept for history. All 4 HIGH findings of the in-depth audit were fixed (`docs/reviews/backend-depth-audit-fixes.md`).
 - **Future work:** HA/active-passive; PostgreSQL when bottleneck evidence exists; schema-validated CAP XML export; floor edge relay (research); raise Argon2id parameters + real PKI; complete the gateway for wire-level security enforcement.
 - **Note:** conclude against slide 3 objectives; do not claim beyond evidence.
 
@@ -286,9 +286,9 @@ Language: English | Vietnamese original: docs/SLIDES.md
 
 ## 6. Defense preparation checklist
 
-- [ ] Fill in team/student ID/class info (slide 1) and sign the statement of originality in BAO-CAO.
+- [x] Fill in team/student ID/class info (slide 1) and sign the statement of originality in BAO-CAO.
 - [x] Replace **all** `[TODO: real figures]` with real evidence + runId/SHA/machine/timestamp (slides 9, 10) — done; see `docs/evidence/`.
-- [x] Run `mvn -B -ntp verify` across the whole reactor; save 51+ surefire XML files in `docs/evidence/verify/` (347 pass).
+- [x] Run `mvn -B -ntp verify` across the whole reactor; save surefire XML in `docs/evidence/verify/` (archived run: 347 pass; current run: 361 Java/1 skipped + 22 dashboard).
 - [x] Chaos with seeds: C01–C05 really run via `scripts/chaos-run.sh` (`failed=[]`); C06–C16 have unit/integration tests + probes in surefire/reviews.
 - [ ] If a second machine is available: rerun chaos/multicast on a real Win+Mac LAN; currently measured on a single M3 Pro host loopback.
 - [ ] Prepare the demo truststore (`scripts/gen-server-cert.sh`) + verify `keytool -list`; for a 2-machine demo, regenerate the SAN with the real IP.
@@ -302,7 +302,7 @@ Language: English | Vietnamese original: docs/SLIDES.md
 
 ## 7. Slide references
 
-1. `Plan/AEGIS_MASTER_BLUEPRINT.md` — §14 (runbook), §15 (rubric), §16 (Q&A), §11 (observability), §12 (chaos).
+1. `Plan/AEGIS_MASTER_BLUEPRINT.md` — external course blueprint (not part of this repository); §14 (runbook), §15 (rubric), §16 (Q&A), §11 (observability), §12 (chaos).
 2. `docs/DEMO-RUNBOOK.md`, `docs/TEST-PLAN.md`, `docs/PROTOCOL.md`, `docs/SECURITY.md`, `docs/BAO-CAO.md`.
 3. `aegis-network-lab/src/main/resources/lab-guide.md` (UDP/multicast lab + benchmark).
 4. `aegis-dashboard/docs/status-contract.md` (status feed `status/1`).

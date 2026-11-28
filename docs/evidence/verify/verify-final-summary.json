@@ -1,0 +1,39 @@
+{
+  "runId": "verify-final",
+  "source": "docs/evidence/verify/verify-final.log",
+  "command": "mvn -B -ntp verify",
+  "finishedAt": "2026-11-26T17:13:14+07:00",
+  "commitSha": null,
+  "commitNote": "Commit SHA was not captured in the log; not inferred from nearby commits.",
+  "machine": {
+    "os": "Windows 10 x64",
+    "java": "24.0.1 (Temurin/HotSpot)"
+  },
+  "result": "BUILD SUCCESS",
+  "java": {
+    "tests": 361,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1,
+    "skippedNote": "UnicastFallbackTest: multicast unavailable on the measurement host.",
+    "byModule": {
+      "aegis-protocol": 57,
+      "aegis-core": 76,
+      "aegis-persistence": 59,
+      "aegis-server": 73,
+      "aegis-client": 45,
+      "aegis-simulator": 20,
+      "aegis-network-lab": 31
+    }
+  },
+  "dashboard": {
+    "tests": 22,
+    "passed": 22,
+    "source": "docs/evidence/fresh-install/fresh-1795688539/report.json:41"
+  },
+  "surefireXml": {
+    "files": 52,
+    "path": "docs/evidence/verify/<module>/TEST-*.xml",
+    "note": "Copied from module target/surefire-reports after this run. The older verify-summary.json (347 Java / 14 dashboard) is retained for the archived run."
+  }
+}

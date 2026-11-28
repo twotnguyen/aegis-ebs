@@ -43,7 +43,7 @@ jobs:
           cache-dependency-path: aegis-dashboard/package-lock.json
 
       # JavaFX headless note: aegis-client depends on JavaFX 24, but its current
-      # tests (AlertRecord/ClientConfig/InboxStore) never start the JavaFX
+      # tests never start the JavaFX
       # toolkit, so plain headless ubuntu-latest works — no X server needed.
       # If JavaFX UI tests are added later, run surefire with Monocle headless:
       #   -Dglass.platform=Monocle -Dmonocle.platform=Headless -Dprism.order=sw
@@ -51,6 +51,12 @@ jobs:
       # with xvfb-run. sqlite-jdbc native-access warnings are benign.
       - name: Maven verify (full reactor, all tests)
         run: mvn -B -ntp verify
+      # test-task2.py boots ServerMain: a clean checkout has no certs/ or cp.txt
+      # (both gitignored, and mvn verify does not generate the classpath file).
+      - name: Prepare demo TLS certs and server classpath
+        run: |
+          bash scripts/gen-server-cert.sh
+          mvn -q -pl aegis-server dependency:build-classpath -Dmdep.outputFile=cp.txt
 
       - name: Python bridge/script tests
         run: python3 scripts/test-admin-bridge.py && python3 scripts/test-task2.py

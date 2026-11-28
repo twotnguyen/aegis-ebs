@@ -458,7 +458,7 @@ Các nguồn ngoài giáo trình: [3] (ExecutorService, JSSE/TLS) → 2.3, 2.8; 
 
 Chương này trình bày kết quả thực nghiệm của đồ án theo trình tự: yêu cầu hệ thống (3.1), phân tích và thiết kế (3.2), cài đặt (3.3), hướng dẫn biên dịch/chạy (3.4), kiểm thử và số liệu đo (3.5), cuối cùng là ưu điểm và hạn chế (3.6). Toàn bộ mô tả thiết kế và cài đặt được đối chiếu trực tiếp với mã nguồn của repository `aegis-ebs` tại commit `9f0dad2` (ngày 21/11/2026) và các tài liệu đặc tả `docs/ARCHITECTURE.md`, `docs/ERD.md`, `docs/PROTOCOL.md`, `docs/TEST-PLAN.md`, `docs/SECURITY.md`.
 
-**Nguyên tắc trung thực số liệu (NFR-018).** Mọi số liệu đo đạc trình bày trong chương này đều phải là kết quả của lần chạy thật, kèm điều kiện đo (runId, commit SHA, cấu hình máy, thời điểm). Những hạng mục đã có bằng chứng thật (kiểm kê test từ mã nguồn, kết quả peer-review trong `docs/reviews/`, báo cáo benchmark `target/lab-report/fanout-report.json`, lần chạy test dashboard được xác minh lại) được trích dẫn đúng nguồn. Những hạng mục đã có lần chạy thật được điền số liệu kèm runId/commit SHA/máy đo: **tải 100 client clean** (p50=773/p95=1307/p99=1334 ms, ACK_RECEIVED 100%, runId `276dedf5`, mục 3.5.5), **chaos C01–C05** (lossy/delayed/duplicate/flaky/mixed fleet 50, mục 3.5.4), **verify toàn reactor** (347 test Java, 14 dashboard, runId `verify-347-h1h4`), **dashboard LIVE** (`docs/evidence/dashboard/`). Bằng chứng lưu trong `docs/evidence/` (benchmark + chaos + verify + dashboard, kèm DB/log/audit/XML thật). Những hạng mục chưa đo được — CPU/RSS/WAL chi tiết, tải mixed/200–500, LAN 2 máy thật, tên nhóm/MSSV, mục lục Word tự động — vẫn ghi rõ là giới hạn/placeholder, không suy diễn. Hệ thống là **SIMULATION/TRAINING**, không thay thế hệ thống báo cháy/sơ tán đã chứng nhận.
+**Nguyên tắc trung thực số liệu (NFR-018).** Mọi số liệu đo đạc trình bày trong chương này đều phải là kết quả của lần chạy thật, kèm điều kiện đo (runId, commit SHA, cấu hình máy, thời điểm). Những hạng mục đã có bằng chứng thật (kiểm kê test từ mã nguồn, kết quả peer-review trong `docs/reviews/`, báo cáo benchmark và chaos trong `docs/evidence/`, lần chạy test dashboard được xác minh lại) được trích dẫn đúng nguồn. Các lần chạy đã ghi nhận: **tải 100 client clean** (p50=773/p95=1307/p99=1334 ms, ACK_RECEIVED 100%, runId `276dedf5`, mục 3.5.5), **chaos C01–C05** (lossy/delayed/duplicate/flaky/mixed fleet 50, mục 3.5.4), **verify toàn reactor** (lần lưu trữ `verify-347-h1h4`: 347 Java/14 dashboard; lần hiện tại: 361 Java/1 skipped + 22 dashboard, mục 3.5.1), **fresh install cold** (451 s, runId `fresh-1795688539`) và **dashboard LIVE** (`docs/evidence/dashboard/`). Bằng chứng lưu trong `docs/evidence/` (benchmark + chaos + verify + dashboard, kèm DB/log/audit/XML thật). Những hạng mục chưa đo được — CPU/RSS/WAL chi tiết, tải mixed/200–500, LAN 2 máy thật — vẫn ghi rõ là giới hạn, không suy diễn. Hệ thống là **SIMULATION/TRAINING**, không thay thế hệ thống báo cháy/sơ tán đã chứng nhận.
 
 ### 3.1 Yêu cầu hệ thống
 
@@ -1251,7 +1251,7 @@ Chiến lược kiểm thử của đồ án gồm năm tầng: (i) unit test lo
 
 #### 3.5.1 Kiểm kê test và kết quả unit/integration
 
-**Kiểm kê từ mã nguồn (mốc lịch sử HEAD `9f0dad2`, trước vòng khắc phục H1–H4).** Đếm annotation `@Test` khi đó được **318 phương thức test**; riêng `FrameCodecFixtureTest` có 4 phương thức `@ParameterizedTest` với 5 fixture (4 × 5 = 20 lượt), tổng **338** lượt Java. Sau vòng khắc phục 4 finding HIGH của backend-depth-audit, thêm `DeliveryRankGuardTest` (7) và hai test `ServerSecurityFixesTest` (H3/H4) nên hiện kiểm kê **327 phương thức + 20 fixture = 347 lượt Java**, phân bố theo Bảng 3.13 và nghiệm thu `verify-347-h1h4` ở cuối mục này. Dashboard có **14 test** trong `test/logic.test.js` chạy bằng `node --test`.
+**Kiểm kê từ mã nguồn (mốc lịch sử HEAD `9f0dad2`, trước vòng khắc phục H1–H4).** Đếm annotation `@Test` khi đó được **318 phương thức test**; riêng `FrameCodecFixtureTest` có 4 phương thức `@ParameterizedTest` với 5 fixture (4 × 5 = 20 lượt), tổng **338** lượt Java. Sau vòng khắc phục 4 finding HIGH của backend-depth-audit, thêm `DeliveryRankGuardTest` (7) và hai test `ServerSecurityFixesTest` (H3/H4) nên kiểm kê tại mốc đó **327 phương thức + 20 fixture = 347 lượt Java**, phân bố theo Bảng 3.13 và nghiệm thu `verify-347-h1h4` ở cuối mục này. Dashboard có **14 test** tại mốc đó trong `test/logic.test.js` chạy bằng `node --test`.
 
 **Bảng 3.13.** Kiểm kê test theo module và kết quả các lần chạy gần nhất.
 
@@ -1269,7 +1269,7 @@ Chiến lược kiểm thử của đồ án gồm năm tầng: (i) unit test lo
 
 Mốc lịch sử: commit `f68f9e2` (khắc phục S-01…S-10) ghi nhận 338 test xanh tại thời điểm đó. Kế tiếp, `verify-8f01589` đối chiếu đủ 338 XML, rồi `verify-347-h1h4` (bảng dưới) ghi nhận **347** lượt sau khi khắc phục H1–H4:
 
-**Kết quả nghiệm thu chính thức `mvn -B -ntp verify` (đo thật trên máy đo, mới nhất).** runId `verify-347-h1h4`, máy Apple M3 Pro (12 nhân, 18 GB RAM, arm64), macOS 15.7.3, Java 24.0.1; timestamp 2026-11-21T21:55Z; **BUILD SUCCESS**, 0 failure / 0 error / 0 skipped. Bằng chứng: `docs/evidence/verify/verify-summary.json` + surefire XML trong `docs/evidence/verify/<module>/`. Lần chạy này diễn ra **sau khi khắc phục 4 finding HIGH của backend-depth-audit (H1–H4)**, nên tổng test tăng từ 338 lên **347** (thêm 7 `DeliveryRankGuardTest` + 2 `ServerSecurityFixesTest` H3/H4); xem `docs/reviews/backend-depth-audit-fixes.md`.
+**Kết quả nghiệm thu `mvn -B -ntp verify` (lần lưu trữ, không còn là lần mới nhất).** runId `verify-347-h1h4`, máy Apple M3 Pro (12 nhân, 18 GB RAM, arm64), macOS 15.7.3, Java 24.0.1; timestamp 2026-11-21T21:55Z; **BUILD SUCCESS**, 0 failure / 0 error / 0 skipped. Bằng chứng: `docs/evidence/verify/verify-summary.json` + surefire XML trong `docs/evidence/verify/<module>/`. Lần chạy này diễn ra **sau khi khắc phục 4 finding HIGH của backend-depth-audit (H1–H4)**, nên tổng test tăng từ 338 lên **347** (thêm 7 `DeliveryRankGuardTest` + 2 `ServerSecurityFixesTest` H3/H4); xem `docs/reviews/backend-depth-audit-fixes.md`. Lần chạy hiện tại (361 Java/1 skipped, 22 dashboard) được ghi ở cuối mục 3.5.1.
 
 | Module | Tests | Failures | Errors | Skipped |
 |---|---|---|---|---|
@@ -1289,11 +1289,13 @@ Lần chạy này xác nhận đủ 347 lượt test Java trên đĩa (kể cả
 
 **Test dashboard (đã chạy thật khi viết báo cáo).** Ngày 21/11/2026, người viết báo cáo chạy lại `npm test` trong `aegis-dashboard` trên máy phát triển (macOS 15.7.3, Node v26.7.0, HEAD `9f0dad2`): kết quả **14 test pass / 0 fail / 0 skipped**, thời gian 232,65 ms, exit 0. Phạm vi phủ của 14 test: quy tắc severity chuẩn tắc (`deriveSeverity`), hợp nhất delta (`applyDelta`), event store (seq/giới hạn kích thước/subscriber), suy sự kiện từ delta, mock incident tất định, vá trạng thái zone không đột biến input, replay controller (load/step/seek/stop/play), ba lệnh chaos mock (DROP_ACK/DELAY_ACK/DISCONNECT), command log tới acknowledged, funnel clamp theo targeted, metrics history/CSV escape/sparkline, và tính nhất quán của mock delta + chaos transform.
 
-**Verify hiện tại (2026-11-26, Windows 10 x64, JDK 24.0.1).** `mvn -B -ntp verify` toàn reactor: **BUILD SUCCESS, 361 test Java, 0 failure/0 error, 1 skipped** (protocol 57, core 76, persistence 59, server 73, client 45, simulator 20, network-lab 31 — `UnicastFallbackTest` có 1 test skipped do multicast không khả dụng). `npm test`: 22/22 pass; script Python: 17/17 pass. Số liệu lịch sử 347/338 ở trên giữ nguyên để đối chiếu bằng chứng cũ.
+**Test dashboard hiện tại.** `npm test` trong `aegis-dashboard`: **22/22 pass** (đo ngày 26/11/2026 trên Windows 10 x64, JDK 24.0.1). Lần chạy 14/14 ngày 21/11/2026 ở trên chỉ là mốc lịch sử, không còn là số hiện tại.
+
+**Verify hiện tại (2026-11-26, Windows 10 x64, JDK 24.0.1).** `mvn -B -ntp verify` toàn reactor: **BUILD SUCCESS, 361 test Java, 0 failure/0 error, 1 skipped** (protocol 57, core 76, persistence 59, server 73, client 45, simulator 20, network-lab 31 — `UnicastFallbackTest` có 1 test skipped do multicast không khả dụng). `npm test`: 22/22 pass; script Python: 17/17 pass. Bằng chứng: `docs/evidence/verify/verify-final.log`, `docs/evidence/verify/verify-final-summary.json` và 52 surefire XML trong `docs/evidence/verify/<module>/` (commit SHA không được ghi trong log). Số liệu lịch sử 347/338 ở trên giữ nguyên để đối chiếu bằng chứng cũ.
 
 #### 3.5.2 Kiểm thử chấp nhận T-01…T-30
 
-Ma trận acceptance trong `docs/TEST-PLAN.md` ánh xạ 30 bài kiểm thử chấp nhận vào module phụ trách và lệnh/verify (Bảng 3.14). Nhiều kịch bản đã được phủ bởi test tự động hiện có (ví dụ: T-01…T-04 bởi 56 lượt test protocol; T-07 bởi ScopedRBACTest 13 test; T-09/T-10 bởi TransactionalPublisherTest 6 test; T-18/T-19 bởi RecoveryScannerTest 4 test và TlsLoopbackIntegrationTest crash-recovery; T-22 bởi PrioritySchedulerTest 13 test; T-23 bởi BoundedWriterQueueTest 6 test và integration slow-client; T-24/T-25 bởi DiscoveryTrustTest/MulticastLoopbackTest/UnicastFallbackTest). Tuy nhiên, **nghiệm thu end-to-end theo đúng lệnh/verify của TEST-PLAN trên máy đo chính thức chưa được thực hiện** — cột kết quả giữ placeholder.
+Ma trận acceptance trong `docs/TEST-PLAN.md` ánh xạ 30 bài kiểm thử chấp nhận vào module phụ trách và lệnh/verify (Bảng 3.14). Nhiều kịch bản đã được phủ bởi test tự động hiện có (ví dụ: T-01…T-04 bởi 57 lượt test protocol; T-07 bởi ScopedRBACTest 13 test; T-09/T-10 bởi TransactionalPublisherTest 6 test; T-18/T-19 bởi RecoveryScannerTest 4 test và TlsLoopbackIntegrationTest crash-recovery; T-22 bởi PrioritySchedulerTest 13 test; T-23 bởi BoundedWriterQueueTest 6 test và integration slow-client; T-24/T-25 bởi DiscoveryTrustTest/MulticastLoopbackTest/UnicastFallbackTest). Cột "Kết quả chính thức" trong Bảng 3.14 đã được điền từ bằng chứng thật (surefire XML, `docs/evidence/`, peer-review); các scenario không có file run riêng ghi rõ nguồn đối chiếu tương ứng.
 
 **Bảng 3.14.** Ma trận kiểm thử chấp nhận T-01…T-30 (theo `docs/TEST-PLAN.md`).
 
@@ -1344,7 +1346,7 @@ Sau khắc phục, kiểm kê test tăng tương ứng: server 52 → 63 (thêm 
 
 #### 3.5.4 Kiểm thử chaos C01…C16
 
-Mười sáu kịch bản chaos (blueprint §12, ánh xạ trong `docs/TEST-PLAN.md`) được tiêm lỗi qua simulator (FaultInjector có seed), các adapter của gateway và điều khiển mạng lab. Bảng 3.16 liệt kê kịch bản, cơ chế tiêm và module/test liên quan hiện có; **kết quả chạy end-to-end chính thức từng kịch bản (seed, lệnh, runId, log/report/ảnh) chưa có** — giữ placeholder.
+Mười sáu kịch bản chaos (blueprint §12, ánh xạ trong `docs/TEST-PLAN.md`) được tiêm lỗi qua simulator (FaultInjector có seed), các adapter của gateway và điều khiển mạng lab. Bảng 3.16 ghi cơ chế tiêm và nguồn bằng chứng: C01–C05 có run thật (`docs/evidence/chaos/*.json`, runId e1943406/d04af662/04c97420/8e92ca3c/3fe99b11); C06–C16 có unit/integration + probe trong surefire/`docs/reviews/`, **không có file chaos-run riêng** (đã nêu rõ trong `docs/TEST-PLAN.md:45`). Không suy diễn kết quả end-to-end cho các scenario chưa có run riêng.
 
 **Bảng 3.16.** Ma trận chaos C01…C16 và ánh xạ kiểm thử.
 
@@ -1441,7 +1443,7 @@ Bằng chứng kèm theo: `bench.db` (SQLite thật, 100 delivery RECEIVED), `se
 
 #### 3.5.7 Dashboard digital twin và quan sát
 
-Các chức năng dashboard đã được kiểm chứng bằng 14 test logic (mục 3.5.1) và hợp đồng `status/1`: dựng tòa nhà 10 tầng × 4 zone bằng Three.js [7], tô màu zone theo severity chuẩn tắc từ bộ đếm delivery thật, funnel targeted/written/received/user-ack không đếm trùng sau retry, replay timeline incident chỉ đọc, chaos mock ba lệnh, xuất báo cáo/CSV, badge MOCK FEED/LIVE phân biệt rõ nguồn dữ liệu. Ảnh chụp nghiệm thu từ lần chạy thật với server + client + simulator:
+Các chức năng dashboard đã được kiểm chứng bằng 22 test logic (mục 3.5.1) và hợp đồng `status/1`: dựng tòa nhà 10 tầng × 4 zone bằng Three.js [7], tô màu zone theo severity chuẩn tắc từ bộ đếm delivery thật, funnel targeted/written/received/user-ack không đếm trùng sau retry, replay timeline incident chỉ đọc, chaos mock ba lệnh, xuất báo cáo/CSV, badge MOCK FEED/LIVE phân biệt rõ nguồn dữ liệu. Ảnh chụp nghiệm thu từ lần chạy thật với server + client + simulator:
 
 **Hình 3.8.** Dashboard digital twin 3D ở trạng thái **LIVE** (ảnh chụp thật từ lần chạy server + simulator fleet, không phải mock).
 
@@ -1463,7 +1465,7 @@ Các chức năng dashboard đã được kiểm chứng bằng 14 test logic (m
 | Acceptance T-01…T-30 | `verify-347-h1h4` + benchmark + chaos + dashboard | **Đã điền Bảng 3.14** |
 | Chaos C01…C16 có seed | C01–C05 đo thật (`docs/evidence/chaos/*.json`, runId e1943406/d04af662/04c97420/8e92ca3c/3fe99b11); C06–C16 unit/integration + probe | **Đã điền Bảng 3.16** |
 | Tải 100 client, p50/p95/p99, tỷ lệ ACK | `docs/evidence/benchmark/276dedf5…/summary.json` (p50=773/p95=1307/p99=1334 ms, ACK 100%) | Có clean-100; mixed/200–500 + CPU/RSS/WAL mở rộng |
-| Fresh install < 30 phút (T-30) | `docs/evidence/fresh-install-warm.{json,txt}` — 1,74 s warm-cache, FK sạch | Có warm; cold clone chưa đo |
+| Fresh install < 30 phút (T-30) | `docs/evidence/fresh-install/fresh-1795688539/report.json` — 451 s từ clone đến server ready (cold cache); `fresh-install-warm.{json,txt}` — 1,74 s warm-cache | **Đáp ứng NFR-015** (ngân sách 1800 s); toolchain có sẵn |
 | Ảnh dashboard 3D nghiệm thu | `docs/evidence/dashboard/twin-live-overview.{png,json}`: LIVE, 40 device, 4 alert, severity thật | Có overview LIVE; cutaway/explode mở rộng |
 | Thư mục bằng chứng chuẩn hóa | `docs/evidence/`: benchmark/, chaos/ (5 preset + runs), dashboard/, verify/ (51+ XML) kèm runId/commit/máy/timestamp | Đã có; mở rộng CPU/RSS + LAN thật |
 
@@ -1492,7 +1494,7 @@ Các chức năng dashboard đã được kiểm chứng bằng 14 test logic (m
 - **Rủi ro bảo trì do ngữ nghĩa retry (S-13, LOW).** Hành vi hiện đúng (initial + 3 retry, cửa sổ 3/6/12s) nhưng javadoc core và cách gọi server ngược quy ước index; `Math.max(1, maxRetries)` khiến cấu hình 0 vẫn retry 1 lần — cần chuẩn hóa để tránh off-by-one tương lai.
 - **Phiên operator chưa TTL tuyệt đối/renew sessionId khi đổi quyền (S-19, LOW); banner ServerMain in credential demo công khai (S-21, lab-only).** Đây là các điểm hardening đã ghi nhận, không phải lỗ hổng trong ngữ cảnh lab một server tin cậy.
 - **Chưa xuất bản tin CAP XML chuẩn [2]** (mới tham khảo ngữ nghĩa metadata); chưa đánh giá an toàn mật mã hình thức; chưa điều khiển thiết bị vật lý thật.
-- **Bằng chứng định lượng chính thức chưa đầy đủ.** Acceptance T-01…T-30, chaos C01…C16 end-to-end, tải 100 client với p50/p95/p99/tỷ lệ ACK và ảnh dashboard nghiệm thu còn ở dạng placeholder; `docs/evidence/` chưa tồn tại; benchmark mới đo trên một host loopback. Báo cáo chưa thể kết luận định lượng về độ tin cậy phân phối trên tải thật cho tới khi các lần chạy này hoàn tất.
+- **Phạm vi bằng chứng định lượng.** Đã có kết quả thật cho T-01…T-30 (Bảng 3.14), C01–C05 (run seed thật), tải 100 client clean (p50/p95/p99, ACK 100%), fresh-install cold 451 s và ảnh dashboard LIVE. C06–C16 chỉ có unit/integration + probe, không có file run riêng; CPU/RSS/WAL chi tiết, tải mixed/200–500 và LAN 2 máy thật chưa đo. Benchmark mới chạy trên một host loopback nên chưa kết luận được độ tin cậy phân phối trên LAN thật.
 
 ## CHƯƠNG 4. KẾT LUẬN VÀ KIẾN NGHỊ
 

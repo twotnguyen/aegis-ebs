@@ -1,134 +1,89 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="aegis.server.ServerSecurityFixesTest" time="9.008" tests="12" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="aegis.server.ServerSecurityFixesTest" time="10.625" tests="15" errors="0" skipped="0" failures="0">
   <properties>
-    <property name="java.specification.version" value="27"/>
-    <property name="sun.jnu.encoding" value="UTF-8"/>
-    <property name="java.class.path" value="/Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/aegis-server/target/test-classes:/Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/aegis-server/target/classes:/Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/aegis-protocol/target/aegis-protocol-1.0.0.jar:/Users/twot/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.17.2/jackson-databind-2.17.2.jar:/Users/twot/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.17.2/jackson-annotations-2.17.2.jar:/Users/twot/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.17.2/jackson-core-2.17.2.jar:/Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/aegis-core/target/aegis-core-1.0.0.jar:/Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/aegis-persistence/target/aegis-persistence-1.0.0.jar:/Users/twot/.m2/repository/org/xerial/sqlite-jdbc/3.46.1.0/sqlite-jdbc-3.46.1.0.jar:/Users/twot/.m2/repository/org/slf4j/slf4j-api/2.0.13/slf4j-api-2.0.13.jar:/Users/twot/.m2/repository/ch/qos/logback/logback-classic/1.5.6/logback-classic-1.5.6.jar:/Users/twot/.m2/repository/ch/qos/logback/logback-core/1.5.6/logback-core-1.5.6.jar:/Users/twot/.m2/repository/de/mkammerer/argon2-jvm/2.11/argon2-jvm-2.11.jar:/Users/twot/.m2/repository/de/mkammerer/argon2-jvm-nolibs/2.11/argon2-jvm-nolibs-2.11.jar:/Users/twot/.m2/repository/net/java/dev/jna/jna/5.8.0/jna-5.8.0.jar:/Users/twot/.m2/repository/org/junit/jupiter/junit-jupiter/5.10.3/junit-jupiter-5.10.3.jar:/Users/twot/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.10.3/junit-jupiter-api-5.10.3.jar:/Users/twot/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/Users/twot/.m2/repository/org/junit/platform/junit-platform-commons/1.10.3/junit-platform-commons-1.10.3.jar:/Users/twot/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/twot/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.10.3/junit-jupiter-params-5.10.3.jar:/Users/twot/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.10.3/junit-jupiter-engine-5.10.3.jar:/Users/twot/.m2/repository/org/junit/platform/junit-platform-engine/1.10.3/junit-platform-engine-1.10.3.jar:"/>
-    <property name="java.vm.vendor" value="Homebrew"/>
+    <property name="java.specification.version" value="24"/>
+    <property name="sun.cpu.isalist" value="amd64"/>
+    <property name="sun.jnu.encoding" value="Cp1252"/>
+    <property name="java.class.path" value="D:\Documents\CODE\LTM\CMP180\aegis-ebs\aegis-server\target\test-classes;D:\Documents\CODE\LTM\CMP180\aegis-ebs\aegis-server\target\classes;D:\Documents\CODE\LTM\CMP180\aegis-ebs\aegis-protocol\target\aegis-protocol-1.0.0.jar;C:\Users\Admin\.m2\repository\com\fasterxml\jackson\core\jackson-databind\2.17.2\jackson-databind-2.17.2.jar;C:\Users\Admin\.m2\repository\com\fasterxml\jackson\core\jackson-annotations\2.17.2\jackson-annotations-2.17.2.jar;C:\Users\Admin\.m2\repository\com\fasterxml\jackson\core\jackson-core\2.17.2\jackson-core-2.17.2.jar;D:\Documents\CODE\LTM\CMP180\aegis-ebs\aegis-core\target\aegis-core-1.0.0.jar;D:\Documents\CODE\LTM\CMP180\aegis-ebs\aegis-persistence\target\aegis-persistence-1.0.0.jar;C:\Users\Admin\.m2\repository\org\xerial\sqlite-jdbc\3.46.1.0\sqlite-jdbc-3.46.1.0.jar;C:\Users\Admin\.m2\repository\org\slf4j\slf4j-api\2.0.13\slf4j-api-2.0.13.jar;C:\Users\Admin\.m2\repository\ch\qos\logback\logback-classic\1.5.6\logback-classic-1.5.6.jar;C:\Users\Admin\.m2\repository\ch\qos\logback\logback-core\1.5.6\logback-core-1.5.6.jar;C:\Users\Admin\.m2\repository\de\mkammerer\argon2-jvm\2.11\argon2-jvm-2.11.jar;C:\Users\Admin\.m2\repository\de\mkammerer\argon2-jvm-nolibs\2.11\argon2-jvm-nolibs-2.11.jar;C:\Users\Admin\.m2\repository\net\java\dev\jna\jna\5.8.0\jna-5.8.0.jar;C:\Users\Admin\.m2\repository\org\junit\jupiter\junit-jupiter\5.10.3\junit-jupiter-5.10.3.jar;C:\Users\Admin\.m2\repository\org\junit\jupiter\junit-jupiter-api\5.10.3\junit-jupiter-api-5.10.3.jar;C:\Users\Admin\.m2\repository\org\opentest4j\opentest4j\1.3.0\opentest4j-1.3.0.jar;C:\Users\Admin\.m2\repository\org\junit\platform\junit-platform-commons\1.10.3\junit-platform-commons-1.10.3.jar;C:\Users\Admin\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;C:\Users\Admin\.m2\repository\org\junit\jupiter\junit-jupiter-params\5.10.3\junit-jupiter-params-5.10.3.jar;C:\Users\Admin\.m2\repository\org\junit\jupiter\junit-jupiter-engine\5.10.3\junit-jupiter-engine-5.10.3.jar;C:\Users\Admin\.m2\repository\org\junit\platform\junit-platform-engine\1.10.3\junit-platform-engine-1.10.3.jar;"/>
+    <property name="java.vm.vendor" value="Oracle Corporation"/>
     <property name="sun.arch.data.model" value="64"/>
-    <property name="java.vendor.url" value="https://github.com/Homebrew/homebrew-core/issues"/>
-    <property name="user.timezone" value="Asia/Ho_Chi_Minh"/>
-    <property name="os.name" value="Mac OS X"/>
-    <property name="java.vm.specification.version" value="27"/>
+    <property name="user.variant" value=""/>
+    <property name="java.vendor.url" value="https://java.oracle.com/"/>
+    <property name="user.timezone" value="GMT+07:00"/>
+    <property name="user.country.format" value="VN"/>
+    <property name="os.name" value="Windows 11"/>
+    <property name="java.vm.specification.version" value="24"/>
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
-    <property name="user.country" value="VN"/>
-    <property name="sun.boot.library.path" value="/opt/homebrew/Cellar/openjdk/27.0.1.1/libexec/openjdk.jdk/Contents/Home/lib"/>
-    <property name="sun.java.command" value="/Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/aegis-server/target/surefire/surefirebooter-20261121220104207_13.jar /Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/aegis-server/target/surefire 2026-11-21T22-01-00_796-jvmRun1 surefire-20261121220104207_11tmp surefire_3-20261121220104207_12tmp"/>
-    <property name="http.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
+    <property name="user.country" value="US"/>
+    <property name="sun.boot.library.path" value="C:\Program Files\Java\jdk-24\bin"/>
+    <property name="sun.java.command" value="C:\Users\Admin\AppData\Local\Temp\surefire7065671198997437606\surefirebooter-20261126171125557_13.jar C:\Users\Admin\AppData\Local\Temp\surefire7065671198997437606 2026-11-26T17-11-15_563-jvmRun1 surefire-20261126171125557_11tmp surefire_3-20261126171125557_12tmp"/>
     <property name="jdk.debug" value="release"/>
-    <property name="surefire.test.class.path" value="/Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/aegis-server/target/test-classes:/Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/aegis-server/target/classes:/Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/aegis-protocol/target/aegis-protocol-1.0.0.jar:/Users/twot/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.17.2/jackson-databind-2.17.2.jar:/Users/twot/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.17.2/jackson-annotations-2.17.2.jar:/Users/twot/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.17.2/jackson-core-2.17.2.jar:/Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/aegis-core/target/aegis-core-1.0.0.jar:/Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/aegis-persistence/target/aegis-persistence-1.0.0.jar:/Users/twot/.m2/repository/org/xerial/sqlite-jdbc/3.46.1.0/sqlite-jdbc-3.46.1.0.jar:/Users/twot/.m2/repository/org/slf4j/slf4j-api/2.0.13/slf4j-api-2.0.13.jar:/Users/twot/.m2/repository/ch/qos/logback/logback-classic/1.5.6/logback-classic-1.5.6.jar:/Users/twot/.m2/repository/ch/qos/logback/logback-core/1.5.6/logback-core-1.5.6.jar:/Users/twot/.m2/repository/de/mkammerer/argon2-jvm/2.11/argon2-jvm-2.11.jar:/Users/twot/.m2/repository/de/mkammerer/argon2-jvm-nolibs/2.11/argon2-jvm-nolibs-2.11.jar:/Users/twot/.m2/repository/net/java/dev/jna/jna/5.8.0/jna-5.8.0.jar:/Users/twot/.m2/repository/org/junit/jupiter/junit-jupiter/5.10.3/junit-jupiter-5.10.3.jar:/Users/twot/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.10.3/junit-jupiter-api-5.10.3.jar:/Users/twot/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/Users/twot/.m2/repository/org/junit/platform/junit-platform-commons/1.10.3/junit-platform-commons-1.10.3.jar:/Users/twot/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/twot/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.10.3/junit-jupiter-params-5.10.3.jar:/Users/twot/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.10.3/junit-jupiter-engine-5.10.3.jar:/Users/twot/.m2/repository/org/junit/platform/junit-platform-engine/1.10.3/junit-platform-engine-1.10.3.jar:"/>
+    <property name="surefire.test.class.path" value="D:\Documents\CODE\LTM\CMP180\aegis-ebs\aegis-server\target\test-classes;D:\Documents\CODE\LTM\CMP180\aegis-ebs\aegis-server\target\classes;D:\Documents\CODE\LTM\CMP180\aegis-ebs\aegis-protocol\target\aegis-protocol-1.0.0.jar;C:\Users\Admin\.m2\repository\com\fasterxml\jackson\core\jackson-databind\2.17.2\jackson-databind-2.17.2.jar;C:\Users\Admin\.m2\repository\com\fasterxml\jackson\core\jackson-annotations\2.17.2\jackson-annotations-2.17.2.jar;C:\Users\Admin\.m2\repository\com\fasterxml\jackson\core\jackson-core\2.17.2\jackson-core-2.17.2.jar;D:\Documents\CODE\LTM\CMP180\aegis-ebs\aegis-core\target\aegis-core-1.0.0.jar;D:\Documents\CODE\LTM\CMP180\aegis-ebs\aegis-persistence\target\aegis-persistence-1.0.0.jar;C:\Users\Admin\.m2\repository\org\xerial\sqlite-jdbc\3.46.1.0\sqlite-jdbc-3.46.1.0.jar;C:\Users\Admin\.m2\repository\org\slf4j\slf4j-api\2.0.13\slf4j-api-2.0.13.jar;C:\Users\Admin\.m2\repository\ch\qos\logback\logback-classic\1.5.6\logback-classic-1.5.6.jar;C:\Users\Admin\.m2\repository\ch\qos\logback\logback-core\1.5.6\logback-core-1.5.6.jar;C:\Users\Admin\.m2\repository\de\mkammerer\argon2-jvm\2.11\argon2-jvm-2.11.jar;C:\Users\Admin\.m2\repository\de\mkammerer\argon2-jvm-nolibs\2.11\argon2-jvm-nolibs-2.11.jar;C:\Users\Admin\.m2\repository\net\java\dev\jna\jna\5.8.0\jna-5.8.0.jar;C:\Users\Admin\.m2\repository\org\junit\jupiter\junit-jupiter\5.10.3\junit-jupiter-5.10.3.jar;C:\Users\Admin\.m2\repository\org\junit\jupiter\junit-jupiter-api\5.10.3\junit-jupiter-api-5.10.3.jar;C:\Users\Admin\.m2\repository\org\opentest4j\opentest4j\1.3.0\opentest4j-1.3.0.jar;C:\Users\Admin\.m2\repository\org\junit\platform\junit-platform-commons\1.10.3\junit-platform-commons-1.10.3.jar;C:\Users\Admin\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;C:\Users\Admin\.m2\repository\org\junit\jupiter\junit-jupiter-params\5.10.3\junit-jupiter-params-5.10.3.jar;C:\Users\Admin\.m2\repository\org\junit\jupiter\junit-jupiter-engine\5.10.3\junit-jupiter-engine-5.10.3.jar;C:\Users\Admin\.m2\repository\org\junit\platform\junit-platform-engine\1.10.3\junit-platform-engine-1.10.3.jar;"/>
     <property name="sun.cpu.endian" value="little"/>
-    <property name="user.home" value="/Users/twot"/>
+    <property name="user.home" value="C:\Users\Admin"/>
     <property name="user.language" value="en"/>
     <property name="java.specification.vendor" value="Oracle Corporation"/>
-    <property name="java.version.date" value="2026-11-17"/>
-    <property name="java.home" value="/opt/homebrew/Cellar/openjdk/27.0.1.1/libexec/openjdk.jdk/Contents/Home"/>
-    <property name="file.separator" value="/"/>
-    <property name="basedir" value="/Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/aegis-server"/>
+    <property name="java.version.date" value="2025-04-15"/>
+    <property name="java.home" value="C:\Program Files\Java\jdk-24"/>
+    <property name="file.separator" value="\"/>
+    <property name="basedir" value="D:\Documents\CODE\LTM\CMP180\aegis-ebs\aegis-server"/>
     <property name="java.vm.compressedOopsMode" value="Zero based"/>
     <property name="line.separator" value="&#10;"/>
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
-    <property name="apple.awt.application.name" value="ForkedBooter"/>
-    <property name="surefire.real.class.path" value="/Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/aegis-server/target/surefire/surefirebooter-20261121220104207_13.jar"/>
+    <property name="surefire.real.class.path" value="C:\Users\Admin\AppData\Local\Temp\surefire7065671198997437606\surefirebooter-20261126171125557_13.jar"/>
+    <property name="user.script" value=""/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
-    <property name="ftp.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
-    <property name="java.runtime.version" value="27.0.1.1"/>
-    <property name="user.name" value="twot"/>
-    <property name="stdout.encoding" value="UTF-8"/>
-    <property name="path.separator" value=":"/>
-    <property name="os.version" value="15.7.3"/>
-    <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
+    <property name="java.runtime.version" value="24.0.1+9-30"/>
+    <property name="user.name" value="Admin"/>
+    <property name="stdout.encoding" value="Cp1252"/>
+    <property name="path.separator" value=";"/>
+    <property name="os.version" value="10.0"/>
+    <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
     <property name="file.encoding" value="UTF-8"/>
-    <property name="jnidispatch.path" value="/Users/twot/Library/Caches/JNA/temp/jna15470325331501923360.tmp"/>
-    <property name="java.vm.name" value="OpenJDK 64-Bit Server VM"/>
-    <property name="jna.platform.library.path" value="/usr/lib:/usr/lib"/>
-    <property name="java.vendor.version" value="Homebrew"/>
-    <property name="localRepository" value="/Users/twot/.m2/repository"/>
+    <property name="jnidispatch.path" value="C:\Users\Admin\AppData\Local\Temp\jna-63116079\jna4843013384598121968.dll"/>
+    <property name="java.vm.name" value="Java HotSpot(TM) 64-Bit Server VM"/>
+    <property name="localRepository" value="C:\Users\Admin\.m2\repository"/>
     <property name="jna.loaded" value="true"/>
-    <property name="java.vendor.url.bug" value="https://github.com/Homebrew/homebrew-core/issues"/>
-    <property name="java.io.tmpdir" value="/var/folders/r0/09_8jh4s0zs7xbj5h1m4_9gm0000gn/T/"/>
-    <property name="java.version" value="27.0.1.1"/>
-    <property name="user.dir" value="/Users/twot/Documents/CODE/LTM/CMP180/aegis-ebs/aegis-server"/>
-    <property name="os.arch" value="aarch64"/>
+    <property name="java.vendor.url.bug" value="https://bugreport.java.com/bugreport/"/>
+    <property name="java.io.tmpdir" value="C:\Users\Admin\AppData\Local\Temp\"/>
+    <property name="java.version" value="24.0.1"/>
+    <property name="user.dir" value="D:\Documents\CODE\LTM\CMP180\aegis-ebs\aegis-server"/>
+    <property name="os.arch" value="amd64"/>
     <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
-    <property name="native.encoding" value="UTF-8"/>
-    <property name="java.library.path" value="/Users/twot/Library/Java/Extensions:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java:."/>
+    <property name="user.language.format" value="vi"/>
+    <property name="sun.os.patch.level" value=""/>
+    <property name="native.encoding" value="Cp1252"/>
+    <property name="java.library.path" value="C:\Program Files\Java\jdk-24\bin;C:\Windows\Sun\Java\bin;C:\Windows\system32;C:\Windows;C:\Users\Admin\AppData\Local\Tern\omp\bin;C:\Program Files (x86)\VMware\VMware Workstation\bin\;C:\Program Files\Common Files\Oracle\Java\javapath;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\MinGW\MinGW\bin;C:\altera\13.0sp1\quartus\bin;C:\Program Files\Git\cmd;C:\Program Files\Tailscale\;C:\Program Files (x86)\Microsoft SQL Server\160\Tools\Binn\;C:\Program Files\Microsoft SQL Server\160\Tools\Binn\;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\;C:\Program Files\Microsoft SQL Server\160\DTS\Binn\;C:\Program Files\Microsoft SQL Server\150\Tools\Binn\;C:\Program Files\Microsoft SQL Server\170\Tools\Binn\;C:\Program Files\NVIDIA Corporation\NVIDIA App\NvDLISR;D:\laragon\bin\php\php-8.3.30-Win32-vs16-x64;D:\composer;C:\Program Files\GitHub CLI\;C:\Program Files (x86)\cloudflared\;C:\Program Files\nodejs\;C:\Users\Admin\.herdr\packages\standalone\releases\0.9.5-x86_64-pc-windows-msvc;C:\Users\Admin\.pi\agent\bin;C:\Users\Admin\AppData\Local\hermes\bin;C:\Users\Admin\AppData\Local\Microsoft\WindowsApps;C:\Users\Admin\.local\bin;C:\Users\Admin\bin;C:\Users\Admin\AppData\Local\Programs\orca\resources\bin;C:\Users\Admin\AppData\Local\Programs\Cua\cua-driver\bin;C:\Users\Admin\.bun\bin;D:\Documents\Flutter\flutter\bin;C:\Users\Admin\AppData\Local\Programs\Tern;C:\Users\Admin\AppData\Local\Microsoft\WinGet\Packages\jqlang.jq_Microsoft.Winget.Source_8wekyb3d8bbwe;C:\Users\Admin\AppData\Local\Microsoft\WinGet\Packages\mvdan.shfmt_Microsoft.Winget.Source_8wekyb3d8bbwe;C:\Users\Admin\AppData\Local\Microsoft\WinGet\Packages\koalaman.shellcheck_Microsoft.Winget.Source_8wekyb3d8bbwe;C:\Users\Admin\AppData\Local\Programs\herdr-app;C:\Users\Admin\AppData\Local\Programs\herdr-core;C:\Users\Admin\AppData\Roaming\hex\bin;C:\Users\Admin\AppData\Roaming\npm;C:\Users\Admin\AppData\Local\Microsoft\WinGet\Packages\SQLite.SQLite_Microsoft.Winget.Source_8wekyb3d8bbwe;C:\Users\Admin\AppData\Local\Programs\apache-maven-3.9.9\apache-maven-3.9.9\bin;C:\Users\Admin\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-9.1-full_build\bin;C:\Program Files\Git\bin;C:\Program Files\Git\usr\bin;."/>
     <property name="java.vm.info" value="mixed mode, sharing"/>
-    <property name="stderr.encoding" value="UTF-8"/>
-    <property name="java.vendor" value="Homebrew"/>
-    <property name="java.vm.version" value="27.0.1.1"/>
-    <property name="stdin.encoding" value="UTF-8"/>
-    <property name="sun.io.unicode.encoding" value="UnicodeBig"/>
-    <property name="socksNonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
-    <property name="java.class.version" value="71.0"/>
+    <property name="stderr.encoding" value="Cp1252"/>
+    <property name="java.vendor" value="Oracle Corporation"/>
+    <property name="java.vm.version" value="24.0.1+9-30"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
+    <property name="java.class.version" value="68.0"/>
   </properties>
-  <testcase name="statusSubscribeEnforcesRoleAndScope" classname="aegis.server.ServerSecurityFixesTest" time="0.13">
-    <system-out><![CDATA[22:01:05.605 [main] INFO aegis.server.StatusFeedServer -- status feed listening on ws://localhost:49522/ (status/1)
-22:01:05.699 [main] INFO aegis.server.TlsGateway -- EBSP/2.0 TLS gateway listening on port 49523
-22:01:05.700 [main] INFO aegis.server.AegisServer -- aegis-server up: TLS 49523 WS 49522 building AEGIS-BLD-A db /var/folders/r0/09_8jh4s0zs7xbj5h1m4_9gm0000gn/T/aegis-sec6605808916010820440/sec.db
+  <testcase name="statusSubscribeEnforcesRoleAndScope" classname="aegis.server.ServerSecurityFixesTest" time="0.397">
+    <system-out><![CDATA[17:11:39.482 [main] INFO aegis.server.StatusFeedServer -- status feed listening on ws://localhost:54504/ (status/1)
+17:11:39.661 [main] INFO aegis.server.TlsGateway -- EBSP/2.0 TLS gateway listening on port 54505
+17:11:39.663 [main] INFO aegis.server.AegisServer -- aegis-server up: TLS 54505 WS 54504 building AEGIS-BLD-A db C:\Users\Admin\AppData\Local\Temp\aegis-sec8684519668005832045\sec.db
 ]]></system-out>
   </testcase>
-  <testcase name="ackUserRequiresVerifiedUserIdAndFlagsDuplicates" classname="aegis.server.ServerSecurityFixesTest" time="0.038"/>
-  <testcase name="internalErrorsDoNotLeakExceptionDetails" classname="aegis.server.ServerSecurityFixesTest" time="0.069">
-    <system-out><![CDATA[22:01:06.015 [virtual-61] WARN aegis.server.MessageRouter -- command ALERT_UPDATE failed
+  <testcase name="ackUserRequiresVerifiedUserIdAndFlagsDuplicates" classname="aegis.server.ServerSecurityFixesTest" time="0.155"/>
+  <testcase name="internalErrorsDoNotLeakExceptionDetails" classname="aegis.server.ServerSecurityFixesTest" time="0.058">
+    <system-out><![CDATA[17:11:40.500 [virtual-87] WARN aegis.server.MessageRouter -- command ALERT_UPDATE failed
 java.util.NoSuchElementException: No value present
-	at java.base/java.util.Optional.orElseThrow(Optional.java:381)
-	at aegis.server.AlertService.update(AlertService.java:184)
-	at aegis.server.MessageRouter.alertUpdate(MessageRouter.java:388)
-	at aegis.server.MessageRouter.route(MessageRouter.java:107)
-	at aegis.server.TlsGateway.readLoop(TlsGateway.java:130)
-	at aegis.server.TlsGateway.lambda$acceptLoop$0(TlsGateway.java:108)
-	at java.base/java.util.concurrent.ThreadPerTaskExecutor$TaskRunner.run(ThreadPerTaskExecutor.java:291)
-	at java.base/java.lang.VirtualThread.run(VirtualThread.java:470)
-]]></system-out>
-  </testcase>
-  <testcase name="alertUpdateRollsBackAsOneTransaction" classname="aegis.server.ServerSecurityFixesTest" time="0.081">
-    <system-out><![CDATA[22:01:06.062 [virtual-61] WARN aegis.server.AlertService -- update failed alertId=13f723b5-dc93-49a1-8d56-8fffdb9aa884
-org.sqlite.SQLiteException: [SQLITE_CONSTRAINT_TRIGGER] A RAISE function within a trigger fired, causing the SQL statement to abort (simulated crash)
-	at org.sqlite.core.DB.newSQLException(DB.java:1179)
-	at org.sqlite.core.DB.newSQLException(DB.java:1190)
-	at org.sqlite.core.DB.execute(DB.java:985)
-	at org.sqlite.core.DB.executeUpdate(DB.java:1054)
-	at org.sqlite.jdbc3.JDBC3PreparedStatement.lambda$executeLargeUpdate$2(JDBC3PreparedStatement.java:129)
-	at org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout(JDBC3Statement.java:454)
-	at org.sqlite.jdbc3.JDBC3PreparedStatement.executeLargeUpdate(JDBC3PreparedStatement.java:124)
-	at org.sqlite.jdbc3.JDBC3PreparedStatement.executeUpdate(JDBC3PreparedStatement.java:105)
-	at aegis.server.ServerStore.insertOperationOn(ServerStore.java:302)
-	at aegis.server.ServerStore.applyUpdate(ServerStore.java:349)
-	at aegis.server.AlertService.update(AlertService.java:189)
-	at aegis.server.MessageRouter.alertUpdate(MessageRouter.java:388)
-	at aegis.server.MessageRouter.route(MessageRouter.java:107)
-	at aegis.server.TlsGateway.readLoop(TlsGateway.java:130)
-	at aegis.server.TlsGateway.lambda$acceptLoop$0(TlsGateway.java:108)
-	at java.base/java.util.concurrent.ThreadPerTaskExecutor$TaskRunner.run(ThreadPerTaskExecutor.java:291)
-	at java.base/java.lang.VirtualThread.run(VirtualThread.java:470)
-]]></system-out>
-  </testcase>
-  <testcase name="alertCancelRollsBackAsOneTransaction" classname="aegis.server.ServerSecurityFixesTest" time="0.065">
-    <system-out><![CDATA[22:01:06.153 [virtual-61] WARN aegis.server.AlertService -- cancel failed alertId=b459962a-b89a-4882-b560-b02bed19c1b9
-org.sqlite.SQLiteException: [SQLITE_CONSTRAINT_TRIGGER] A RAISE function within a trigger fired, causing the SQL statement to abort (simulated crash)
-	at org.sqlite.core.DB.newSQLException(DB.java:1179)
-	at org.sqlite.core.DB.newSQLException(DB.java:1190)
-	at org.sqlite.core.DB.execute(DB.java:985)
-	at org.sqlite.core.DB.executeUpdate(DB.java:1054)
-	at org.sqlite.jdbc3.JDBC3PreparedStatement.lambda$executeLargeUpdate$2(JDBC3PreparedStatement.java:129)
-	at org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout(JDBC3Statement.java:454)
-	at org.sqlite.jdbc3.JDBC3PreparedStatement.executeLargeUpdate(JDBC3PreparedStatement.java:124)
-	at org.sqlite.jdbc3.JDBC3PreparedStatement.executeUpdate(JDBC3PreparedStatement.java:105)
-	at aegis.server.ServerStore.insertOperationOn(ServerStore.java:302)
-	at aegis.server.ServerStore.applyCancel(ServerStore.java:383)
-	at aegis.server.AlertService.cancel(AlertService.java:227)
-	at aegis.server.MessageRouter.alertCancel(MessageRouter.java:411)
+	at java.base/java.util.Optional.orElseThrow(Optional.java:377)
+	at aegis.server.AlertService.update(AlertService.java:212)
+	at aegis.server.MessageRouter.alertUpdate(MessageRouter.java:392)
 	at aegis.server.MessageRouter.route(MessageRouter.java:108)
 	at aegis.server.TlsGateway.readLoop(TlsGateway.java:130)
 	at aegis.server.TlsGateway.lambda$acceptLoop$0(TlsGateway.java:108)
 	at java.base/java.util.concurrent.ThreadPerTaskExecutor$TaskRunner.run(ThreadPerTaskExecutor.java:291)
-	at java.base/java.lang.VirtualThread.run(VirtualThread.java:470)
+	at java.base/java.lang.VirtualThread.run(VirtualThread.java:466)
 ]]></system-out>
   </testcase>
-  <testcase name="incidentWritesRollBackAsOneTransaction" classname="aegis.server.ServerSecurityFixesTest" time="0.016">
-    <system-out><![CDATA[22:01:06.165 [virtual-61] WARN aegis.server.IncidentService -- incident create failed building=AEGIS-BLD-A
+  <testcase name="alertUpdateRollsBackAsOneTransaction" classname="aegis.server.ServerSecurityFixesTest" time="0.167">
+    <system-out><![CDATA[17:11:40.585 [virtual-87] WARN aegis.server.AlertService -- update failed alertId=190e10d2-cbe0-4af9-99cb-d5b81eb970da
 org.sqlite.SQLiteException: [SQLITE_CONSTRAINT_TRIGGER] A RAISE function within a trigger fired, causing the SQL statement to abort (simulated crash)
 	at org.sqlite.core.DB.newSQLException(DB.java:1179)
 	at org.sqlite.core.DB.newSQLException(DB.java:1190)
@@ -138,16 +93,19 @@ org.sqlite.SQLiteException: [SQLITE_CONSTRAINT_TRIGGER] A RAISE function within 
 	at org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout(JDBC3Statement.java:454)
 	at org.sqlite.jdbc3.JDBC3PreparedStatement.executeLargeUpdate(JDBC3PreparedStatement.java:124)
 	at org.sqlite.jdbc3.JDBC3PreparedStatement.executeUpdate(JDBC3PreparedStatement.java:105)
-	at aegis.server.ServerStore.insertIncidentEventOn(ServerStore.java:249)
-	at aegis.server.ServerStore.createIncidentAtomic(ServerStore.java:426)
-	at aegis.server.IncidentService.create(IncidentService.java:53)
-	at aegis.server.MessageRouter.incidentCreate(MessageRouter.java:314)
-	at aegis.server.MessageRouter.route(MessageRouter.java:104)
+	at aegis.server.ServerStore.insertOperationOn(ServerStore.java:305)
+	at aegis.server.ServerStore.applyUpdate(ServerStore.java:352)
+	at aegis.server.AlertService.update(AlertService.java:217)
+	at aegis.server.MessageRouter.alertUpdate(MessageRouter.java:392)
+	at aegis.server.MessageRouter.route(MessageRouter.java:108)
 	at aegis.server.TlsGateway.readLoop(TlsGateway.java:130)
 	at aegis.server.TlsGateway.lambda$acceptLoop$0(TlsGateway.java:108)
 	at java.base/java.util.concurrent.ThreadPerTaskExecutor$TaskRunner.run(ThreadPerTaskExecutor.java:291)
-	at java.base/java.lang.VirtualThread.run(VirtualThread.java:470)
-22:01:06.173 [virtual-61] WARN aegis.server.IncidentService -- incident transition failed incidentId=119f6c13-0aa9-4596-89e2-e7be0ab35e4b
+	at java.base/java.lang.VirtualThread.run(VirtualThread.java:466)
+]]></system-out>
+  </testcase>
+  <testcase name="alertCancelRollsBackAsOneTransaction" classname="aegis.server.ServerSecurityFixesTest" time="0.124">
+    <system-out><![CDATA[17:11:40.743 [virtual-87] WARN aegis.server.AlertService -- cancel failed alertId=d5c3fd57-974c-462a-9b39-37d978dca19f
 org.sqlite.SQLiteException: [SQLITE_CONSTRAINT_TRIGGER] A RAISE function within a trigger fired, causing the SQL statement to abort (simulated crash)
 	at org.sqlite.core.DB.newSQLException(DB.java:1179)
 	at org.sqlite.core.DB.newSQLException(DB.java:1190)
@@ -157,42 +115,86 @@ org.sqlite.SQLiteException: [SQLITE_CONSTRAINT_TRIGGER] A RAISE function within 
 	at org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout(JDBC3Statement.java:454)
 	at org.sqlite.jdbc3.JDBC3PreparedStatement.executeLargeUpdate(JDBC3PreparedStatement.java:124)
 	at org.sqlite.jdbc3.JDBC3PreparedStatement.executeUpdate(JDBC3PreparedStatement.java:105)
-	at aegis.server.ServerStore.insertIncidentEventOn(ServerStore.java:249)
-	at aegis.server.ServerStore.transitionIncidentAtomic(ServerStore.java:452)
-	at aegis.server.IncidentService.transition(IncidentService.java:79)
-	at aegis.server.MessageRouter.incidentTransition(MessageRouter.java:335)
+	at aegis.server.ServerStore.insertOperationOn(ServerStore.java:305)
+	at aegis.server.ServerStore.applyCancel(ServerStore.java:386)
+	at aegis.server.AlertService.cancel(AlertService.java:255)
+	at aegis.server.MessageRouter.alertCancel(MessageRouter.java:415)
+	at aegis.server.MessageRouter.route(MessageRouter.java:109)
+	at aegis.server.TlsGateway.readLoop(TlsGateway.java:130)
+	at aegis.server.TlsGateway.lambda$acceptLoop$0(TlsGateway.java:108)
+	at java.base/java.util.concurrent.ThreadPerTaskExecutor$TaskRunner.run(ThreadPerTaskExecutor.java:291)
+	at java.base/java.lang.VirtualThread.run(VirtualThread.java:466)
+]]></system-out>
+  </testcase>
+  <testcase name="incidentWritesRollBackAsOneTransaction" classname="aegis.server.ServerSecurityFixesTest" time="0.094">
+    <system-out><![CDATA[17:11:40.808 [virtual-87] WARN aegis.server.IncidentService -- incident create failed building=AEGIS-BLD-A
+org.sqlite.SQLiteException: [SQLITE_CONSTRAINT_TRIGGER] A RAISE function within a trigger fired, causing the SQL statement to abort (simulated crash)
+	at org.sqlite.core.DB.newSQLException(DB.java:1179)
+	at org.sqlite.core.DB.newSQLException(DB.java:1190)
+	at org.sqlite.core.DB.execute(DB.java:985)
+	at org.sqlite.core.DB.executeUpdate(DB.java:1054)
+	at org.sqlite.jdbc3.JDBC3PreparedStatement.lambda$executeLargeUpdate$2(JDBC3PreparedStatement.java:129)
+	at org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout(JDBC3Statement.java:454)
+	at org.sqlite.jdbc3.JDBC3PreparedStatement.executeLargeUpdate(JDBC3PreparedStatement.java:124)
+	at org.sqlite.jdbc3.JDBC3PreparedStatement.executeUpdate(JDBC3PreparedStatement.java:105)
+	at aegis.server.ServerStore.insertIncidentEventOn(ServerStore.java:250)
+	at aegis.server.ServerStore.createIncidentAtomic(ServerStore.java:429)
+	at aegis.server.IncidentService.create(IncidentService.java:53)
+	at aegis.server.MessageRouter.incidentCreate(MessageRouter.java:318)
 	at aegis.server.MessageRouter.route(MessageRouter.java:105)
 	at aegis.server.TlsGateway.readLoop(TlsGateway.java:130)
 	at aegis.server.TlsGateway.lambda$acceptLoop$0(TlsGateway.java:108)
 	at java.base/java.util.concurrent.ThreadPerTaskExecutor$TaskRunner.run(ThreadPerTaskExecutor.java:291)
-	at java.base/java.lang.VirtualThread.run(VirtualThread.java:470)
+	at java.base/java.lang.VirtualThread.run(VirtualThread.java:466)
+17:11:40.859 [virtual-87] WARN aegis.server.IncidentService -- incident transition failed incidentId=98456093-c452-4aa2-898e-0d9f665af31c
+org.sqlite.SQLiteException: [SQLITE_CONSTRAINT_TRIGGER] A RAISE function within a trigger fired, causing the SQL statement to abort (simulated crash)
+	at org.sqlite.core.DB.newSQLException(DB.java:1179)
+	at org.sqlite.core.DB.newSQLException(DB.java:1190)
+	at org.sqlite.core.DB.execute(DB.java:985)
+	at org.sqlite.core.DB.executeUpdate(DB.java:1054)
+	at org.sqlite.jdbc3.JDBC3PreparedStatement.lambda$executeLargeUpdate$2(JDBC3PreparedStatement.java:129)
+	at org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout(JDBC3Statement.java:454)
+	at org.sqlite.jdbc3.JDBC3PreparedStatement.executeLargeUpdate(JDBC3PreparedStatement.java:124)
+	at org.sqlite.jdbc3.JDBC3PreparedStatement.executeUpdate(JDBC3PreparedStatement.java:105)
+	at aegis.server.ServerStore.insertIncidentEventOn(ServerStore.java:250)
+	at aegis.server.ServerStore.transitionIncidentAtomic(ServerStore.java:455)
+	at aegis.server.IncidentService.transition(IncidentService.java:79)
+	at aegis.server.MessageRouter.incidentTransition(MessageRouter.java:339)
+	at aegis.server.MessageRouter.route(MessageRouter.java:106)
+	at aegis.server.TlsGateway.readLoop(TlsGateway.java:130)
+	at aegis.server.TlsGateway.lambda$acceptLoop$0(TlsGateway.java:108)
+	at java.base/java.util.concurrent.ThreadPerTaskExecutor$TaskRunner.run(ThreadPerTaskExecutor.java:291)
+	at java.base/java.lang.VirtualThread.run(VirtualThread.java:466)
 ]]></system-out>
   </testcase>
-  <testcase name="preAuthConnectionsExpireButAuthenticatedOnesSurvive" classname="aegis.server.ServerSecurityFixesTest" time="6.169">
-    <system-out><![CDATA[22:01:07.711 [virtual-79] INFO aegis.server.TlsGateway -- pre-auth session expired session=4cf24e58-21eb-4e24-b776-7ec4c6311755 reason=read timeout
-22:01:09.417 [virtual-82] INFO aegis.server.TlsGateway -- pre-auth session expired session=e91de385-7d18-4568-a916-67d2ce9796ce reason=ttl
+  <testcase name="preAuthConnectionsExpireButAuthenticatedOnesSurvive" classname="aegis.server.ServerSecurityFixesTest" time="5.881">
+    <system-out><![CDATA[17:11:42.410 [virtual-104] INFO aegis.server.TlsGateway -- pre-auth session expired session=0b1eded0-d04d-4590-9dfc-ca70035f2af9 reason=read timeout
+17:11:44.047 [virtual-107] INFO aegis.server.TlsGateway -- pre-auth session expired session=5c9e8c39-40ee-4a36-86aa-13e30e546441 reason=ttl
 ]]></system-out>
   </testcase>
-  <testcase name="connectionCapRejectsExcessSockets" classname="aegis.server.ServerSecurityFixesTest" time="1.595">
-    <system-out><![CDATA[22:01:12.436 [virtual-57] WARN aegis.server.TlsGateway -- connection cap 12 reached; rejecting /127.0.0.1:49548
-22:01:12.437 [virtual-57] WARN aegis.server.TlsGateway -- connection cap 12 reached; rejecting /127.0.0.1:49549
-22:01:12.438 [virtual-57] WARN aegis.server.TlsGateway -- connection cap 12 reached; rejecting /127.0.0.1:49550
-22:01:12.439 [virtual-57] WARN aegis.server.TlsGateway -- connection cap 12 reached; rejecting /127.0.0.1:49551
-22:01:13.925 [virtual-90] INFO aegis.server.TlsGateway -- pre-auth session expired session=c100e49b-e466-41cc-b1e5-fc002be83ad3 reason=read timeout
-22:01:13.926 [virtual-92] INFO aegis.server.TlsGateway -- pre-auth session expired session=82b17767-15e1-4178-8e56-43d1af3d47a8 reason=read timeout
-22:01:13.928 [virtual-88] INFO aegis.server.TlsGateway -- pre-auth session expired session=878b917c-f366-4b0c-bec6-be0204e1a02e reason=read timeout
-22:01:13.930 [virtual-94] INFO aegis.server.TlsGateway -- pre-auth session expired session=9ffac288-d0ec-4a60-b28e-8b9728f31c23 reason=read timeout
-22:01:13.932 [virtual-100] INFO aegis.server.TlsGateway -- pre-auth session expired session=dfc882a6-157f-40ec-9a53-6c5b60e90544 reason=read timeout
-22:01:13.933 [virtual-96] INFO aegis.server.TlsGateway -- pre-auth session expired session=2b5f19eb-f6f6-4bd1-b994-dc2dde2ceed8 reason=read timeout
-22:01:13.934 [virtual-98] INFO aegis.server.TlsGateway -- pre-auth session expired session=97cad8dd-1856-4943-818d-a8e64895b87e reason=read timeout
-22:01:13.936 [virtual-102] INFO aegis.server.TlsGateway -- pre-auth session expired session=e338d6b3-46ec-43d3-8bac-6360dba2a562 reason=read timeout
-22:01:13.938 [virtual-104] INFO aegis.server.TlsGateway -- pre-auth session expired session=96b3614d-559d-420d-94c9-f7e20a45f4ad reason=read timeout
-22:01:13.939 [virtual-106] INFO aegis.server.TlsGateway -- pre-auth session expired session=f0b28e2b-f6bd-4412-86d6-8f44d741efcb reason=read timeout
-22:01:13.942 [virtual-108] INFO aegis.server.TlsGateway -- pre-auth session expired session=eb1287f6-33d3-4e11-b2dc-d6227420d5d5 reason=read timeout
+  <testcase name="connectionCapRejectsExcessSockets" classname="aegis.server.ServerSecurityFixesTest" time="1.619">
+    <system-out><![CDATA[17:11:46.883 [virtual-83] WARN aegis.server.TlsGateway -- connection cap 12 reached; rejecting /127.0.0.1:64560
+17:11:46.886 [virtual-83] WARN aegis.server.TlsGateway -- connection cap 12 reached; rejecting /127.0.0.1:64561
+17:11:46.889 [virtual-83] WARN aegis.server.TlsGateway -- connection cap 12 reached; rejecting /127.0.0.1:64562
+17:11:46.891 [virtual-83] WARN aegis.server.TlsGateway -- connection cap 12 reached; rejecting /127.0.0.1:64563
+17:11:48.290 [virtual-113] INFO aegis.server.TlsGateway -- pre-auth session expired session=e0458873-9616-4048-bfff-a06dd296d326 reason=read timeout
+17:11:48.295 [virtual-115] INFO aegis.server.TlsGateway -- pre-auth session expired session=f8e4bbb1-1b38-4833-8972-ee2ae69be928 reason=read timeout
+17:11:48.306 [virtual-117] INFO aegis.server.TlsGateway -- pre-auth session expired session=9638256c-fd48-427a-a30d-251f365dfb53 reason=read timeout
+17:11:48.317 [virtual-119] INFO aegis.server.TlsGateway -- pre-auth session expired session=295c8b06-0c8c-4a0e-ae04-59274f0e01cc reason=read timeout
+17:11:48.327 [virtual-121] INFO aegis.server.TlsGateway -- pre-auth session expired session=f37e61e1-197e-4375-9a92-92f92c2a5c45 reason=read timeout
+17:11:48.334 [virtual-123] INFO aegis.server.TlsGateway -- pre-auth session expired session=0e8dbb2e-8563-44e0-ab26-10bdd5ff61aa reason=read timeout
+17:11:48.353 [virtual-125] INFO aegis.server.TlsGateway -- pre-auth session expired session=eec38516-0ecb-45c0-8dce-451d9a3f96f2 reason=read timeout
+17:11:48.363 [virtual-127] INFO aegis.server.TlsGateway -- pre-auth session expired session=2d264112-5b68-44c1-844e-0a0dc0e67b50 reason=read timeout
+17:11:48.373 [virtual-129] INFO aegis.server.TlsGateway -- pre-auth session expired session=fd85fc37-a055-4e47-a418-bdf7c1ef4f24 reason=read timeout
+17:11:48.383 [virtual-131] INFO aegis.server.TlsGateway -- pre-auth session expired session=9cbab78c-fbf8-4b76-873b-73b6cd84cbcf reason=read timeout
+17:11:48.387 [virtual-133] INFO aegis.server.TlsGateway -- pre-auth session expired session=5e65beeb-a8c5-4323-9adc-05e9538cbacc reason=read timeout
 ]]></system-out>
   </testcase>
-  <testcase name="wsFeedCapsSubscribers" classname="aegis.server.ServerSecurityFixesTest" time="0.071"/>
-  <testcase name="timestampsAreFixedWidthAndExpiryIsChronological" classname="aegis.server.ServerSecurityFixesTest" time="0.014"/>
-  <testcase name="reAuthenticationOnAuthenticatedSessionIsRejected" classname="aegis.server.ServerSecurityFixesTest" time="0.016"/>
-  <testcase name="wsSlowSubscriberIsDroppedWithoutBlockingSender" classname="aegis.server.ServerSecurityFixesTest" time="0.003"/>
+  <testcase name="wsFeedCapsSubscribers" classname="aegis.server.ServerSecurityFixesTest" time="0.275"/>
+  <testcase name="timestampsAreFixedWidthAndExpiryIsChronological" classname="aegis.server.ServerSecurityFixesTest" time="0.065"/>
+  <testcase name="reAuthenticationOnAuthenticatedSessionIsRejected" classname="aegis.server.ServerSecurityFixesTest" time="0.038"/>
+  <testcase name="wsSlowSubscriberIsDroppedWithoutBlockingSender" classname="aegis.server.ServerSecurityFixesTest" time="0.002"/>
+  <testcase name="replayAfterTargetChangeReturnsOriginalAlert" classname="aegis.server.ServerSecurityFixesTest" time="0.07"/>
+  <testcase name="reusedRequestIdWithDifferentPayloadIsConflict" classname="aegis.server.ServerSecurityFixesTest" time="0.072"/>
+  <testcase name="revokedGrantStopsPublishingOnExistingSession" classname="aegis.server.ServerSecurityFixesTest" time="0.104"/>
 </testsuite>

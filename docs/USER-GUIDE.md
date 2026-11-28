@@ -30,15 +30,16 @@ brew install maven            # Java 24 (Temurin) + Maven 3.10
 bash scripts/dev.sh              # mvn -DskipTests package  → BUILD_OK
 bash scripts/test.sh             # mvn test → 361 test Java
 bash scripts/initdb.sh           # tạo aegis.db: 26 bảng, foreign_key_check sạch
-sqlite3 aegis.db < aegis-persistence/src/main/resources/db/seed_demo.sql   # dữ liệu demo
+# KHÔNG nạp seed_demo.sql vào aegis.db: hash placeholder chặn đăng nhập; server tự seed 480 device
 bash scripts/gen-server-cert.sh  # certs/aegis-server.p12 + aegis-truststore.p12 (password: aegis-demo)
 ```
 
 ## 2. Chạy server
 ```bash
 mvn -q -pl aegis-server dependency:build-classpath -Dmdep.outputFile=cp.txt
-java -cp "aegis-server/target/classes:$(cat cp.txt)" aegis.server.ServerMain \
-  --db aegis.db --keystore certs/aegis-server.p12 --storepass aegis-demo
+# cp.txt nằm trong aegis-server/; kèm target/classes của module anh em (jar ~/.m2 có thể cũ)
+java -cp "aegis-server/target/classes:aegis-core/target/classes:aegis-persistence/target/classes:aegis-protocol/target/classes:$(cat aegis-server/cp.txt)" \
+  aegis.server.ServerMain --db aegis.db --keystore certs/aegis-server.p12 --storepass aegis-demo
 ```
 Output mong đợi:
 ```
@@ -53,8 +54,10 @@ AEGIS EBS server ready
 ## 3. Chạy client JavaFX (máy nhân viên)
 ```bash
 mvn -pl aegis-client javafx:run -Djavafx.args="--host localhost --port 9443 \
-  --device-id DEV-A-F01-A-01 --truststore certs/aegis-truststore.p12 \
+  --device-id DEV-A-F01-A-01 --device-secret device-demo-secret \
+  --truststore ../certs/aegis-truststore.p12 \
   --truststore-password aegis-demo --inbox client-inbox.db --sound"
+# javafx:run chạy từ aegis-client/ → truststore dùng ../certs/…
 ```
 Cửa sổ hiện banner SIMULATION, trạng thái CONNECTING→ONLINE; khi có cảnh báo → popup + beep; nút **Acknowledge** gửi ACK_USER.
 
@@ -63,7 +66,9 @@ Cửa sổ hiện banner SIMULATION, trạng thái CONNECTING→ONLINE; khi có 
 mvn -pl aegis-simulator org.codehaus.mojo:exec-maven-plugin:3.2.0:exec \
   -Dexec.executable=java -Dexec.args="-classpath %classpath aegis.simulator.SimulatorMain \
   --agents 100 --scenario mixed --seed 42 --host localhost --port 9443 \
-  --truststore certs/aegis-truststore.p12 --truststore-password aegis-demo --duration 30"
+  --device-prefix SIM-DEV --device-secret device-demo-secret \
+  --truststore ../certs/aegis-truststore.p12 --truststore-password aegis-demo --duration 30"
+# exec:exec chạy từ aegis-simulator/ → ../certs/…; fleet SIM-DEV-* phải đăng ký trước (README.md §5)
 ```
 Scenarios: `clean | lossy | delayed | duplicate | flaky | mixed`. In SUMMARY (agents, connects, alerts, ACK sent/dropped/delayed, disconnects, SYNC, heartbeats).
 
@@ -74,7 +79,7 @@ cd aegis-dashboard && npm install && npm run dev   # http://localhost:5173
 Tự nối `ws://localhost:9444`; chưa có server → MOCK FEED. Phím 1–6: Twin · Incidents · Chaos · Reports · Funnel · **Operator**. Tab Operator dùng bridge HTTP `http://localhost:9445` để publish/cancel alert thật và start/stop fleet device (xem mục 0). Tòa nhà 3D đổi màu zone theo severity; click tầng để fly-to/cutaway/explode.
 
 ## 6. Phát cảnh báo FIRE_DRILL (operator)
-Với demo web-only dùng tab **Operator** trên dashboard (mục 0); với studio/chaos thật dùng operator client hoặc harness `target/e2e-dev/ebsp.py` (Operator.publish). Quy trình quan sát được:
+Với demo web-only dùng tab **Operator** trên dashboard (mục 0); với studio/chaos thật dùng operator client hoặc harness `scripts/ebsp.py` (Operator.publish). Quy trình quan sát được:
 1. Operator `ALERT_CREATE`/`ALERT_PUBLISH` (requestId idempotent) → server kiểm RBAC + snapshot target.
 2. Fanout `ALERT_PUSH` tới thiết bị target (priority CRITICAL ưu tiên).
 3. Client lưu durable inbox → `ACK_RECEIVED`; người bấm → `ACK_USER`.
@@ -87,7 +92,7 @@ Với demo web-only dùng tab **Operator** trên dashboard (mục 0); với stud
 ```bash
 bash scripts/bench-load.sh     # benchmark 100 client → docs/evidence/benchmark/<runId>/
 bash scripts/chaos-run.sh      # chaos scenarios → docs/evidence/chaos/
-bash scripts/demo-e2e.sh       # demo end-to-end → docs/evidence/demo/
+bash scripts/demo-e2e.sh       # chạy tay; docs/evidence/demo/ chưa có bản ghi được commit
 ```
 Mỗi run kèm `summary.json` (runId, commit SHA, máy đo, p50/p95/p99, ACK rate, retry).
 

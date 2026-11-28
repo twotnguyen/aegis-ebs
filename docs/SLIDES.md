@@ -188,7 +188,7 @@
 - **Ghi chú:** nêu hạn chế chủ động, đúng tinh thần NFR-018 + blueprint §0.2.
 
 ### Slide 15 — Kết luận & hướng phát triển (10:40–11:15)
-- **Đạt được so mục tiêu:** tự xây EBSP/2.0 trên TCP/UDP Java; ACK 2 tầng + retry idempotent + dedup + reconnect + crash recovery; RBAC scoped + audit; digital twin 3D + chaos lab + đo lường. Bằng chứng: `verify-347-h1h4` (347 Java/14 dashboard), benchmark 100 client, chaos C01–C05, ảnh LIVE. 4 finding HIGH của audit chuyên sâu đã sửa (`docs/reviews/backend-depth-audit-fixes.md`).
+- **Đạt được so mục tiêu:** tự xây EBSP/2.0 trên TCP/UDP Java; ACK 2 tầng + retry idempotent + dedup + reconnect + crash recovery; RBAC scoped + audit; digital twin 3D + chaos lab + đo lường. Bằng chứng: verify hiện tại **361 Java/1 skipped + 22 dashboard** (`docs/evidence/verify/`), benchmark 100 client, chaos C01–C05, ảnh LIVE; lần lưu trữ `verify-347-h1h4` (347/14) giữ để đối chiếu lịch sử. 4 finding HIGH của audit chuyên sâu đã sửa (`docs/reviews/backend-depth-audit-fixes.md`).
 - **Hướng phát triển:** HA/active-passive; PostgreSQL khi có bằng chứng bottleneck; CAP XML export validate schema; floor edge relay (nghiên cứu); nâng Argon2id + PKI thật; hoàn thiện gateway thực thi bảo mật wire.
 - **Ghi chú:** kết luận bám mục tiêu slide 3; không tuyên bố vượt quá bằng chứng.
 
@@ -284,9 +284,9 @@
 
 ## 6. Checklist chuẩn bị bảo vệ
 
-- [ ] Điền thông tin nhóm/MSSV/lớp (slide 1) và ký lời cam đoan trong BAO-CAO.
+- [x] Điền thông tin nhóm/MSSV/lớp (slide 1) và ký lời cam đoan trong BAO-CAO.
 - [x] Thay **toàn bộ** `[TODO: số thật]` bằng bằng chứng thật + runId/SHA/máy/timestamp (slide 9, 10) — xong; xem `docs/evidence/`.
-- [x] Chạy `mvn -B -ntp verify` toàn reactor; lưu 51+ surefire XML trong `docs/evidence/verify/` (347 pass).
+- [x] Chạy `mvn -B -ntp verify` toàn reactor; lưu surefire XML trong `docs/evidence/verify/` (lần lưu trữ 347 pass; lần hiện tại 361 Java/1 skipped + 22 dashboard).
 - [x] Chaos có seed: C01–C05 chạy thật bằng `scripts/chaos-run.sh` (`failed=[]`); C06–C16 có unit/integration + probe trong surefire/reviews.
 - [ ] Nếu có máy thứ hai: chạy lại chaos/multicast trên LAN Win+Mac thật; hiện tại đo trên máy M3 Pro single-host loopback.
 - [ ] Chuẩn bị truststore demo (`scripts/gen-server-cert.sh`) + kiểm tra `keytool -list`; nếu demo 2 máy, sinh lại SAN với IP thật.
@@ -300,7 +300,7 @@
 
 ## 7. Tài liệu tham khảo cho slide
 
-1. `Plan/AEGIS_MASTER_BLUEPRINT.md` — §14 (runbook), §15 (rubric), §16 (Q&A), §11 (observability), §12 (chaos).
+1. `Plan/AEGIS_MASTER_BLUEPRINT.md` — blueprint giáo trình bên ngoài repository (không nằm trong repo này); §14 (runbook), §15 (rubric), §16 (Q&A), §11 (observability), §12 (chaos).
 2. `docs/DEMO-RUNBOOK.md`, `docs/TEST-PLAN.md`, `docs/PROTOCOL.md`, `docs/SECURITY.md`, `docs/BAO-CAO.md`.
 3. `aegis-network-lab/src/main/resources/lab-guide.md` (UDP/multicast lab + benchmark).
 4. `aegis-dashboard/docs/status-contract.md` (status feed `status/1`).

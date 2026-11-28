@@ -30,15 +30,16 @@ brew install maven            # Java 24 (Temurin) + Maven 3.10
 ./scripts/dev.sh              # mvn -DskipTests package  → BUILD_OK
 ./scripts/test.sh             # mvn test → 361 Java tests
 ./scripts/initdb.sh           # creates aegis.db: 26 tables, clean foreign_key_check
-sqlite3 aegis.db < aegis-persistence/src/main/resources/db/seed_demo.sql   # demo data
+# Do NOT load seed_demo.sql into aegis.db: placeholder hashes block login; the server seeds 480 devices itself
 ./scripts/gen-server-cert.sh  # certs/aegis-server.p12 + aegis-truststore.p12 (password: aegis-demo)
 ```
 
 ## 2. Run the server
 ```bash
 mvn -q -pl aegis-server dependency:build-classpath -Dmdep.outputFile=cp.txt
-java -cp "aegis-server/target/classes:$(cat cp.txt)" aegis.server.ServerMain \
-  --db aegis.db --keystore certs/aegis-server.p12 --storepass aegis-demo
+# cp.txt lives in aegis-server/; include sibling target/classes (jars in ~/.m2 may be stale)
+java -cp "aegis-server/target/classes:aegis-core/target/classes:aegis-persistence/target/classes:aegis-protocol/target/classes:$(cat aegis-server/cp.txt)" \
+  aegis.server.ServerMain --db aegis.db --keystore certs/aegis-server.p12 --storepass aegis-demo
 ```
 Expected output:
 ```
@@ -53,8 +54,10 @@ AEGIS EBS server ready
 ## 3. Run the JavaFX client (employee machine)
 ```bash
 mvn -pl aegis-client javafx:run -Djavafx.args="--host localhost --port 9443 \
-  --device-id DEV-A-F01-A-01 --truststore certs/aegis-truststore.p12 \
+  --device-id DEV-A-F01-A-01 --device-secret device-demo-secret \
+  --truststore ../certs/aegis-truststore.p12 \
   --truststore-password aegis-demo --inbox client-inbox.db --sound"
+# javafx:run forks with working dir aegis-client/ → ../certs/…
 ```
 The window shows the SIMULATION banner, status CONNECTING→ONLINE; on an alert → popup + beep; the **Acknowledge** button sends ACK_USER.
 
@@ -63,7 +66,9 @@ The window shows the SIMULATION banner, status CONNECTING→ONLINE; on an alert 
 mvn -pl aegis-simulator org.codehaus.mojo:exec-maven-plugin:3.2.0:exec \
   -Dexec.executable=java -Dexec.args="-classpath %classpath aegis.simulator.SimulatorMain \
   --agents 100 --scenario mixed --seed 42 --host localhost --port 9443 \
-  --truststore certs/aegis-truststore.p12 --truststore-password aegis-demo --duration 30"
+  --device-prefix SIM-DEV --device-secret device-demo-secret \
+  --truststore ../certs/aegis-truststore.p12 --truststore-password aegis-demo --duration 30"
+# exec:exec forks from aegis-simulator/ → ../certs/…; fleet SIM-DEV-* must be pre-registered (README.md §5)
 ```
 Scenarios: `clean | lossy | delayed | duplicate | flaky | mixed`. Prints SUMMARY (agents, connects, alerts, ACK sent/dropped/delayed, disconnects, SYNC, heartbeats).
 
@@ -74,7 +79,7 @@ cd aegis-dashboard && npm install && npm run dev   # http://localhost:5173
 It connects automatically to `ws://localhost:9444`; without a server → MOCK FEED. Keys 1–6: Twin · Incidents · Chaos · Reports · Funnel · **Operator**. The Operator tab uses the HTTP bridge `http://localhost:9445` to publish/cancel real alerts and start/stop the device fleet (see section 0). The 3D building changes zone colors by severity; click a floor to fly-to/cutaway/explode.
 
 ## 6. Publish a FIRE_DRILL alert (operator)
-For the web-only demo use the **Operator** tab on the dashboard (section 0); for a real studio/chaos setup use the operator client or the `target/e2e-dev/ebsp.py` harness (Operator.publish). Observable flow:
+For the web-only demo use the **Operator** tab on the dashboard (section 0); for a real studio/chaos setup use the operator client or the `scripts/ebsp.py` harness (Operator.publish). Observable flow:
 1. Operator `ALERT_CREATE`/`ALERT_PUBLISH` (idempotent requestId) → server checks RBAC + target snapshot.
 2. Fanout `ALERT_PUSH` to target devices (CRITICAL priority first).
 3. Client stores the durable inbox → `ACK_RECEIVED`; a person presses the button → `ACK_USER`.
@@ -87,7 +92,7 @@ For the web-only demo use the **Operator** tab on the dashboard (section 0); for
 ```bash
 ./scripts/bench-load.sh     # 100-client benchmark → docs/evidence/benchmark/<runId>/
 ./scripts/chaos-run.sh      # chaos scenarios → docs/evidence/chaos/
-./scripts/demo-e2e.sh       # end-to-end demo → docs/evidence/demo/
+./scripts/demo-e2e.sh       # run manually; no committed run in docs/evidence/demo/ yet
 ```
 Every run includes a `summary.json` (runId, commit SHA, measurement machine, p50/p95/p99, ACK rate, retries).
 
