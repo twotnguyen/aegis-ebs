@@ -120,12 +120,12 @@ echo "demo-web: installing reactor artifacts + generating aegis-server/cp.txt...
 mvn -q -DskipTests install
 mvn -q -pl aegis-server dependency:build-classpath -Dmdep.outputFile=cp.txt
 case "$(uname -s)" in
-  MINGW*|MSYS*|CYGWIN*|Windows_NT) CP_SEP=';' ;;
-  *) CP_SEP=':' ;;
+  MINGW*|MSYS*|CYGWIN*|Windows_NT) CP_SEP=';'; JREPO="$(cygpath -m "$REPO")" ;;
+  *) CP_SEP=':'; JREPO="$REPO" ;;
 esac
-CP="$REPO/aegis-server/target/classes"
+CP="$JREPO/aegis-server/target/classes"
 for module in persistence core protocol; do
-  CP="$CP$CP_SEP$REPO/aegis-$module/target/classes"
+  CP="$CP$CP_SEP$JREPO/aegis-$module/target/classes"
 done
 CP="$CP$CP_SEP$(tr -d '\n' < "$REPO/aegis-server/cp.txt")"
 
@@ -142,8 +142,8 @@ fi
 
 # ---- 3. real server (seeds 480 devices with codes DEV-A-F01-A-01 ..) -------
 java -cp "$CP" aegis.server.ServerMain \
-  --db "$REPO/aegis.db" \
-  --keystore "$REPO/certs/aegis-server.p12" --storepass aegis-demo \
+  --db "$JREPO/aegis.db" \
+  --keystore "$JREPO/certs/aegis-server.p12" --storepass aegis-demo \
   --tls-port "$TLS_PORT" --ws-port "$WS_PORT" \
   > "$EVIDENCE/server.log" 2>&1 &
 SERVER_PID=$!

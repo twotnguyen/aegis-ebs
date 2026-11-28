@@ -51,6 +51,7 @@ Java 24 (Maven 3.10) · `Socket`/`ServerSocket`/`SSLSocket`/`SSLServerSocket` ·
 ```
 aegis-ebs/
 ├── pom.xml                  # Maven reactor (7 module Java)
+├── run                     # ./run (Git Bash) · run.cmd (cmd/PowerShell)
 ├── aegis-protocol/  aegis-core/  aegis-persistence/  aegis-server/
 ├── aegis-client/    aegis-simulator/  aegis-network-lab/
 ├── aegis-dashboard/         # Node + Vite + Three.js (3D twin)
@@ -66,11 +67,13 @@ aegis-ebs/
 
 ### Demo web-only — khuyến nghị cho bảo vệ
 
-Một lệnh khởi động server + bridge + dashboard; phần còn lại thao tác hoàn toàn trên web:
+Chỉ một lệnh từ thư mục repo (hoặc `bash <đường-dẫn>/run` từ nơi khác):
 
 ```bash
-bash scripts/demo-web.sh
+./run
 ```
+
+Trên cmd/PowerShell gõ `run.cmd`. Wrapper gọi `scripts/demo-web.sh` nên không cần nhớ đường dẫn dài.
 
 - Mở `http://localhost:5173` → tab **Operator** (tab thứ sáu; bridge HTTP `http://localhost:9445`).
 - **Fleet Start (20)** → **Publish FIRE_DRILL F05** (zone đỏ + ACK trên dashboard LIVE) → **Retry demo** (1 device im lặng, `FAILED` sau 3s/6s/12s) → **Cancel**.

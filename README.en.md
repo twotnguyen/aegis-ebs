@@ -51,6 +51,7 @@ Java 24 (Maven 3.10) · `Socket`/`ServerSocket`/`SSLSocket`/`SSLServerSocket` ·
 ```
 aegis-ebs/
 ├── pom.xml                  # Maven reactor (7 Java modules)
+├── run                     # ./run (Git Bash) · run.cmd (cmd/PowerShell)
 ├── aegis-protocol/  aegis-core/  aegis-persistence/  aegis-server/
 ├── aegis-client/    aegis-simulator/  aegis-network-lab/
 ├── aegis-dashboard/         # Node + Vite + Three.js (3D twin)
@@ -66,11 +67,13 @@ aegis-ebs/
 
 ### Web-only demo — recommended for the defense
 
-One command starts the server + bridge + dashboard; everything else is done in the browser:
+One command from the repo directory (or `bash <path>/run` from anywhere):
 
 ```bash
-bash scripts/demo-web.sh
+./run
 ```
+
+On cmd/PowerShell type `run.cmd`. The wrapper calls `scripts/demo-web.sh`, so there is no long path to remember.
 
 - Open `http://localhost:5173` → **Operator** tab (the sixth tab; HTTP bridge at `http://localhost:9445`).
 - **Fleet Start (20)** → **Publish FIRE_DRILL F05** (red zone + ACKs on the LIVE dashboard) → **Retry demo** (1 silent device, `FAILED` after 3s/6s/12s) → **Cancel**.
